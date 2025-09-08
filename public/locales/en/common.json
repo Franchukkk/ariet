@@ -5,9 +5,7 @@
 	"AboutUs": {
 		"about_company": "About Us"
 	},
-
-	"title": 
-	{
+	"title": {
 		"our_products": "Our Products",
 		"our_advantages": "Our Advantages",
 		"global_presence": "Global Presence\nAriet Power",
@@ -18,11 +16,12 @@
 		"categories": "Ariet Product Categories",
 		"contacts": "Contacts",
 		"company": "Company",
-		"section": "Section",	
+		"section": "Section",
 		"social_networks": "Social Networks",
-		"catalog": "Catalog"
+		"catalog": "Catalog",
+		"login": "Login",
+		"registration": "Registration"
 	},
-
 	"list": {
 		"advantages": {
 			"peace_confidence": {
@@ -38,16 +37,13 @@
 				"description": "A convenient tool that allows you to get an accurate proposal for your solution in just a few clicks"
 			}
 		},
-
 		"barcelona_spain": "Barcelona, Spain",
-    "izmir_turkey": "Izmir, Turkey",
-    "shenzhen_china": "Shenzhen, China"
+		"izmir_turkey": "Izmir, Turkey",
+		"shenzhen_china": "Shenzhen, China"
 	},
-
-	
-  "Info": {
-    "own_modern_factories": "We have our own modern factories, which allows ...",
-    "global_network_and_support": "Thanks to the wide geography of production and the extensive partner network, Ariet Power ensures uninterrupted deliveries and customer support worldwide. Our structure is designed so that every order is fulfilled on time, and technical support is always available, regardless of the region.",
+	"Info": {
+		"own_modern_factories": "We have our own modern factories, which allows ...",
+		"global_network_and_support": "Thanks to the wide geography of production and the extensive partner network, Ariet Power ensures uninterrupted deliveries and customer support worldwide. Our structure is designed so that every order is fulfilled on time, and technical support is always available, regardless of the region.",
 		"lorem_ipsum": ".4kW - 10kVA/9kW Lorem Ipsum - this is a \"fish\" text, often used in printing and web design. Lorem Ipsum is a standard \"fish\"",
 		"headquarters": "Headquarters —",
 		"warehouses": "Warehouses —",
@@ -55,23 +51,19 @@
 		"fast_delivery": "fast and accurate delivery",
 		"copyright_year": "2025 Ariet®.",
 		"all_rights_reserved": "All rights reserved.",
-		"privacy_policy": "Privacy Policy"	
-  },
-
-
+		"privacy_policy": "Privacy Policy"
+	},
 	"Subtitle": {
 		"we_are_where_reliable_solutions_are_needed": "We are where reliable solutions are needed.",
 		"products_full_compliance": "All Ariet Power products fully",
 		"products_international_standards": "comply with international standards",
 		"products_safety_quality": "and safety and quality."
 	},
-
 	"Text": {
 		"partner_network": "Partner Network (Value Added Partners)",
 		"we_work_with_reliable_local_partners": "We collaborate with reliable local partners who enhance our\n        service by providing technical and marketing support on the ground:"
 	},
-
-	"Description":{
+	"Description": {
 		"goal": "Our goal",
 		"premium": "— to provide premium-",
 		"equipment": "equipment with\n      an optimal balance",
@@ -88,12 +80,34 @@
 		"service_after_purchase": "after purchase,\n    to achieve maximum",
 		"customer_satisfaction": "customer satisfaction."
 	},
-
 	"card": {
 		"efficiency": "Efficiency Above EU CoC Requirements for AC UPS"
 	},
-
 	"Form": {
 		"fill_form": "Fill out the form and we\\nwill contact you"
+	},
+	"LoginForm": {
+		"login": "Email",
+		"password": "Password",
+		"remember_me": "Remember me",
+		"enter": "Enter",
+		"registration": "Registration"
+	},
+	"RegistrationForm": {
+		"statuses": {
+			"client": "Client",
+			"ambassador": "Ambassador",
+			"diller": "Diller"
+		},
+		"name": "Name",
+		"second_name": "Second Name",
+		"phone": "Phone",
+		"email": "Email",
+		"password": "Password",
+		"confirm_password": "Confirm Password",
+		"to_remember_password": "To remember password",
+		"registration": "Registration",
+		"i_have_account": "I have account",
+		"enter": "Enter"
 	}
 }
