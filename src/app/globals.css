@@ -1,0 +1,101 @@
+
+@import "tailwindcss";
+
+@import url("/assets/fonts/fonts.css");
+
+body {
+  margin: 0;
+  font-family: "TT Firs Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #000000;
+  color: #ffffff;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.main-wrapper {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-right: 54px !important;
+  padding-left: 54px !important;
+}
+
+.app-wrapper {
+  padding: 18px 0px 83px;
+}
+
+@media (max-width: 1000px) {
+  .main-wrapper {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  .app-wrapper {
+    padding: 20px 0;
+  }
+}
+
+.swiper-pagination-bullet {
+  width: 56px !important;
+  height: 40px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  position: relative;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 5px;
+    background: #333333 !important;
+    position: absolute;
+    top: 50%;
+    left: 0;
+  }
+}
+
+.swiper-pagination-bullet-active {
+  &::before {
+    background: #4bc785 !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+/* @import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+} */

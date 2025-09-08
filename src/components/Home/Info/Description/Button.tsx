@@ -1,0 +1,37 @@
+import styled from "styled-components";
+import ArrowSvg from "@/assets/img/arrow.svg";
+
+export const Button = () => (
+  <StyledButton>
+    <ArrowSvg aria-label="icon" /> Подробнее о нас
+  </StyledButton>
+);
+
+const StyledButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  padding: 0 31px;
+  border: 1px solid #4bc785;
+  border-radius: 61px;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 100%;
+  letter-spacing: 1%;
+  text-align: center;
+  color: #ffffff;
+  max-width: 358px;
+  width: 100%;
+  position: relative;
+  transition: all 0.3s;
+  img {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 31px;
+  }
+  &:hover {
+    background: #4bc785;
+  }
+`;
