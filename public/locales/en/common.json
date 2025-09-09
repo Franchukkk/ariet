@@ -108,6 +108,7 @@
 		"to_remember_password": "To remember password",
 		"registration": "Registration",
 		"i_have_account": "I have account",
-		"enter": "Enter"
+		"enter": "Enter",
+		"passwords_do_not_match": "Passwords do not match"
 	}
 }

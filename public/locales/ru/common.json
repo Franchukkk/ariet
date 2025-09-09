@@ -112,6 +112,7 @@
 		"to_remember_password": "Запомнить пароль",
 		"registration": "Регистрация",
 		"i_have_account": "У меня есть аккаунт",
-		"enter": "Войти"
+		"enter": "Войти",
+		"passwords_do_not_match": "Пароли не совпадают"
 	}
 }

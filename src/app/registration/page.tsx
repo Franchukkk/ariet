@@ -20,12 +20,19 @@ export default function Registration() {
 
 const RegistrationWrapper = styled.div`
     position: relative;
+    max-width: 1440px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 100px 0px;
+    margin: auto;
     overflow: hidden;
+
+    @media (max-width: 1000px) {
+        padding: 0px 25px;
+        margin-bottom: 50px;
+    }
 `;
 
 const StyledTitle = styled.h1`
@@ -43,12 +50,15 @@ const StyledTitle = styled.h1`
 `;
 
 const CanvasBlock = styled.div`
-   transform: rotate(-24deg);
+    transform: rotate(-24deg);
     position: absolute;
-    left: 150px;
-    top: -252px;
-    width: 204%;
-    height: 174%;
+    right: -200px;
+    width: 840px;
+    height: 644px;
     z-index: -2;
     overflow: hidden;
+
+     @media (max-width: 1000px) {
+        right: -500px;
+    }
 `;

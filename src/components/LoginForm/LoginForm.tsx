@@ -107,13 +107,13 @@ const CustomCheckbox = styled.label`
 
     [type="checkbox"]:checked + &:after {
         position: absolute;
-        top: 2px;
+        top: 4px;
         transform: translate(-100%, 0px);
-        left: -16px;
+        left: -18px;
         content: "";
         display: block;
-        width: 20px;
-        height: 20px;
+        width: 16px;
+        height: 16px;
         background: #4bc785;
         border-radius: 4px;
         border: none;
