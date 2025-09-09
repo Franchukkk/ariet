@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
 export const TitleBasket = () => {
-    const { t } = useTranslation("common");
-    return (
-        <StyledTitle >{t("title.basket")}</StyledTitle>
-    )
+  const { t } = useTranslation("common");
+  return (
+    <StyledTitle >{t("title.basket")}</StyledTitle>
+  )
 }
 
 const StyledTitle = styled.h3`
@@ -16,7 +16,8 @@ const StyledTitle = styled.h3`
   text-transform: uppercase;  
   color: #ffffff;
 
-  @media (max-width: 800px) {
+  @media (max-width: 1280px) {
     text-align: center;
+    margin-bottom: 20px;
   }
 `;

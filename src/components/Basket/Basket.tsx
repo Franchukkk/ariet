@@ -1,5 +1,5 @@
 import { Support } from "../Support/Support"
-import BasketList from "./BasketList"
+import { BasketList } from "./BasketList"
 import { TitleBasket } from "./TitleBasket"
 
 export const Basket = () => {

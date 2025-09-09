@@ -110,5 +110,13 @@
 		"i_have_account": "I have account",
 		"enter": "Enter",
 		"passwords_do_not_match": "Passwords do not match"
+	},
+
+	"Thanks": {
+		"title": "Thank you for your purchase",
+		"order_number": "Order number",
+		"contact_manager": "Our manager will contact you.",
+		"to_catalogue": "To catalogue",
+		"my_orders": "My orders"
 	}
 }
