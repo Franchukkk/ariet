@@ -1,12 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 interface Props {
   onClick?: () => void;
 }
 
-export const ShowMore = ({ onClick }: Props) => (
-  <StyledShowMore onClick={onClick}>Показать больше</StyledShowMore>
-);
+export const ShowMore = ({ onClick }: Props) => {
+  const { t } = useTranslation("common");
+
+  return <StyledShowMore onClick={onClick}>{t("buttons.show_more")}</StyledShowMore>;
+};
 
 const StyledShowMore = styled.button`
   display: flex;

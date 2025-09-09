@@ -1,12 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 interface Props {
   onClick: () => void;
 }
 
-export const CleanButton = ({ onClick }: Props) => (
-  <StyledCleanButton onClick={onClick}>Очистить фильтр</StyledCleanButton>
-);
+export const CleanButton = ({ onClick }: Props) => {
+  const { t } = useTranslation("common");
+
+  return <StyledCleanButton onClick={onClick}>{t("filters.clear")}</StyledCleanButton>;
+};
 
 const StyledCleanButton = styled.button`
   font-weight: 300;

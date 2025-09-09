@@ -1,14 +1,15 @@
 "use client";
 
-import styled from "styled-components";
-import { Filters } from "./Filters/Filters";
-import { Header } from "./Header/Header";
-import { List } from "./List";
-import { ShowMore } from "./ShowMore";
-import { Pagination } from "@/components/Pagination/Pagination";
-import { useState } from "react";
-import productImg from "@/assets/img/module.png";
-import type { StaticImageData } from "next/image";
+import productImg from "@/assets/img/module.png"
+import { Pagination } from "@/components/Pagination/Pagination"
+import type { StaticImageData } from "next/image"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+import { Filters } from "./Filters/Filters"
+import { Header } from "./Header/Header"
+import { List } from "./List"
+import { ShowMore } from "./ShowMore"
 
 type ImgLike = string | StaticImageData;
 
@@ -19,46 +20,48 @@ export interface IProduct {
   link: string;
 }
 
-const productData: IProduct[] = [
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-  {
-    title: "Онлайн ИБП ARIET",
-    category: "Однофазные ИБП",
-    photo: productImg,
-    link: "/",
-  },
-];
-
 export const Content = () => {
+  const { t } = useTranslation("common");
+
+  const productData: IProduct[] = [
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+    {
+      title: t("products.online_ups"),
+      category: t("products.single_phase"),
+      photo: productImg,
+      link: "/",
+    },
+  ];
+
   const [activeFilters, setActiveFilters] = useState<string[]>(["2"]);
   const [pagination, setPagination] = useState({
     currentPage: 1,

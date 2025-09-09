@@ -1,11 +1,16 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Card = ({ active }: { active?: boolean }) => (
-  <StyledCard className={`${active && "active"}`}>
-    <div className="title">Онлайн ИБП Ariet T3K</div>
-    <div className="subtitle">1 ква</div>
-  </StyledCard>
-);
+export const Card = ({ active }: { active?: boolean }) => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledCard className={`${active ? "active" : ""}`}>
+      <div className="title">{t("ups.ups_model")}</div>
+      <div className="subtitle">{t("ups.ups_power")}</div>
+    </StyledCard>
+  );
+};
 
 const StyledCard = styled.div`
   padding: 25px 20px 13px;
@@ -14,6 +19,7 @@ const StyledCard = styled.div`
   border: 1px solid transparent;
   transition: all 0.3s;
   flex-shrink: 0;
+
   .title {
     font-weight: 500;
     font-size: 14px;
@@ -30,6 +36,7 @@ const StyledCard = styled.div`
     letter-spacing: 1%;
     color: #ffffffa8;
   }
+
   &.active,
   &:hover {
     border: 1px solid #1dcf94;

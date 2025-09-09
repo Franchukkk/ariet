@@ -1,26 +1,32 @@
-import styled from "styled-components";
-import bg from "@/assets/img/tech-info-bg.png";
-import { Title } from "./Title";
-import { Button } from "./Button";
-import { BuyButton } from "./BuyButton";
-import type { StaticImageData } from "next/image";
+"use client";
+
+import bg from "@/assets/img/tech-info-bg.png"
+import type { StaticImageData } from "next/image"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+import { Button } from "./Button"
+import { BuyButton } from "./BuyButton"
+import { Title } from "./Title"
 
 type ImgLike = string | StaticImageData;
 
-export const TechnicalInfo = ({ bgImg = bg }: { bgImg: ImgLike }) => (
-  <div className="main-wrapper">
-    <StyledTechnicalInfo
-      $bg={bgImg}
-      className="flex flex-col justify-center items-center"
-    >
-      <Title />
-      <Button title="Детальные характеристики" />
-      <Button title="Детальные характеристики" type="light" />
-      <BuyButton />
-    </StyledTechnicalInfo>
-  </div>
-);
+export const TechnicalInfo = ({ bgImg }: { bgImg?: ImgLike }) => {
+  const { t } = useTranslation("common");
 
+  return (
+    <div className="main-wrapper">
+      <StyledTechnicalInfo
+        $bg={bgImg || bg}
+        className="flex flex-col justify-center items-center"
+      >
+        <Title />
+        <Button title={t("button.details")} />
+        <Button title={t("button.details")} type="light" />
+        <BuyButton />
+      </StyledTechnicalInfo>
+    </div>
+  );
+};
 
 
 const StyledTechnicalInfo = styled.div<{ $bg: ImgLike }>`

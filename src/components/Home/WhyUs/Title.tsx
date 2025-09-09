@@ -1,8 +1,13 @@
-import styled from "styled-components";
+"use client";
 
-export const Title = () => (
-  <StyledTitle>Почему выбирают Ariet Power</StyledTitle>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle>{t("title.choose_ariet")}</StyledTitle>;
+};
 
 const StyledTitle = styled.h3`
   margin-bottom: 74px;
@@ -12,6 +17,7 @@ const StyledTitle = styled.h3`
   letter-spacing: 0%;
   text-transform: uppercase;
   color: #ffffff;
+
   @media (max-width: 700px) {
     font-size: 40px;
     margin-bottom: 0px;

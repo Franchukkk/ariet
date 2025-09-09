@@ -1,4 +1,4 @@
-
+"use client";
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
@@ -15,6 +15,7 @@ const StyledTitle = styled.h2`
   text-transform: uppercase;
   color: #fff;
   margin-bottom: 45px;
+
   @media (max-width: 800px) {
     font-size: 30px;
     text-align: center;

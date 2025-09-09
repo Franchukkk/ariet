@@ -1,6 +1,7 @@
-import styled from "styled-components";
-import { Info } from "./Info/Info";
-import { Cards } from "./Cards/Cards";
+"use client"
+import styled from "styled-components"
+import { Cards } from "./Cards/Cards"
+import { Info } from "./Info/Info"
 
 export const Standarts = () => (
   <StyledStandarts className="main-wrapper">

@@ -1,6 +1,10 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => <StyledTitle>Что идёт в комплекте</StyledTitle>;
+export const Title = () => {
+  const { t } = useTranslation("common");
+  return <StyledTitle>{t("kit.title")}</StyledTitle>;
+};
 
 const StyledTitle = styled.div`
   font-weight: 600;
@@ -10,6 +14,7 @@ const StyledTitle = styled.div`
   text-align: center;
   text-transform: uppercase;
   margin-bottom: 70px;
+
   @media (max-width: 800px) {
     font-size: 30px;
     line-height: 1.2;

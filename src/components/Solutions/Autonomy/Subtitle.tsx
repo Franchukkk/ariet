@@ -1,11 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    Мы разрабатываем системы под нужную мощность <br /> и время работы — от
-    плавного отключения до <br /> длительной поддержки.
-  </StyledSubtitle>
-);
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledSubtitle>{t("solutions.subtitle")}</StyledSubtitle>;
+};
 
 const StyledSubtitle = styled.p`
   font-weight: 400;

@@ -1,6 +1,13 @@
-import styled from "styled-components";
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
 
-export const Button = () => <StyledButton>Каталог продукции</StyledButton>;
+export const Button = () => {
+  const {t} = useTranslation("common")
+
+  return (
+  <StyledButton>{t("Button.catalog")}</StyledButton>
+  )
+}
 
 const StyledButton = styled.button`
   display: flex;

@@ -1,14 +1,16 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Info = () => (
-  <StyledInfo>
-    <div className="main-wrapper subtitle">
-      Отгрузка в день заказа и мгновенная техническая <br /> помощь от нашей
-      команды поддержки
-    </div>
-    <div className="title">поддержка</div>
-  </StyledInfo>
-);
+export const Info = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledInfo>
+      <div className="main-wrapper subtitle" dangerouslySetInnerHTML={{ __html: t("support.subtitle") }} />
+      <div className="title">{t("support.title")}</div>
+    </StyledInfo>
+  );
+};
 
 const StyledInfo = styled.div`
   z-index: -2;

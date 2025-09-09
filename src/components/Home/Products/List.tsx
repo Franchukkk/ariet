@@ -1,60 +1,39 @@
-import styled from "styled-components";
-import { ModelCard } from "@/components/ModelCard/ModelCard";
-import productImg from "@/assets/img/module.png";
+"use client";
 
-export const List = () => (
-  <StyledList>
-    <div className="card">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-    <div className="card">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-    <div className="card no-border">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-    <div className="divider" />
-    <div className="card">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-    <div className="card">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-    <div className="card no-border">
-      <ModelCard
-        photo={productImg}
-        title="Онлайн ИБП ARIET "
-        category="Однофазные ИБП"
-        link="/"
-      />
-    </div>
-  </StyledList>
-);
+import productImg from "@/assets/img/module.png"
+import { ModelCard } from "@/components/ModelCard/ModelCard"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+const PRODUCTS = [
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+  { titleKey: "products.online_ups", categoryKey: "products.single_phase", link: "/" },
+];
+
+export const List = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledList>
+      {PRODUCTS.map((product, index) => (
+        <div key={index} className={`card ${index % 3 === 2 ? "no-border" : ""}`}>
+          <ModelCard
+            photo={productImg}
+            title={t(product.titleKey)}
+            category={t(product.categoryKey)}
+            link={product.link}
+          />
+        </div>
+      ))}
+
+      <div className="divider" />
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div`
   display: grid;
@@ -63,12 +42,14 @@ const StyledList = styled.div`
   border-top: 1px dashed #ffffff50;
   margin-bottom: 34px;
   padding: 12px 0;
+
   .divider {
     grid-column: 1/4;
     grid-row: 2/3;
     border-bottom: 1px dashed #ffffff50;
     margin: 14px 0;
   }
+
   .card {
     border-right: 1px dashed #ffffff50;
     border-radius: 0;
@@ -77,20 +58,24 @@ const StyledList = styled.div`
       border-right: none;
     }
   }
+
   @media (max-width: 1200px) {
     grid-template-columns: 1fr 1fr;
     border-bottom: none;
+
     .divider {
       display: none;
     }
+
     .card {
       border-bottom: 1px dashed #ffffff50;
       border-right: none;
-      &:last-child() {
+      &:last-child {
         border-bottom: none;
       }
     }
   }
+
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }

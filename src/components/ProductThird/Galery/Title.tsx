@@ -1,6 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => <StyledTitle>Галерея </StyledTitle>;
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle>{t("gallery.title")}</StyledTitle>;
+};
 
 const StyledTitle = styled.div`
   font-weight: 600;

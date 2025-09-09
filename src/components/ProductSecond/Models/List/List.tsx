@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import "swiper/css/pagination"
 import { Autoplay, Pagination } from "swiper/modules"
@@ -8,34 +9,38 @@ import { Swiper, SwiperSlide } from "swiper/react"
 import photo from "@/assets/img/module.png"
 import { ModelCard } from "../../../ModelCard/ModelCard"
 
-const MODELS = [
-  { title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", link: "/", isNew: false },
-  { title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", link: "/", isNew: true },
-  { title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", link: "/", isNew: false },
-  { title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", link: "/", isNew: false },
-  { title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", link: "/", isNew: false },
-];
+export const List = () => {
+  const { t } = useTranslation("common");
 
-export const List = () => (
-  <StyledList>
-    <Swiper
-      spaceBetween={0}
-      modules={[Pagination, Autoplay]}
-      pagination={{ clickable: true }}
-      breakpoints={{
-        1024: { slidesPerView: 3 },
-        800: { slidesPerView: 2 },
-        0: { slidesPerView: 1 },
-      }}
-    >
-      {MODELS.map((model, index) => (
-        <SwiperSlide key={index}>
-          <ModelCard {...model} photo={photo} />
-        </SwiperSlide>
-      ))}
-    </Swiper>
-  </StyledList>
-);
+  const MODELS = [
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: true },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
+  ];
+
+  return (
+    <StyledList>
+      <Swiper
+        spaceBetween={0}
+        modules={[Pagination, Autoplay]}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          1024: { slidesPerView: 3 },
+          800: { slidesPerView: 2 },
+          0: { slidesPerView: 1 },
+        }}
+      >
+        {MODELS.map((model, index) => (
+          <SwiperSlide key={index}>
+            <ModelCard {...model} photo={photo} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div`
   border-top: 1px dashed #ffffff50;

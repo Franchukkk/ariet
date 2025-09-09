@@ -1,15 +1,20 @@
-import styled from "styled-components";
-import ArrowSvg from "@/assets/img/arrow.svg";
+import ArrowSvg from "@/assets/img/arrow.svg"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Buttons = () => (
-  <StyledButtons className="flex flex-col gap-[19px]">
-    <button>Детальные характеристики</button>
-    <button className="light">Руководство</button>
-    <button className="outline-btn">
-      <ArrowSvg aria-label="icon" /> Где купить?!
-    </button>
-  </StyledButtons>
-);
+export const Buttons = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledButtons className="flex flex-col gap-[19px]">
+      <button>{t("buttons.detailed_specs")}</button>
+      <button className="light">{t("buttons.manual")}</button>
+      <button className="outline-btn">
+        <ArrowSvg aria-label="icon" /> {t("buttons.where_to_buy")}
+      </button>
+    </StyledButtons>
+  );
+};
 
 const StyledButtons = styled.div`
   button {

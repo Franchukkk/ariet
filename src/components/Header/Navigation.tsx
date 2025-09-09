@@ -6,10 +6,10 @@ import styled from "styled-components"
 
 
 const LINKS = [
-  { title: "Title.о_компании", link: "/" },
-  { title: "Navigation.техническая_поддержка", link: "/" },
-  { title: "Navigation.партнерам", link: "/" },
-  { title: "Title.контакты", link: "/" },
+  { title: "title.about_company", link: "/about" },
+  { title: "Navigation.support", link: "/online-support" },
+  { title: "Navigation.partners", link: "/partner" },
+  { title: "title.contacts", link: "/contacts" },
 ];
 
 export const Navigation = () => {

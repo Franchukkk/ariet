@@ -1,12 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    6кВа/5.4кВт - 10кВа/9кВт Lorem Ipsum - это текст-"рыба", часто используемый
-    в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбойё6кВа/5.4кВт
-    - 10кВа/9кВт Lorem Ipsum - это т
-  </StyledSubtitle>
-);
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledSubtitle>{t("ups.subtitle_Lorem")}</StyledSubtitle>;
+};
 
 const StyledSubtitle = styled.p`
   max-width: 715px;
@@ -17,6 +16,7 @@ const StyledSubtitle = styled.p`
   letter-spacing: 1%;
   text-align: center;
   color: #ffffffa8;
+
   @media (max-width: 1000px) {
   }
 `;

@@ -1,10 +1,17 @@
-import styled from "styled-components";
+"use client";
 
-export const Title = () => (
-  <StyledTitle>
-    Мы предоставим всё <br /> необходимое, чтобы вы могли:
-  </StyledTitle>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledTitle
+      dangerouslySetInnerHTML={{ __html: t("title.adv_title") }}
+    />
+  );
+};
 
 const StyledTitle = styled.h2`
   font-weight: 400;
@@ -14,7 +21,8 @@ const StyledTitle = styled.h2`
   text-transform: uppercase;
   margin-bottom: 40px;
   color: #4bc785;
-  @media(max-width: 800px) {
+
+  @media (max-width: 800px) {
     text-align: center;
   }
 `;

@@ -1,6 +1,10 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => <StyledTitle>Техническая информация</StyledTitle>;
+export const Title = () => {
+  const { t } = useTranslation("common");
+  return <StyledTitle>{t("technical_info.title")}</StyledTitle>;
+};
 
 const StyledTitle = styled.h3`
   font-weight: 600;

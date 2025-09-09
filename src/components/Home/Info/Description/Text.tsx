@@ -1,18 +1,14 @@
-import styled from "styled-components";
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
 
-export const Text = () => (
-  <StyledText>
-    Собственные производственные мощности в Испании, Турции и Китае, а также
-    широкая сеть партнёров в Европе, Азии и на Ближнем Востоке позволяют нам
-    обеспечивать стабильные поставки, гибкие условия сотрудничества и высокий
-    уровень технической поддержки.
-    <br />
-    <br />
-    Более 20 лет мы создаём надёжные решения, соответствующие международным
-    стандартам качества. Ariet Power — это партнёр, который думает о вашем
-    бизнесе и заботится о бесперебойной работе ваших систем.
+export const Text = () => {
+  const {t} = useTranslation("common")
+  return (
+    <StyledText>
+    {t("Text.home_text")}
   </StyledText>
-);
+  )
+};
 
 const StyledText = styled.p`
   font-weight: 100;

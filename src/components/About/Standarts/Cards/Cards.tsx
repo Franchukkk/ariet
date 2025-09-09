@@ -16,10 +16,10 @@ type Item = {
 };
 
 const DATA: Item[] = [
-  { titleKey: "Cards.tuv", icon: icon1 },
-  { titleKey: "Cards.ce", icon: icon2 },
-  { titleKey: "Cards.bureau_veritas", icon: icon3 },
-  { titleKey: "Cards.efficiency", className: "outline-card" },
+  { titleKey: "card.tuv", icon: icon1 },
+  { titleKey: "card.ce", icon: icon2 },
+  { titleKey: "card.bureau_veritas", icon: icon3 },
+  { titleKey: "card.efficiency", className: "outline-card" },
 ];
 
 export const Cards = () => {
@@ -44,6 +44,7 @@ const StyledCards = styled.div`
   grid-template-columns: 1fr 1fr;
   grid-auto-rows: 201px;
   gap: 12px;
+
   @media (max-width: 800px) {
     grid-template-columns: 1fr;
     grid-auto-rows: 170px;

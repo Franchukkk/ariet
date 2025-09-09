@@ -10,7 +10,7 @@ export const Info = () => {
     <StyledInfo className="flex flex-col gap-[24px]">
       <p>
         <span className="label">{t("Info.headquarters")}</span>{" "}
-        {t("List.barcelona_spain")}
+        {t("list.barcelona_spain")}
       </p>
       <p>
         <span className="label">{t("Info.warehouses")}</span>{" "}

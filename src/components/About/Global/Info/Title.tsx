@@ -1,14 +1,14 @@
 "use client";
 
-import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 export const Title = () => {
 
   const { t } = useTranslation('common');
   return (
     <StyledTitle>
-      {t("Title.глобальное")}
+      {t("title.title_name")}
     </StyledTitle>
   )
 };

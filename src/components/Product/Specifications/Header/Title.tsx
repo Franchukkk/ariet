@@ -1,10 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>
-    Ключевые <br /> особенности модели
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle>{t("keyFeatures.title")}</StyledTitle>;
+};
 
 const StyledTitle = styled.h2`
   font-weight: 600;
@@ -13,6 +14,7 @@ const StyledTitle = styled.h2`
   letter-spacing: 0%;
   text-transform: uppercase;
   margin-right: 30px;
+
   @media (max-width: 1000px) {
     font-size: 40px;
     line-height: 1;

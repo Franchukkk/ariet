@@ -1,11 +1,18 @@
-import styled from "styled-components";
-import IconSvg from "@/assets/img/guide.svg";
+"use client";
 
-export const DownloadButton = () => (
-  <StyledDownloadButton className="flex items-center justify-center gap-[15px]">
-    Скачать гайд <IconSvg aria-label="download guide" />
-  </StyledDownloadButton>
-);
+import IconSvg from "@/assets/img/guide.svg"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const DownloadButton = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledDownloadButton className="flex items-center justify-center gap-[15px]">
+      {t("dashboard.download_guide")} <IconSvg aria-label={t("dashboard.download_guide")} />
+    </StyledDownloadButton>
+  );
+};
 
 const StyledDownloadButton = styled.button`
   padding: 15px 73px;
@@ -19,6 +26,7 @@ const StyledDownloadButton = styled.button`
   border-radius: 61px;
   margin: 0 auto 73px;
   transition: all 0.3s;
+
   &:hover {
     background: #1dcf94;
   }

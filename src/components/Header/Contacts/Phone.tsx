@@ -1,8 +1,8 @@
 "use client";
 
-import styled from "styled-components";
-import { useTranslation } from "react-i18next";
-import PhoneIcon from "@/assets/img/phone.svg";
+import PhoneIcon from "@/assets/img/phone.svg"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 export const Phone = () => {
   const { t } = useTranslation("common");
@@ -13,7 +13,7 @@ export const Phone = () => {
         <PhoneIcon aria-label="phone" />
         +380 67 993 72 34
       </a>
-      <div className="call-me cursor-pointer">{t("Phone.перезвоните_мне")}</div>
+      <div className="call-me cursor-pointer">{t("Phone.call_me_back")}</div>
     </StyledPhone>
   );
 };

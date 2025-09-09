@@ -1,7 +1,12 @@
-import Link from "next/link";
-import styled from "styled-components";
+import Link from "next/link"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const More = () => <StyledMore href="/">Подробнее</StyledMore>;
+export const More = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledMore href="/">{t("buttons.more")}</StyledMore>;
+};
 
 const StyledMore = styled(Link)`
   height: 162px;

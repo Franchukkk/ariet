@@ -1,10 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    Безопасное электропитание чувствительной техники. <br /> Защита от молнии и высокочастотных помех. Чистая синусоида.
-  </StyledSubtitle>
-);
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledSubtitle
+      dangerouslySetInnerHTML={{ __html: t("ups.subtitle") }}
+    />
+  );
+};
 
 const StyledSubtitle = styled.p`
   font-weight: 400;

@@ -1,5 +1,6 @@
-import styled from "styled-components";
-import IconSvg from "@/assets/img/swipe-icon.svg";
+import IconSvg from "@/assets/img/swipe-icon.svg"
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
 
 interface Props {
   active: number;
@@ -7,20 +8,24 @@ interface Props {
   total: number;
 }
 
-export const Footer = ({ active, total, nextSlide }: Props) => (
-  <StyledFooter className="flex items-center gap-2">
-    {1 + active}{" "}
-    <span>
-      / {total} {total === 1 + active ? "" : "Далее"}{" "}
-    </span>
-    {total === 1 + active ? null : (
-      <>
-        {" "}
-        {nextSlide} <IconSvg aria-label="icon" />
-      </>
-    )}
-  </StyledFooter>
-);
+export const Footer = ({ active, total, nextSlide }: Props) => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledFooter className="flex items-center gap-2">
+      {1 + active}{" "}
+      <span>
+        / {total} {total === 1 + active ? "" : t("title.next")}{" "}
+      </span>
+      {total === 1 + active ? null : (
+        <>
+          {nextSlide} <IconSvg aria-label="icon" />
+        </>
+      )}
+    </StyledFooter>
+  );
+};
+
 
 const StyledFooter = styled.div`
   position: absolute;

@@ -1,26 +1,19 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Header = () => (
-  <StyledHeader className="flex items-center justify-between gap-3">
-    <div>
-      <div className="title">
-        Умное управление <br /> питанием
+export const Header = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledHeader className="flex items-center justify-between gap-3">
+      <div>
+        <div className="title" dangerouslySetInnerHTML={{ __html: t("header.title") }} />
+        <div className="subtitle" dangerouslySetInnerHTML={{ __html: t("header.subtitle") }} />
       </div>
-      <div className="subtitle">
-        ИБП поддерживает несколько интерфейсов управления. Его можно легко{" "}
-        <br /> интегрировать в любую IT-инфраструктуру.
-      </div>
-    </div>
-    <p className="info">
-      <span>
-        Удалённый мониторинг, автоматические <br /> уведомления и безопасное
-        отключение <br />
-        оборудования
-      </span>{" "}
-      – всё работает чётко и без <br /> сбоев, где бы вы ни находились.
-    </p>
-  </StyledHeader>
-);
+      <p className="info" dangerouslySetInnerHTML={{ __html: t("header.info") }} />
+    </StyledHeader>
+  );
+};
 
 const StyledHeader = styled.div`
   margin-bottom: 59px;

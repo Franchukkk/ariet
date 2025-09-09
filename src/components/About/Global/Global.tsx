@@ -1,6 +1,7 @@
-import styled from "styled-components";
-import { Info } from "./Info/Info";
-import { Network } from "./Network/Network";
+"use client"
+import styled from "styled-components"
+import { Info } from "./Info/Info"
+import { Network } from "./Network/Network"
 
 export const Global = () => (
   <StyledGlobal>

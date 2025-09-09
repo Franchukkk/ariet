@@ -1,12 +1,13 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle className="main-wrapper support-title">
-    <div className="support-title">
-      Техническая <br /> поддержка и <br /> сопровождение
-    </div>
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledTitle className="main-wrapper support-title" dangerouslySetInnerHTML={{ __html: t("support.title_support") }} />
+  );
+};
 
 const StyledTitle = styled.h3`
   font-weight: 600;

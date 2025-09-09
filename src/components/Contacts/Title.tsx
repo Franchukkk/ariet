@@ -5,7 +5,7 @@ import styled from "styled-components"
 
 export const Title = () => {
   const { t } = useTranslation("common");
-  return <StyledTitle>{t("Title.contacts")}</StyledTitle>;
+  return <StyledTitle>{t("title.contacts")}</StyledTitle>;
 };
 
 

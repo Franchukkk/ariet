@@ -1,76 +1,62 @@
 "use client";
 
-import styled from "styled-components";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Autoplay } from "swiper/modules";
-import "swiper/css/pagination";
-import { Card } from "./Card/Card";
-import photo1 from "@/assets/img/specification-1.png";
-import photo2 from "@/assets/img/specification-2.png";
-import cardBorder from "@/assets/img/specification-border.png";
-import type { StaticImageData } from "next/image";
+import photo1 from "@/assets/img/specification-1.png"
+import photo2 from "@/assets/img/specification-2.png"
+import cardBorder from "@/assets/img/specification-border.png"
+import type { StaticImageData } from "next/image"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+import "swiper/css/pagination"
+import { Autoplay, Pagination } from "swiper/modules"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Card } from "./Card/Card"
 
 type ImgLike = string | StaticImageData;
 
-export const List = () => (
-  <StyledList $cardBorder={cardBorder}>
-    <Swiper
-      spaceBetween={25}
-      modules={[Pagination, Autoplay]}
-      //   autoplay={{
-      //     delay: 2000,
-      //     disableOnInteraction: true,
-      //   }}
-      pagination={{ clickable: true }}
-      breakpoints={{
-        1024: {
-          slidesPerView: 2,
-        },
-        0: {
-          slidesPerView: 1,
-        },
-      }}
-    >
-      <SwiperSlide>
-        <Card
-          title="Защита от помех и грозы"
-          subtitle="Ферритовые кольца исключают любые внутренние помехи в электросигнале. Встроенная грозозащита в ИБП автоматически гасит резкие скачки напряжения."
-          slide={1}
-          totalSlides={5}
-          photo={photo1}
-        />
-      </SwiperSlide>
-      <SwiperSlide>
-        <Card
-          title="Бесшумная работа"
-          subtitle={`Самые тихие вентиляторы из всех возможных.\nИБП часто размещают рядом с\nаппаратами УЗИ, где постоянно\nнаходятся люди.`}
-          slide={2}
-          totalSlides={5}
-          photo={photo2}
-        />
-      </SwiperSlide>{" "}
-      <SwiperSlide>
-        <Card
-          title="Защита от помех и грозы"
-          subtitle="Ферритовые кольца исключают любые внутренние помехи в электросигнале. Встроенная грозозащита в ИБП автоматически гасит резкие скачки напряжения."
-          slide={1}
-          totalSlides={5}
-          photo={photo1}
-        />
-      </SwiperSlide>{" "}
-      <SwiperSlide>
-        <Card
-          title="Бесшумная работа"
-          subtitle={`Самые тихие вентиляторы из всех возможных.\nИБП часто размещают рядом с\nаппаратами УЗИ, где постоянно\nнаходятся люди.`}
-          slide={2}
-          totalSlides={5}
-          photo={photo2}
-        />
-      </SwiperSlide>{" "}
-    </Swiper>
-  </StyledList>
-);
+const DATA = [
+  {
+    id: 1,
+    titleKey: "spec.protection_title",
+    subtitleKey: "spec.protection_subtitle",
+    photo: photo1,
+  },
+  {
+    id: 2,
+    titleKey: "spec.silent_title",
+    subtitleKey: "spec.silent_subtitle",
+    photo: photo2,
+  },
+];
 
+export const List = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledList $cardBorder={cardBorder}>
+      <Swiper
+        spaceBetween={25}
+        modules={[Pagination, Autoplay]}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          1024: { slidesPerView: 2 },
+          0: { slidesPerView: 1 },
+        }}
+      >
+        {DATA.map((item) => (
+          <SwiperSlide key={item.id}>
+            <Card
+              title={t(item.titleKey)}
+              subtitle={t(item.subtitleKey)}
+              slide={item.id}
+              totalSlides={DATA.length}
+              photo={item.photo}
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div<{ $cardBorder: ImgLike }>`
   .swiper-slide {

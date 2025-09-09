@@ -1,14 +1,16 @@
 "use client";
 
-import styled from "styled-components";
-import BurgerIcon from "@/assets/img/burger.svg";
-import ArrowIcon from "@/assets/img/select-arrow.svg";
-import { Dropdown } from "./Dropdown";
-import React, { useEffect, useRef, useState } from "react";
+import BurgerIcon from "@/assets/img/burger.svg"
+import ArrowIcon from "@/assets/img/select-arrow.svg"
+import { useEffect, useRef, useState } from "react"
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
+import { Dropdown } from "./Dropdown"
 
 export const Catalog = () => {
   const [isOpen, setIsOpen] = useState(false);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation("common");
 
   const handleClick = () => setIsOpen((prev) => !prev);
 
@@ -36,7 +38,7 @@ export const Catalog = () => {
       onClick={handleClick}
     >
       <BurgerIcon aria-label="icon" className="mr-5 b-icon" />
-      Каталог продукции
+      {t("catalog.title")}
       <ArrowIcon className="ml-[25px] arrow-down" aria-label="icon"/>
       <Dropdown />
     </StyledCatalog>

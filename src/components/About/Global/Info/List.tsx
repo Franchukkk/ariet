@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const KEYS = [
-  "List.barcelona_spain",
-  "List.izmir_turkey",
-  "List.shenzhen_china",
+  "list.barcelona_spain",
+  "list.izmir_turkey",
+  "list.shenzhen_china",
 ] as const;
 
 const ListItem = ({ text }: { text: string }) => (

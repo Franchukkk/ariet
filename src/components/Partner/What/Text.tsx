@@ -1,12 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Text = () => (
-  <StyledText>
-    Стать партнёром Ariet Power — значит войти в наш <br /> мир и получить
-    доступ не только к <br /> высокотехнологичной продукции, но и к <br />{" "}
-    персональному сопровождению, которое <br /> отличает нас от других.
-  </StyledText>
-);
+export const Text = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledText
+      dangerouslySetInnerHTML={{ __html: t("Text.partner_support") }}
+    />
+  );
+};
 
 const StyledText = styled.p`
   font-weight: 400;

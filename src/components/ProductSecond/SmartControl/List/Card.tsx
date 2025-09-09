@@ -1,21 +1,23 @@
-import styled from "styled-components";
-import photo from "@/assets/img/card.png";
-import Image from "next/image";
+import photo from "@/assets/img/card.png"
+import Image from "next/image"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Card = () => (
-  <StyledCard>
-    <div className="banner">
-      <Image src={photo} alt="Карта SNMP" />
-    </div>
-    <div className="content">
-      <div className="title">Карта SNMP</div>
-      <p className="descr">
-        Подключение к вашей системе мониторинга <br /> и управления с
-        возможностью получать <br /> данные в реальном времени.
-      </p>
-    </div>
-  </StyledCard>
-);
+export const Card = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledCard>
+      <div className="banner">
+        <Image src={photo} alt={t("card.snmp_alt")} />
+      </div>
+      <div className="content">
+        <div className="title">{t("card.snmp_title")}</div>
+        <p className="descr">{t("card.snmp_description")}</p>
+      </div>
+    </StyledCard>
+  );
+};
 
 const StyledCard = styled.div`
   .banner {

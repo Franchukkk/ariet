@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import Link from "next/link"
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 export const HomeLink = () => {
   const { t } = useTranslation("common");
   return (
     <StyledLink href="/">
-      {t("HomeLink.в_каталог")}
+      {t("HomeLink.to_catalog")}
     </StyledLink>
   );
 };

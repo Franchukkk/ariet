@@ -1,6 +1,7 @@
-import styled from "styled-components";
-import { Description } from "./Description";
-import { Info } from "./Info";
+"use client"
+import styled from "styled-components"
+import { Description } from "./Description"
+import { Info } from "./Info"
 
 export const Goal = () => (
   <StyledGoal>

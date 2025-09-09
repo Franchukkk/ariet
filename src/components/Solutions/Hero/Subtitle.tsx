@@ -1,11 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    Мы проектируем источники бесперебойного питания, которые <br /> идеально
-    соответствуют вашим условиям и требованиям.
-  </StyledSubtitle>
-);
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledSubtitle dangerouslySetInnerHTML={{ __html: t("banner.subtitle") }} />;
+};
 
 const StyledSubtitle = styled.p`
   font-weight: 400;

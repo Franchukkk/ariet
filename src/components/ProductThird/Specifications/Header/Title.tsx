@@ -1,10 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>
-    Ключевые <br /> особенности модели
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle>{t("ups.model_features")}</StyledTitle>;
+};
 
 const StyledTitle = styled.h2`
   font-weight: 600;

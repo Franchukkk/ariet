@@ -1,12 +1,14 @@
-import styled from "styled-components";
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
 
-export const Title = () => (
+export const Title = () => {
+  const {t} = useTranslation("common")
+  return(
   <StyledTitle>
-    Ariet Power — энергия, на которую <br /> можно положиться <br /> / <br />
-    Наши ИБП, стабилизаторы и аккумуляторные системы защищают критически важные
-    объекты по всему миру — от дата-центров до промышленных предприятий.
+    {t('title.home_intro')}
   </StyledTitle>
-);
+  )
+};
 
 const StyledTitle = styled.h3`
   font-weight: 400;

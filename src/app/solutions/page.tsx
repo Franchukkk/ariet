@@ -1,11 +1,12 @@
-import styled from "styled-components";
-import { Hero } from "../../components/Solutions/Hero/Hero";
-import { Parameters } from "../../components/Solutions/Parameters/Parameters";
-import { Advantages } from "../../components/Solutions/Advantages/Advantages";
-import { MaterialTitle } from "../../components/Solutions/MaterialTitle";
-import { Autonomy } from "../../components/Solutions/Autonomy/Autonomy";
-import { LightPlanet } from "../../components/LightPlanet/LightPlanet";
-import { Form } from "../../components/Form/Form";
+"use client"
+import styled from "styled-components"
+import { Form } from "../../components/Form/Form"
+import { LightPlanet } from "../../components/LightPlanet/LightPlanet"
+import { Advantages } from "../../components/Solutions/Advantages/Advantages"
+import { Autonomy } from "../../components/Solutions/Autonomy/Autonomy"
+import { Hero } from "../../components/Solutions/Hero/Hero"
+import { MaterialTitle } from "../../components/Solutions/MaterialTitle"
+import { Parameters } from "../../components/Solutions/Parameters/Parameters"
 
 export default function Page() {
   return (

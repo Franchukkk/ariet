@@ -27,7 +27,7 @@ export const Description = () => {
   );
 };
 
-const StyledDescription = styled.p`
+const StyledDescription = styled.div`
   padding: 128px 10px 387px 0px;
   font-weight: 400;
   font-size: 23px;

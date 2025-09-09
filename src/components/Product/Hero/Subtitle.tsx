@@ -1,11 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    <b>Автономная работа до 54 часов.</b> Максимальная защита от скачков
-    напряжения. <br /> Идеален для критически важных систем.
-  </StyledSubtitle>
-);
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledSubtitle
+      dangerouslySetInnerHTML={{ __html: t("battery.subtitle") }}
+    />
+  );
+};
 
 const StyledSubtitle = styled.p`
   font-weight: 400;

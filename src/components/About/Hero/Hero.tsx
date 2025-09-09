@@ -1,15 +1,16 @@
-import styled from "styled-components";
-import { Title } from "./Title";
-import { Info } from "./Info";
-import { Description } from "./Description";
+"use client"
 import bg from "@/assets/img/about-bg.png"
-import { Background } from "./Background";
-import type { StaticImageData } from "next/image";
+import type { StaticImageData } from "next/image"
+import styled from "styled-components"
+import { Background } from "./Background"
+import { Description } from "./Description"
+import { Info } from "./Info"
+import { Title } from "./Title"
 
 type ImgLike = string | StaticImageData;
 
-export const Hero = ({ bgImg = bg }: { bgImg: ImgLike }) => (
-  <StyledHero className="main-wrapper" $bg={bgImg}>
+export const Hero = ({ bgImg }: { bgImg?: ImgLike }) => (
+  <StyledHero className="main-wrapper" $bg={bgImg || bg}>
     <div className="flex items-center justify-between top-content">
       <Title />
       <Info />
@@ -19,7 +20,6 @@ export const Hero = ({ bgImg = bg }: { bgImg: ImgLike }) => (
   </StyledHero>
 );
 
-
 const StyledHero = styled.div<{ $bg: ImgLike }>`
   height: 657px;
   width: 100%;
@@ -28,11 +28,12 @@ const StyledHero = styled.div<{ $bg: ImgLike }>`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* background: ${({ $bg }) =>
-    `url(${typeof $bg === "string" ? $bg : $bg.src}) center/cover no-repeat`}; */
+  background: ${({ $bg }) =>
+    `url(${typeof $bg === "string" ? $bg : $bg.src}) center/cover no-repeat`};
   background-position-x: 132px;
   position: relative;
   overflow: hidden;
+
   @media (max-width: 1000px) {
     text-align: center;
     background-position-x: -150px;
@@ -41,10 +42,10 @@ const StyledHero = styled.div<{ $bg: ImgLike }>`
       flex-direction: column;
     }
   }
+
   @media (max-width: 800px) {
     padding: 45px 10px;
     background-position-x: -50px;
-
     height: max-content;
   }
 `;

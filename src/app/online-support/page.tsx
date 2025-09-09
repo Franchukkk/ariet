@@ -1,7 +1,8 @@
-import styled from "styled-components";
-import { Hero } from "../../components/OnlineSupport/Hero/Hero";
-import { DownloadButton } from "../../components/OnlineSupport/DownloadButton";
-import { Form } from "../../components/Form/Form";
+'use client'
+import styled from "styled-components"
+import { Form } from "../../components/Form/Form"
+import { DownloadButton } from "../../components/OnlineSupport/DownloadButton"
+import { Hero } from "../../components/OnlineSupport/Hero/Hero"
 
 export default function Page() {
   return (

@@ -1,17 +1,17 @@
-import styled from "styled-components";
+"use client";
 
-export const Description = () => (
-  <StyledDescription>
-    Управляйте своими продуктами Ariet Power в несколько кликов:
-    зарегистрируйтесь или войдите в личный кабинет, чтобы получить доступ к
-    технической поддержке, проверить статус гарантии или напрямую связаться с
-    нашей командой. <br />
-    <br />
-    Регистрация займёт не больше 30 секунд! Мы подготовили простой гайд по
-    активации аккаунта и использованию системы — скачайте его ниже и начните
-    прямо сейчас.
-  </StyledDescription>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const Description = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledDescription
+      dangerouslySetInnerHTML={{ __html: t("Description.dashboard") }}
+    />
+  );
+};
 
 const StyledDescription = styled.p`
   max-width: 671px;

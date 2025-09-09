@@ -8,9 +8,9 @@ export const Title = () => {
 
   return (
     <StyledTitle>
-      {t("Title.international")} <br />
-      {t("Title.standards")} <br />
-      {t("Title.quality")}
+      {t("title.international")} <br />
+      {t("title.standards")} <br />
+      {t("title.quality")}
     </StyledTitle>
   );
 };

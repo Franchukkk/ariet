@@ -1,10 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>
-    Индивидуальные <br /> решения ИБП под <br /> любые задачи
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle dangerouslySetInnerHTML={{ __html: t("banner.title_support") }} />;
+};
 
 const StyledTitle = styled.h1`
   font-weight: 600;

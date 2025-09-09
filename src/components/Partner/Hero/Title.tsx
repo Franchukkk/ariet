@@ -1,12 +1,19 @@
-import styled from "styled-components";
+"use client";
 
-export const Title = () => (
-  <StyledTile>
-    Станьте частью <br /> Ariet Power
-  </StyledTile>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-const StyledTile = styled.h1`
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledTitle
+      dangerouslySetInnerHTML={{ __html: t("title.join_title") }}
+    />
+  );
+};
+
+const StyledTitle = styled.h1`
   font-family: TT Firs Neue;
   font-weight: 600;
   font-size: 72.65px;
@@ -14,6 +21,7 @@ const StyledTile = styled.h1`
   letter-spacing: 0%;
   text-transform: uppercase;
   margin-bottom: 26px;
+
   @media (max-width: 800px) {
     font-size: 40px;
     line-height: 1.2;

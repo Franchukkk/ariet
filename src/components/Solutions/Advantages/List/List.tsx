@@ -1,20 +1,25 @@
-import styled from "styled-components";
-import { Card } from "./Card";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+import { Card } from "./Card"
 
-const DATA = [
-  "Экстремальные\nтемпературы",
-  "Высокогорные\nусловия",
-  "Влажность, пыль,\nкоррозия",
-  "Вибрации и механические\nнагрузки",
-];
+export const List = () => {
+  const { t } = useTranslation("common");
 
-export const List = () => (
-  <StyledList>
-    {DATA?.map((title, i) => (
-      <Card key={i} position={1 + i} title={title} />
-    ))}
-  </StyledList>
-);
+  const DATA = [
+    t("environment.extreme_temperatures"),
+    t("environment.high_altitude"),
+    t("environment.humidity_dust_corrosion"),
+    t("environment.vibrations_mechanical_loads"),
+  ];
+
+  return (
+    <StyledList>
+      {DATA.map((title, i) => (
+        <Card key={i} position={1 + i} title={title} />
+      ))}
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div`
   display: grid;

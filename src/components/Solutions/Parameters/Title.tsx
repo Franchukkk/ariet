@@ -1,10 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>
-    ИБП под ваши <br /> параметры
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle dangerouslySetInnerHTML={{ __html: t("ups.parameters_title") }} />;
+};
 
 const StyledTitle = styled.h2`
   font-weight: 600;

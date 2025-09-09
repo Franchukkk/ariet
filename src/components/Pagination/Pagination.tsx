@@ -1,9 +1,8 @@
-import styled from "styled-components";
-import BackButtonIcon from "@/assets/img/back.svg";
-import NextButtonIcon from "@/assets/img/next.svg";
-import More from "@/assets/img/more.svg";
-import { Button } from "./Button";
-import React from "react";
+import BackButtonIcon from "@/assets/img/back.svg"
+import More from "@/assets/img/more.svg"
+import NextButtonIcon from "@/assets/img/next.svg"
+import styled from "styled-components"
+import { Button } from "./Button"
 
 interface Props {
   currentPage?: number;
@@ -12,7 +11,7 @@ interface Props {
 }
 
 const getPages = (current: number, total: number) => {
-  // Повертає масив сторінок та маркерів "..."
+  
   if (total <= 5) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }

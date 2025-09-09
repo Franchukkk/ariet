@@ -1,13 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>
-    В состав ИБП входят{" "}
-    <b>6 мощных аккумуляторов серии HR ёмкостью по 14 Ач каждый</b>. <br />
-    <br /> Это премиальное решение, рассчитанное на стабильную и длительную
-    работу даже в условиях повышенной нагрузки.
-  </StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledTitle
+      dangerouslySetInnerHTML={{ __html: t("ups.description") }}
+    />
+  );
+};
 
 const StyledTitle = styled.div`
   font-weight: 400;

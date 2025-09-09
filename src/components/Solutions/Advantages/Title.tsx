@@ -1,8 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Title = () => (
-  <StyledTitle>Надёжность при любых внешних воздействиях</StyledTitle>
-);
+export const Title = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledTitle>{t("reliability.title")}</StyledTitle>;
+};
 
 const StyledTitle = styled.div`
   font-weight: 400;

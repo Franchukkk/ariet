@@ -1,11 +1,17 @@
-import styled from "styled-components";
+"use client";
 
-export const Subtitle = () => (
-  <StyledSubtitle>
-    Присоединяйтесь к партнёрской программе для профессионалов в <br /> области
-    энергорешений
-  </StyledSubtitle>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const Subtitle = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledSubtitle
+      dangerouslySetInnerHTML={{ __html: t("Subtitle.partners") }}
+    />
+  );
+};
 
 const StyledSubtitle = styled.div`
   font-weight: 400;
@@ -15,7 +21,8 @@ const StyledSubtitle = styled.div`
   text-transform: uppercase;
   color: #4bc785;
   margin-bottom: 86px;
-    @media (max-width: 800px) {
-        margin-bottom: 30px;
-    }
+
+  @media (max-width: 800px) {
+    margin-bottom: 30px;
+  }
 `;

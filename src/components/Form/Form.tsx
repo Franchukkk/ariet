@@ -22,26 +22,26 @@ export const Form = ({ title }: Props) => {
     <StyledForm>
       <Title title={formTitle} />
 
-      <div className="fields">
+        <div className="fields">
         <div className="fields-group">
-          <Input label="Name" />
-          <Input label="Position" />
+          <Input label={t("Form.name")} />
+          <Input label={t("Form.position")} />
         </div>
         <div className="fields-group">
-          <Input label="Phone number" />
-          <Input label="Email" />
+          <Input label={t("Form.phone")} />
+          <Input label={t("Form.email")} />
         </div>
-        <Input label="Address" />
+        <Input label={t("Form.address")} />
         <div className="fields-group">
-          <Input label="ZIP/POST code" />
-          <Input label="City" />
+          <Input label={t("Form.zip")} />
+          <Input label={t("Form.city")} />
         </div>
-        <Input label="Country" />
-        <Input label="Your message" textarea />
+        <Input label={t("Form.country")} />
+        <Input label={t("Form.message")} textarea />
       </div>
 
       <Checkbox
-        label="I am a company"
+        label={t("Form.is_company")}
         checked={checkbox}
         onChange={() => setCheckbox(!checkbox)}
       />

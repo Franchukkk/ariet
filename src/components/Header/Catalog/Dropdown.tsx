@@ -1,54 +1,61 @@
+"use client";
+
 import Link from "next/link"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const LINKS = [
   {
-    title: "Commercial",
+    titleKey: "catalog.commercial",
     items: [
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
     ],
   },
   {
-    title: "Commercial",
+    titleKey: "catalog.commercial",
     items: [
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
     ],
   },
   {
-    title: "Commercial",
+    titleKey: "catalog.commercial",
     items: [
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
     ],
   },
   {
-    title: "Commercial",
+    titleKey: "catalog.commercial",
     items: [
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
-      { title: "Category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
+      { titleKey: "catalog.category", link: "/" },
     ],
   },
 ];
 
 export const Dropdown = () => {
+  const { t } = useTranslation("common");
+
   return (
     <StyledDropdown className="dropdown">
-      {LINKS?.map(({ title, items }, i) => (
+      {LINKS.map(({ titleKey, items }, i) => (
         <div key={i}>
-          <div className="group-title">{title}</div>
+          <div className="group-title">{t(titleKey)}</div>
           <div className="flex flex-col gap-3">
-            {items?.map((link, j) => (
-              <Link key={j} href={link.link}>{link.title}</Link>
+            {items.map((link, j) => (
+              <Link key={j} href={link.link}>
+                {t(link.titleKey)}
+              </Link>
             ))}
           </div>
         </div>
@@ -77,11 +84,13 @@ const StyledDropdown = styled.div`
   visibility: hidden;
   transition: all 0.3s;
   z-index: 100;
+
   .group-title {
     margin-bottom: 10px;
     font-size: 12px;
     color: #ffffff70;
   }
+
   a:hover {
     color: #4bc785;
   }

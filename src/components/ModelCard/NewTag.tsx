@@ -1,6 +1,13 @@
-import styled from "styled-components";
+"use client";
 
-export const NewTag = () => <StyledNewTag>NEW</StyledNewTag>;
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const NewTag = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledNewTag>{t("tags.new")}</StyledNewTag>;
+};
 
 const StyledNewTag = styled.div`
   position: absolute;

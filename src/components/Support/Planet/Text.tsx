@@ -1,12 +1,11 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const Text = () => (
-  <StyledText>
-    Наша квалифицированная команда технической <br /> поддержки и отдела продаж
-    всегда готова <br /> помочь / <br />
-    от предварительного выбора продукта до <br /> постпродажного обслуживания.
-  </StyledText>
-);
+export const Text = () => {
+  const { t } = useTranslation("common");
+
+  return <StyledText dangerouslySetInnerHTML={{ __html: t("support.team_text") }} />;
+};
 
 const StyledText = styled.p`
   font-weight: 400;

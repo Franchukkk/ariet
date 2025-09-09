@@ -6,47 +6,51 @@ import { Autoplay, Pagination } from "swiper/modules"
 import { Swiper, SwiperSlide } from "swiper/react"
 
 import photo from "@/assets/img/module.png"
+import { useTranslation } from "react-i18next"
 import { ModelCard } from "../../../ModelCard/ModelCard"
 
-// Масив даних для слайдів
-const MODULES = [
-  { id: "1", title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", isNew: false },
-  { id: "2", title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", isNew: true },
-  { id: "3", title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", isNew: false },
-  { id: "4", title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", isNew: false },
-  { id: "5", title: "Онлайн ИБП ARIET", category: "Однофазные ИБП", isNew: false },
-];
+export const List = () => {
+  const { t } = useTranslation("common");
 
-export const List = () => (
-  <StyledList>
-    <Swiper
-      spaceBetween={0}
-      modules={[Pagination, Autoplay]}
-      autoplay={{
-        delay: 2000,
-        disableOnInteraction: true,
-      }}
-      pagination={{ clickable: true }}
-      breakpoints={{
-        1024: { slidesPerView: 3 },
-        800: { slidesPerView: 2 },
-        0: { slidesPerView: 1 },
-      }}
-    >
-      {MODULES.map((module) => (
-        <SwiperSlide key={module.id}>
-          <ModelCard
-            photo={photo}
-            title={module.title}
-            category={module.category}
-            link="/"
-            isNew={module.isNew}
-          />
-        </SwiperSlide>
-      ))}
-    </Swiper>
-  </StyledList>
-);
+  const MODULES = [
+    { id: "1", title: t("products.online_ups"), category: t("products.single_phase"), isNew: false },
+    { id: "2", title: t("products.online_ups"), category: t("products.single_phase"), isNew: true },
+    { id: "3", title: t("products.online_ups"), category: t("products.single_phase"), isNew: false },
+    { id: "4", title: t("products.online_ups"), category: t("products.single_phase"), isNew: false },
+    { id: "5", title: t("products.online_ups"), category: t("products.single_phase"), isNew: false },
+  ];
+
+  return (
+    <StyledList>
+      <Swiper
+        spaceBetween={0}
+        modules={[Pagination, Autoplay]}
+        autoplay={{
+          delay: 2000,
+          disableOnInteraction: true,
+        }}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          1024: { slidesPerView: 3 },
+          800: { slidesPerView: 2 },
+          0: { slidesPerView: 1 },
+        }}
+      >
+        {MODULES.map((module) => (
+          <SwiperSlide key={module.id}>
+            <ModelCard
+              photo={photo}
+              title={module.title}
+              category={module.category}
+              link="/"
+              isNew={module.isNew}
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div`
   border-top: 1px dashed #ffffff50;

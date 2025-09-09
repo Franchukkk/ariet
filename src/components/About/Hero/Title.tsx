@@ -7,7 +7,7 @@ export const Title = () => {
    const { t } = useTranslation("common");
   return (
     <StyledTitle>
-      {t("Title.about_company")} <br />
+      {t("title.about_company")} <br />
       Ariet Power
     </StyledTitle>
   )

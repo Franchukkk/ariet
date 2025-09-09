@@ -1,11 +1,15 @@
-import styled from "styled-components";
-import ArrowSvg from "@/assets/img/arrow.svg";
+import ArrowSvg from "@/assets/img/arrow.svg"
+import { useTranslation } from 'react-i18next'
+import styled from "styled-components"
 
-export const Button = () => (
-  <StyledButton>
-    <ArrowSvg aria-label="icon" /> Подробнее о нас
+export const Button = () => {
+  const {t} = useTranslation("common")
+  return(
+    <StyledButton>
+    <ArrowSvg aria-label="icon" /> {t("Button.more_about_us")}
   </StyledButton>
-);
+  )
+}
 
 const StyledButton = styled.button`
   display: flex;

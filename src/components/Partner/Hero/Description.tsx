@@ -1,14 +1,17 @@
-import styled from "styled-components";
+"use client";
 
-export const Description = () => (
-  <StyledDescription>
-    Мы не просто ищем дистрибьюторов — мы создаём партнёрские отношения. <br />В
-    Ariet Power вы становитесь частью команды, получая полную поддержку,
-    инструменты и знания, необходимые для успешного ведения бизнеса. <br />
-    Наши партнёры — это, в первую очередь, экспертные консультанты, которые
-    знают продукт в деталях и могут с уверенностью представлять его клиентам.
-  </StyledDescription>
-);
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
+
+export const Description = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledDescription
+      dangerouslySetInnerHTML={{ __html: t("Description.partners_description") }}
+    />
+  );
+};
 
 const StyledDescription = styled.p`
   max-width: 631px;

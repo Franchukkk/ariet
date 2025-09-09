@@ -1,10 +1,15 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
-export const MaterialTitle = () => (
-  <StyledMaterialTitle>
-    Мы используем <br /> специальные материалы и <br /> конструктивные решения.
-  </StyledMaterialTitle>
-);
+export const MaterialTitle = () => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledMaterialTitle
+      dangerouslySetInnerHTML={{ __html: t("ups.material_title") }}
+    />
+  );
+};
 
 const StyledMaterialTitle = styled.h2`
   font-weight: 600;

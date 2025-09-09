@@ -1,70 +1,44 @@
 "use client";
 
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import "swiper/css/pagination"
 import { Autoplay, Pagination } from "swiper/modules"
 import { Swiper, SwiperSlide } from "swiper/react"
 import { Card } from "./Card/Card"
 
-export const List = () => (
-  <StyledList>
-    <Swiper
-      spaceBetween={20}
-      modules={[Pagination, Autoplay]}
-      autoplay={{
-        delay: 2000,
-        disableOnInteraction: false,
-      }}
-      pagination={{ clickable: true }}
-      breakpoints={{
-        500: {
-          slidesPerView: "auto",
-          centeredSlides: true,
-        },
-        0: {
-          slidesPerView: 1,
-          centeredSlides: true,
-        },
-      }}
-    >
-      <SwiperSlide>
-        <Card
-          title="Подключение без адаптеров"
-          subtitle="4 европейских розетки «Sсhuko» из качественного пластика. Идеальны для медицинского оборудования."
-          progress={25}
-        />
-      </SwiperSlide>
-      <SwiperSlide>
-        <Card
-          title="Мгновенное переключение за 0 мс"
-          subtitle="Холодный запуск и незаметный переход на резервное питание без отключения оборудования."
-          progress={50}
-        />
-      </SwiperSlide>
-      <SwiperSlide>
-        <Card
-          title="Встроенный мониторинг RJ45"
-          subtitle="Позволяет отслеживать состояние ИБП и подключенного оборудования."
-          progress={75}
-        />
-      </SwiperSlide>
-      <SwiperSlide>
-        <Card
-          title="Горячая замена АКБ"
-          subtitle="Для замены батарей не нужно отключать ИБП. Система продолжает работать."
-          progress={100}
-        />
-      </SwiperSlide>
-      <SwiperSlide>
-        <Card
-          title="Подключение без адаптеров"
-          subtitle="4 европейских розетки «Sсhuko» из качественного пластика. Идеальны для медицинского оборудования."
-          progress={100}
-        />
-      </SwiperSlide>
-    </Swiper>
-  </StyledList>
-);
+export const List = () => {
+  const { t } = useTranslation("common");
+
+  const SLIDES = [
+    { title: t("ups.features.no_adapters.title"), subtitle: t("ups.features.no_adapters.subtitle"), progress: 25 },
+    { title: t("ups.features.instant_switch.title"), subtitle: t("ups.features.instant_switch.subtitle"), progress: 50 },
+    { title: t("ups.features.rj45_monitoring.title"), subtitle: t("ups.features.rj45_monitoring.subtitle"), progress: 75 },
+    { title: t("ups.features.hot_swap.title"), subtitle: t("ups.features.hot_swap.subtitle"), progress: 100 },
+    { title: t("ups.features.no_adapters.title"), subtitle: t("ups.features.no_adapters.subtitle"), progress: 100 },
+  ];
+
+  return (
+    <StyledList>
+      <Swiper
+        spaceBetween={20}
+        modules={[Pagination, Autoplay]}
+        autoplay={{ delay: 2000, disableOnInteraction: false }}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          500: { slidesPerView: "auto", centeredSlides: true },
+          0: { slidesPerView: 1, centeredSlides: true },
+        }}
+      >
+        {SLIDES.map((slide, i) => (
+          <SwiperSlide key={i}>
+            <Card title={slide.title} subtitle={slide.subtitle} progress={slide.progress} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </StyledList>
+  );
+};
 
 const StyledList = styled.div`
   .swiper-slide {

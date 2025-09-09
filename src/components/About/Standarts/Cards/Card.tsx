@@ -1,44 +1,48 @@
-import { StaticImageData } from 'next/image'
-import type { ComponentType, SVGProps } from 'react'
-import styled from 'styled-components'
+"use client";
 
-interface Props {
-	title: string
-	icon?: StaticImageData | ComponentType<SVGProps<SVGSVGElement>>
-	className?: string
-}
+import Image, { StaticImageData } from "next/image"
+import type { ComponentType, SVGProps } from "react"
+import styled from "styled-components"
 
-export const Card = ({ title, icon: IconSvg, className }: Props) => {
-	const justify = IconSvg ? 'justify-between' : 'justify-center'
+type Props = {
+  title: string;
+  icon?: StaticImageData | ComponentType<SVGProps<SVGSVGElement>>;
+  className?: string;
+};
 
-	return (
-		<StyledCard className={`flex flex-col ${justify} ${className ?? ''}`}>
-			<div>{title}</div>
+export const Card = ({ title, icon: Icon, className }: Props) => {
+  return (
+    <StyledCard className={className}>
+      <div className="title">{title}</div>
 
-			{IconSvg ? <IconSvg aria-hidden='true' focusable='false' /> : null}
-		</StyledCard>
-	)
-}
+      {Icon ? (
+        typeof Icon === "function" ? (
+          <Icon aria-hidden="true" focusable="false" />
+        ) : (
+          <Image src={Icon} alt={title} width={64} height={64} />
+        )
+      ) : null}
+    </StyledCard>
+  );
+};
 
 const StyledCard = styled.div`
-	padding: 43px 52px 25px 32px;
-	border-radius: 8px;
-	background: #0d0c0c;
-	font-weight: 500;
-	font-size: 17px;
-	line-height: 120%;
-	letter-spacing: 1%;
-	text-transform: uppercase;
-	color: #ffffff;
-	img {
-		height: 62px;
-		width: max-content;
-	}
-	&.outline-card {
-		border: 1px solid #292929 !important;
-		background: transparent;
-	}
-	@media (max-width: 800px) {
-		padding: 30px;
-	}
-`
+  border: 1px solid #313131;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+
+  .title {
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  &.outline-card {
+    border: 2px dashed #4bc785;
+  }
+`;

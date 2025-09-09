@@ -1,15 +1,20 @@
-import styled from "styled-components";
+import { useTranslation } from "react-i18next"
+import styled from "styled-components"
 
 interface Props {
   active: boolean;
   onClick: () => void;
 }
 
-export const ToggleButton = ({ active, onClick }: Props) => (
-  <StyledToggleButton onClick={onClick}>
-    {active ? "Скрыть" : "Отобразить"} фильтры
-  </StyledToggleButton>
-);
+export const ToggleButton = ({ active, onClick }: Props) => {
+  const { t } = useTranslation("common");
+
+  return (
+    <StyledToggleButton onClick={onClick}>
+      {active ? t("filters.hide") : t("filters.show")} {t("filters.title")}
+    </StyledToggleButton>
+  );
+};
 
 const StyledToggleButton = styled.button`
   font-weight: 300;

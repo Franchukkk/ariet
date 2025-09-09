@@ -15,7 +15,7 @@ export default function Page() {
   <StyledAbout>
     <Hero />
     <Goal />
-    <Advantages />
+     <Advantages />
     <Support />
     <Standarts />
     <Global />
@@ -24,7 +24,7 @@ export default function Page() {
   )
 };
 
-const StyledAbout = styled.div`
+const   StyledAbout = styled.div`
   .support-wrapper {
     padding-bottom: 0;
   }
