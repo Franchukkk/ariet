@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function RegistrationForm() {
     const [selected, setSelected] = useState("client");
@@ -15,6 +16,7 @@ export default function RegistrationForm() {
     const { t } = useTranslation("common");
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
         if (rememberMe) {
             localStorage.setItem("rememberMe", "true");
@@ -24,10 +26,9 @@ export default function RegistrationForm() {
 
         if (password !== confirmPassword) {
             alert(t("RegistrationForm.passwords_do_not_match"));
-            return;
-        }
+            ;
+         }
 
-        e.preventDefault();
         console.log({ name, secondName, phone, email, rememberMe, password, confirmPassword });
     }
 
@@ -120,7 +121,7 @@ export default function RegistrationForm() {
             </div>
 
             <SubmitButton type="submit">{t("title.registration")}</SubmitButton>
-            <a href="/login">{t("RegistrationForm.i_have_account")} <span className="text-[#1dcf94]">{t("LoginForm.enter")}</span></a>
+            <Link className="cursor-pointer" href="/login">{t("RegistrationForm.i_have_account")} <span className="text-[#1dcf94] ">{t("LoginForm.enter")}</span></Link>
         </StyledForm>
     )
 }
@@ -230,6 +231,7 @@ const SubmitButton = styled.button`
     max-width: 434px;
     min-width: 200px;
     height: 58px;
+    cursor: pointer;
     border: 1px solid #1dcf94;
     border-radius: 61px;
     margin-bottom: 50px;

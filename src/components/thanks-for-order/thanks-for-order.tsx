@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
@@ -13,8 +14,8 @@ export const ThanksForOrder = ({ orderNumber }: { orderNumber: string }) => {
             <p className="text-[22px] font-bold text-center mb-[40px]">{t("Thanks.contact_manager")}</p>
 
             <div className="flex gap-[20px] justify-center buttons">
-                <a href="/" className="w-[50%] max-w-[394px] text-[#000000] h-[58px] flex items-center justify-center bg-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" href="/">{t("Thanks.to_catalogue")}</a>
-                <a href="/" className="w-[50%] max-w-[394px] text-[#1DCF94] h-[58px] flex items-center justify-center bg-[transparent] border border-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" href="/">{t("Thanks.my_orders")}</a>
+                <Link href="/" className="w-[50%] max-w-[394px] text-[#000000] h-[58px] flex items-center justify-center bg-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.to_catalogue")}</Link>
+                <Link href="/" className="w-[50%] max-w-[394px] text-[#1DCF94] h-[58px] flex items-center justify-center bg-[transparent] border border-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.my_orders")}</Link>
             </div>
         </WrapperThanksForOrder>
     )

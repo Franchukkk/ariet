@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function LoginForm() {
     const [login, setLogin] = useState("");
@@ -30,7 +31,7 @@ export default function LoginForm() {
             </div>
 
             <SubmitButton type="submit">{t("LoginForm.enter")}</SubmitButton>
-            <a className="text-[#1dcf94]" href="/registration">{t("LoginForm.registration")}</a>
+            <Link className="text-[#1dcf94] cursor-pointer" href="/registration">{t("LoginForm.registration")}</Link>
         </StyledForm>
     )
 }
@@ -128,6 +129,7 @@ const SubmitButton = styled.button`
     max-width: 434px;
     min-width: 200px;
     height: 58px;
+    cursor: pointer;
     border: 1px solid #1dcf94;
     border-radius: 61px;
     margin-bottom: 50px;
