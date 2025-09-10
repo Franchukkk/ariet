@@ -19,6 +19,7 @@ export const ModelCard = ({
   photo,
   title,
   category,
+  
   isNew,
   className,
 }: Props) => (
