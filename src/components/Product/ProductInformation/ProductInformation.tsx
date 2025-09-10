@@ -153,9 +153,9 @@ export const ProductInformation = () => {
     const separatedName = product.name.split(" ");
     const { t } = useTranslation("common");
     return (
-        <div style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
-            <div className="overflow-hidden flex flex-col gap-[20px] w-[60%] relative ">
-                <div className="text-[70px] font-bold">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></div>
+        <Wrapper style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
+            <WrapperContent className="overflow-hidden flex flex-col gap-[20px] w-[60%] relative">
+                <Title className="text-[70px] font-bold">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
                 <StyledList $cardBorder={cardBorder} className="overflow-hidden">
                     <Swiper
                         spaceBetween={25}
@@ -174,10 +174,10 @@ export const ProductInformation = () => {
                         </CanvasBlockTwo>
                         <img src="/image/product-bg.png" alt="product-bg" className="w-full h-full absolute top-0 left-0 z-[0]" />
 
-                        <div className="w-full h-full relative">
+                        <SwiperWrapper className="w-full h-full relative">
                             {slidesData.map((slide, index) => (
                                 <SwiperSlide key={index}>
-                                    <div className="w-[50%] h-full relative left-[25%] z-[3] relative">
+                                    <CardWrapper className="w-[50%] h-full relative left-[25%] z-[3] relative">
                                         <Card
                                             title={slide.title}
                                             subtitle={slide.subtitle}
@@ -186,30 +186,30 @@ export const ProductInformation = () => {
                                             photo={slide.photo}
 
                                         />
-                                    </div>
+                                    </CardWrapper>
                                 </SwiperSlide>
                             ))}
-                        </div>
+                        </SwiperWrapper>
                     </Swiper>
                 </StyledList>
-            </div>
-            <div className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
+            </WrapperContent>
+            <SeconndInfo className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
                 <div className="flex flex-row justify-between mb-[7px]">
-                    <p className="text-[18px] font-light text-[#FFFFFFA8]">
+                    <CenterText className="text-[18px] font-light text-[#FFFFFFA8]">
                         {t("ProductItem.article")}: {product.id}
-                    </p>
+                    </CenterText>
                     <p className="text-[14px] font-light text-[#1DCF94]">
                         {product.variants[0].stock[0].quantity > 0 ? t("ProductItem.availability") : t("ProductItem.not_availability")}
                     </p>
 
                 </div>
-                <p className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</p>
-                <button className="mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</button>
+                <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</CenterText>
+                <BuyButton className="mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
                 <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
-                <p className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</p>
+                <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
                 <div className="pb-[30px] border-b border-dashed border-[#313131]!">
                     {product.variants.map((item) => (
-                        <label
+                        <WrapperVersion
                             key={`version-${item.id}`}
                             className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
                             style={{ color: version === `version-${item.id}` ? "#4BC785" : "#FFFFFF" }}
@@ -224,14 +224,14 @@ export const ProductInformation = () => {
                                 onChange={(e) => setVersion(e.target.value)}
                             />
                             {item.socket.name}
-                        </label>
+                        </WrapperVersion>
                     ))}
 
                 </div>
 
                 <div className="pb-[30px] pt-[20px] border-b border-dashed border-[#313131]!">
-                    <p className="text-[23px] uppercase font-bold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</p>
-                    <label
+                    <CenterText className="text-[23px] uppercase font-bold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
+                    <WrapperVersion
 
                         className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
                     >
@@ -243,12 +243,15 @@ export const ProductInformation = () => {
                             className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
                         />
                         {product.variants[Number(version.split("-")[1])].socket.code}
-                    </label>
+                    </WrapperVersion>
                 </div>
                 <div className="pb-[42px] relative" onClick={() => setShowDescription(!showDescription)}>
-                    <img className={`absolute top-[10px] left-[350px] w-[24px] h-[24px] transition-all duration-300 ${showDescription ? "rotate-0" : "rotate-180"}`}
-                        src="/image/arrow-up.svg" alt="arrow-down" />
-                    <p className="text-[23px] leading-[33px] uppercase font-bold text-[#FFFFFF] mb-[18px] mt-[22px]">{t("ProductItem.description")}</p>
+
+                    <DescriptionText className="flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-bold text-[#FFFFFF] mb-[18px] mt-[22px]">
+                        {t("ProductItem.description")}
+                        <ImgIcon className={`w-[24px] h-[24px] transition-all duration-300 ${showDescription ? "rotate-0" : "rotate-180"}`}
+                            src="/image/arrow-up.svg" alt="arrow-down" />
+                    </DescriptionText>
                     <p
                         className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${showDescription ? "max-h-[200px] overflow-y-auto" : "max-h-0"
                             }`}
@@ -260,21 +263,117 @@ export const ProductInformation = () => {
                 </div>
 
 
-            </div>
-        </div>
+            </SeconndInfo>
+        </Wrapper>
     )
 }
 
+const CenterText = styled.p`
+    @media (max-width: 1000px) {
+        text-align: center;
+        font-size: 18px;
+    }
+`;
+
+const DescriptionText = styled(CenterText)`
+    @media (max-width: 1000px) {
+        justify-content: center;
+    }
+`;
+
+const ImgIcon = styled.img`
+    cursor: pointer;
+    @media (max-width: 1000px) {
+       
+    }
+`;
 
 
+const BuyButton = styled.button`
+    @media (max-width: 1000px) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: auto;
+        margin-bottom: 20px;
+    }
+`;
+
+const Title = styled.div`
+    @media (max-width: 1000px) {
+        span {
+            text-align: center;
+            font-size: 30px;
+            line-height: 35px;
+            margin-bottom: 20px;
+        }
+        text-align: center;
+        font-size: 30px;
+        line-height: 35px;
+        margin-bottom: 20px;
+    }
+`;
+
+const SwiperWrapper = styled.div`
+    @media (max-width: 1000px) {
+        width: 100%;
+    }
+`;
+
+const CardWrapper = styled.div`
+    > div > :last-child {
+        display: none;
+    }
+    @media (max-width: 1000px) {
+        width: 100%;
+        left: 0;
+        background-size: contain;
+
+         > div {
+        background-size: contain;
+        }
+    }
+`;
+
+const Wrapper = styled.div`
+    @media (max-width: 1000px) {
+        flex-direction: column;
+        gap: 0px;
+        label {
+            margin: auto;
+            margin-bottom: 20px;
+            width: 50%;
+        }
+    }
+`;
+
+const WrapperContent = styled.div`
+    @media (max-width: 1000px) {
+        width: 100%;
+    }
+`;
+
+const SeconndInfo = styled.div`
+    @media (max-width: 1000px) {
+        width: 100%;
+        border-left: none;
+        border-top: 1px dashed #313131;
+        padding-top: 20px;
+    }
+`;
+
+const WrapperVersion = styled.label`
+    @media (max-width: 1000px) {
+       justify-content: center;
+    }
+`;
 
 const OutlineText = styled.span`
-            font-weight: bold;
-            color: transparent; /* заливка прозора */
-            -webkit-text-stroke-width: 1px; /* товщина обводки */
-            -webkit-text-stroke-color: #ffffff; /* колір обводки */
-            `;
-
+    font-weight: bold;
+    color: transparent; /* заливка прозора */
+    -webkit-text-stroke-width: 1px; /* товщина обводки */
+    -webkit-text-stroke-color: #ffffff; /* колір обводки */
+`;
 
 const StyledList = styled.div<{ $cardBorder: ImgLike }>`
     .swiper-slide {
