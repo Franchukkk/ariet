@@ -10,7 +10,6 @@
 	"AboutUs": {
 		"about_company": "About Us"
 	},
-
 	"banner": {
 		"max_autonomy": "Maximum <br /> autonomy",
 		"title": "UPS for Increased <br /> Autonomy",
@@ -19,7 +18,6 @@
 		"text": "Personalized development for every project <br /> We create UPS units not found in standard catalogs. <br /> Considering everything: from technical parameters to <br /> industry specifics.",
 		"title_banner": "Maximum <br /> autonomy"
 	},
-
 	"HomeLink": {
 		"to_catalog": "To the catalog"
 	},
@@ -30,13 +28,11 @@
 		"manual": "Manual",
 		"where_to_buy": "Where to buy?!"
 	},
-
 	"products": {
 		"online_ups": "Online UPS ARIET",
 		"single_phase": "Single-phase UPS",
 		"title": "Ariet Products"
 	},
-
 	"battery": {
 		"title": "Online UPS Ariet <span>T3K</span>",
 		"subtitle": "<b>Autonomous operation up to 54 hours.</b> Maximum protection against power surges. <br /> Ideal for mission-critical systems.",
@@ -54,10 +50,8 @@
 			"subtitle": "the best tool for intensive operation."
 		}
 	},
-
 	"advantages": {
 		"peace_of_mind_and_confidence_description": "3-year warranty on most UPS models (upgradeable to 5 years for select products)",
-
 		"fast_delivery_and_support_description": "Same-day delivery and instant technical assistance from our support team",
 		"ups_configurator_description": "A convenient tool that allows you to get an exact offer for your solution in a few clicks",
 		"peace_of_mind_and_confidence": "Peace and confidence",
@@ -73,17 +67,14 @@
 		"second": "use all market opportunities",
 		"third": "ensure maximum satisfaction of your clients' needs"
 	},
-
 	"logo_card": {
 		"text": "Collaborating with Ariet Power — <br /> means choosing stability, <br /> support and confidence at <br /> every step of the process."
 	},
-
 	"title": {
 		"technical_info_title": "Technical Information",
 		"other_models": "Other popular UPS models",
 		"adv_title": "We provide everything <br /> you need to:",
 		"choose_ariet": "Why Choose Ariet Power",
-
 		"our_products": "Our Products",
 		"our_advantages": "Our Advantages",
 		"global_presence": "Global Presence\nAriet Power",
@@ -99,15 +90,15 @@
 		"catalog": "Catalog",
 		"next": "Далее",
 		"model_key_features": "Key <br /> features of the model",
-
 		"home_intro": "Ariet Power — energy you can rely on\n\nOur UPS systems, stabilizers, and battery solutions protect critical facilities around the world — from data centers to industrial enterprises.",
 		"support": "Online <br /> Support Ariet <br /> Power",
 		"partners": "Advantages <br /> of the Partner <br /> Program",
 		"join_title": "Become part of <br /> Ariet Power",
 		"join_Ariet_title": "What does it mean to be an Ariet<br /> partner",
-
 		"login": "Login",
-		"registration": "Registration"
+		"registration": "Registration",
+		"basket": "Your Basket",
+		"other_models": "Other Models"
 	},
 	"list": {
 		"advantages": {
@@ -127,7 +118,6 @@
 		"barcelona_spain": "Barcelona, Spain",
 		"izmir_turkey": "Izmir, Turkey",
 		"shenzhen_china": "Shenzhen, China",
-
 		"item1": {
 			"title": "Autonomous operation up to 30 minutes =",
 			"subtitle": "ensures safety and stability of processes."
@@ -141,7 +131,6 @@
 			"subtitle": "best tool for intensive use."
 		}
 	},
-
 	"partners": {
 		"save_time": {
 			"title": "Save Time",
@@ -156,7 +145,6 @@
 			"description": "Transparent conditions\nAssistance at all stages\nContinuous presence and support"
 		}
 	},
-
 	"Info": {
 		"izmir_turkey": "Izmir, Turkey",
 		"shenzhen_china": "Shenzhen, China",
@@ -203,7 +191,6 @@
 		"service_before_purchase": "We ensure a high level of service both before and",
 		"service_after_purchase": "after purchase,\n    to achieve maximum",
 		"customer_satisfaction": "customer satisfaction.",
-
 		"experience_text": "years of experience in the development and\nmanufacturing of solutions for\nuninterrupted power supply",
 		"countries_text": "countries where our\nproducts and partner network are represented",
 		"dashboard": "Manage your Ariet Power products in just a few clicks: register or log in to your account to access technical support, check warranty status, or contact our team directly. <br /><br />Registration takes less than 30 seconds! We’ve prepared a simple guide for account activation and system usage — download it below and get started now.",
@@ -245,7 +232,6 @@
 		"is_company": "I am a company",
 		"submit": "Submit"
 	},
-
 	"catalog": {
 		"title": "Product Catalog",
 		"commercial": "Commercial",
@@ -254,7 +240,6 @@
 	"Phone": {
 		"call_me_back": "Call me back"
 	},
-
 	"Navigation": {
 		"support": "Technical Support",
 		"partners": "For Partners"
@@ -264,17 +249,14 @@
 		"project": "Project Solutions",
 		"best": "Best Sellers"
 	},
-
 	"dashboard": {
 		"download_guide": "Download Guide"
 	},
-
 	"breadcrumbs": {
 		"home": "Home",
 		"products": "Products",
 		"online_ups": "Online UPS Ariet T3K"
 	},
-
 	"ups": {
 		"select_product_variant": "Select a product variant",
 		"ups_model": "Online UPS Ariet T3K",
@@ -340,7 +322,6 @@
 			"subtitle": "The quietest fans available. UPS often placed near ultrasound machines where people are constantly present."
 		}
 	},
-
 	"steps": {
 		"medical": "Medical Facilities",
 		"laboratory": "Laboratories",
@@ -359,7 +340,6 @@
 		"details": "Detailed specifications",
 		"buy": "Where to buy?!"
 	},
-
 	"filters": {
 		"category": "Product Category",
 		"category_1": "Category Name 1",
@@ -486,7 +466,6 @@
 		"silent_subtitle": "The quietest fans possible. UPS is often placed near ultrasound machines where people are constantly present.",
 		"fill_form": "Fill out the form and we\\nwill contact you"
 	},
-
 	"LoginForm": {
 		"login": "Email",
 		"password": "Password",
@@ -512,12 +491,24 @@
 		"enter": "Enter",
 		"passwords_do_not_match": "Passwords do not match"
 	},
-
 	"Thanks": {
 		"title": "Thank you for your purchase",
 		"order_number": "Order number",
 		"contact_manager": "Our manager will contact you.",
 		"to_catalogue": "To catalogue",
 		"my_orders": "My orders"
+	},
+	"ProductItem": {
+		"choose_variant": "Select a product variant",
+		"main_page": "Main page",
+		"products": "Products",
+		"buy": "Buy",
+		"current": "Online UPS Ariet T3K",
+		"article": "Article",
+		"availability": "In stock",
+		"not_availability": "Out of stock",
+		"version": "Version of the product:",
+		"socket": "Socket of the product:",
+		"description": "Description"
 	}
 }

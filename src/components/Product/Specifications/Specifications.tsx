@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Header } from "./Header/Header";
-import { List } from "./List/List";
+import { List } from "../Specifications/List/List";
 
 export const Specifications = () => (
   <StyledSpecifications className="main-wrapper">

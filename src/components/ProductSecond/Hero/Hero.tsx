@@ -18,6 +18,7 @@ export const Hero = () => {
             t("breadcrumbs.products"),
             t("breadcrumbs.online_ups")
           ]}
+          alias={["/", "products", "current"]}
         />
         <div className="flex flex-col align-center">
           <Title />
