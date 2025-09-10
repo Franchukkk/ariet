@@ -4,88 +4,86 @@
 		"more_about_us": "More about us",
 		"catalog": "Product Catalog"
 	},
-	  "tags": {
-    "new": "NEW"
-  },
+	"tags": {
+		"new": "NEW"
+	},
 	"AboutUs": {
 		"about_company": "About Us"
 	},
 
 	"banner": {
-    "max_autonomy": "Maximum <br /> autonomy",
+		"max_autonomy": "Maximum <br /> autonomy",
 		"title": "UPS for Increased <br /> Autonomy",
 		"subtitle": "We design uninterruptible power supplies that <br /> perfectly meet your conditions and requirements.",
 		"title_support": "Custom <br /> UPS solutions for <br /> any task",
 		"text": "Personalized development for every project <br /> We create UPS units not found in standard catalogs. <br /> Considering everything: from technical parameters to <br /> industry specifics.",
 		"title_banner": "Maximum <br /> autonomy"
-  },
+	},
 
 	"HomeLink": {
 		"to_catalog": "To the catalog"
 	},
 	"buttons": {
-    "show_more": "Show more",
+		"show_more": "Show more",
 		"more": "More",
 		"detailed_specs": "Detailed specifications",
-    "manual": "Manual",
-    "where_to_buy": "Where to buy?!"
-  },
-	
-  "products": {
-    "online_ups": "Online UPS ARIET",
-    "single_phase": "Single-phase UPS",
+		"manual": "Manual",
+		"where_to_buy": "Where to buy?!"
+	},
+
+	"products": {
+		"online_ups": "Online UPS ARIET",
+		"single_phase": "Single-phase UPS",
 		"title": "Ariet Products"
-  },
+	},
 
-	  "battery": {
-			"title": "Online UPS Ariet <span>T3K</span>",
-			"subtitle": "<b>Autonomous operation up to 54 hours.</b> Maximum protection against power surges. <br /> Ideal for mission-critical systems.",
-			"hr_title": "The UPS includes <1>6 powerful HR series batteries with a capacity of 14 Ah each</1>.<br/><br/>This is a premium solution designed for stable and long-lasting operation, even under heavy load conditions.",
-    "autonomy": {
-      "title": "Autonomous operation up to 30 minutes =",
-      "subtitle": "safety and stability of work processes."
-    },
-    "reliable_battery": {
-      "title": "Reliable batteries =",
-      "subtitle": "fewer technical risks and replacement costs."
-    },
-    "hr_series": {
-      "title": "HR Series =",
-      "subtitle": "the best tool for intensive operation."
-    }
-  },
+	"battery": {
+		"title": "Online UPS Ariet <span>T3K</span>",
+		"subtitle": "<b>Autonomous operation up to 54 hours.</b> Maximum protection against power surges. <br /> Ideal for mission-critical systems.",
+		"hr_title": "The UPS includes <1>6 powerful HR series batteries with a capacity of 14 Ah each</1>.<br/><br/>This is a premium solution designed for stable and long-lasting operation, even under heavy load conditions.",
+		"autonomy": {
+			"title": "Autonomous operation up to 30 minutes =",
+			"subtitle": "safety and stability of work processes."
+		},
+		"reliable_battery": {
+			"title": "Reliable batteries =",
+			"subtitle": "fewer technical risks and replacement costs."
+		},
+		"hr_series": {
+			"title": "HR Series =",
+			"subtitle": "the best tool for intensive operation."
+		}
+	},
 
-	
-  "advantages": {
-    "peace_of_mind_and_confidence_description": "3-year warranty on most UPS models (upgradeable to 5 years for select products)",
+	"advantages": {
+		"peace_of_mind_and_confidence_description": "3-year warranty on most UPS models (upgradeable to 5 years for select products)",
 
-"fast_delivery_and_support_description": "Same-day delivery and instant technical assistance from our support team",
-"ups_configurator_description": "A convenient tool that allows you to get an exact offer for your solution in a few clicks",
-"peace_of_mind_and_confidence": "Peace and confidence",
-"fast_delivery_and_support": "Fast delivery and support",
-"ups_configurator": "Configurator",
-"reliability": "Reliability and durability",
-"assortment": "Wide range of solutions",
-"fast_delivery": "Fast delivery",
-"personal_approach": "Individual approach to clients",
-"global_presence": "Global\npresence",
-"partner_support": "Marketing\nsupport\nfor\npartners",
-"first": "do your job with confidence",
-"second": "use all market opportunities",
-"third": "ensure maximum satisfaction of your clients' needs"
-  },
-	
-  "logo_card": {
-    "text": "Collaborating with Ariet Power — <br /> means choosing stability, <br /> support and confidence at <br /> every step of the process."
-  },
+		"fast_delivery_and_support_description": "Same-day delivery and instant technical assistance from our support team",
+		"ups_configurator_description": "A convenient tool that allows you to get an exact offer for your solution in a few clicks",
+		"peace_of_mind_and_confidence": "Peace and confidence",
+		"fast_delivery_and_support": "Fast delivery and support",
+		"ups_configurator": "Configurator",
+		"reliability": "Reliability and durability",
+		"assortment": "Wide range of solutions",
+		"fast_delivery": "Fast delivery",
+		"personal_approach": "Individual approach to clients",
+		"global_presence": "Global\npresence",
+		"partner_support": "Marketing\nsupport\nfor\npartners",
+		"first": "do your job with confidence",
+		"second": "use all market opportunities",
+		"third": "ensure maximum satisfaction of your clients' needs"
+	},
 
+	"logo_card": {
+		"text": "Collaborating with Ariet Power — <br /> means choosing stability, <br /> support and confidence at <br /> every step of the process."
+	},
 
-	"title": 
-	{
+	"title": {
 		"technical_info_title": "Technical Information",
 		"other_models": "Other popular UPS models",
 		"adv_title": "We provide everything <br /> you need to:",
 		"choose_ariet": "Why Choose Ariet Power",
+
 		"our_products": "Our Products",
 		"our_advantages": "Our Advantages",
 		"global_presence": "Global Presence\nAriet Power",
@@ -96,21 +94,21 @@
 		"categories": "Ariet Product Categories",
 		"contacts": "Contacts",
 		"company": "Company",
-		"section": "Section",	
+		"section": "Section",
 		"social_networks": "Social Networks",
 		"catalog": "Catalog",
 		"next": "Далее",
 		"model_key_features": "Key <br /> features of the model",
-		
-  "home_intro": "Ariet Power — energy you can rely on\n\nOur UPS systems, stabilizers, and battery solutions protect critical facilities around the world — from data centers to industrial enterprises.",
-	"support": "Online <br /> Support Ariet <br /> Power",
-    "partners": "Advantages <br /> of the Partner <br /> Program",
+
+		"home_intro": "Ariet Power — energy you can rely on\n\nOur UPS systems, stabilizers, and battery solutions protect critical facilities around the world — from data centers to industrial enterprises.",
+		"support": "Online <br /> Support Ariet <br /> Power",
+		"partners": "Advantages <br /> of the Partner <br /> Program",
 		"join_title": "Become part of <br /> Ariet Power",
-		"join_Ariet_title": "What does it mean to be an Ariet<br /> partner"
+		"join_Ariet_title": "What does it mean to be an Ariet<br /> partner",
 
-
+		"login": "Login",
+		"registration": "Registration"
 	},
-
 	"list": {
 		"advantages": {
 			"peace_confidence": {
@@ -126,48 +124,44 @@
 				"description": "A convenient tool that allows you to get an accurate proposal for your solution in just a few clicks"
 			}
 		},
-
 		"barcelona_spain": "Barcelona, Spain",
-    "izmir_turkey": "Izmir, Turkey",
-    "shenzhen_china": "Shenzhen, China",
+		"izmir_turkey": "Izmir, Turkey",
+		"shenzhen_china": "Shenzhen, China",
 
-		    "item1": {
-      "title": "Autonomous operation up to 30 minutes =",
-      "subtitle": "ensures safety and stability of processes."
-    },
-    "item2": {
-      "title": "Reliable batteries =",
-      "subtitle": "reduces technical risks and replacement costs."
-    },
-    "item3": {
-      "title": "HR series =",
-      "subtitle": "best tool for intensive use."
-    }
-  
+		"item1": {
+			"title": "Autonomous operation up to 30 minutes =",
+			"subtitle": "ensures safety and stability of processes."
+		},
+		"item2": {
+			"title": "Reliable batteries =",
+			"subtitle": "reduces technical risks and replacement costs."
+		},
+		"item3": {
+			"title": "HR series =",
+			"subtitle": "best tool for intensive use."
+		}
 	},
 
-	
-  "partners": {
-    "save_time": {
-      "title": "Save Time",
-      "description": "Ready promo materials\nIndividual project planning\nExclusive tools"
-    },
-    "earn_more": {
-      "title": "Earn More",
-      "description": "Marketing support\nJoint participation in promotions and events\nCommercial privileges"
-    },
-    "reduce_risks": {
-      "title": "Reduce Risks",
-      "description": "Transparent conditions\nAssistance at all stages\nContinuous presence and support"
-    }
-  },
+	"partners": {
+		"save_time": {
+			"title": "Save Time",
+			"description": "Ready promo materials\nIndividual project planning\nExclusive tools"
+		},
+		"earn_more": {
+			"title": "Earn More",
+			"description": "Marketing support\nJoint participation in promotions and events\nCommercial privileges"
+		},
+		"reduce_risks": {
+			"title": "Reduce Risks",
+			"description": "Transparent conditions\nAssistance at all stages\nContinuous presence and support"
+		}
+	},
 
-
-
-	
-  "Info": {
-    "own_modern_factories": "We have our own modern factories, which allows ...",
-    "global_network_and_support": "Thanks to the wide geography of production and the extensive partner network, Ariet Power ensures uninterrupted deliveries and customer support worldwide. Our structure is designed so that every order is fulfilled on time, and technical support is always available, regardless of the region.",
+	"Info": {
+		"izmir_turkey": "Izmir, Turkey",
+		"shenzhen_china": "Shenzhen, China",
+		"own_modern_factories": "We have our own modern factories, which allows ...",
+		"global_network_and_support": "Thanks to the wide geography of production and the extensive partner network, Ariet Power ensures uninterrupted deliveries and customer support worldwide. Our structure is designed so that every order is fulfilled on time, and technical support is always available, regardless of the region.",
 		"lorem_ipsum": ".4kW - 10kVA/9kW Lorem Ipsum - this is a \"fish\" text, often used in printing and web design. Lorem Ipsum is a standard \"fish\"",
 		"headquarters": "Headquarters —",
 		"warehouses": "Warehouses —",
@@ -175,10 +169,8 @@
 		"fast_delivery": "fast and accurate delivery",
 		"copyright_year": "2025 Ariet®.",
 		"all_rights_reserved": "All rights reserved.",
-		"privacy_policy": "Privacy Policy"	
-  },
-
-
+		"privacy_policy": "Privacy Policy"
+	},
 	"Subtitle": {
 		"we_are_where_reliable_solutions_are_needed": "We are where reliable solutions are needed.",
 		"products_full_compliance": "All Ariet Power products fully",
@@ -187,17 +179,15 @@
 		"subtitle": "Quick access to service, warranty, and support — in just 30 seconds",
 		"partners": "Join the partner program for professionals in <br /> the energy solutions field"
 	},
-
 	"Text": {
 		"partner_network": "Partner Network (Value Added Partners)",
 		"we_work_with_reliable_local_partners": "We collaborate with reliable local partners who enhance our\n        service by providing technical and marketing support on the ground:",
 		"home_text": "Our own production facilities in Spain, Turkey and China, as well as a wide network of partners in Europe, Asia and the Middle East, allow us to provide stable supplies, flexible terms of cooperation and a high level of technical support.\n\nFor more than 20 years, we have been creating reliable solutions that meet international quality standards. Ariet Power is a partner who thinks about your business and cares about the smooth operation of your systems.",
 		"heading": "Together with <br /> the best",
-    "paragraph": "We are pioneers in our field, constantly seeking new solutions and opportunities. <br /> Our team consists of experienced professionals you will soon meet. <br /> Fill out the form — and let's start collaborating.",
+		"paragraph": "We are pioneers in our field, constantly seeking new solutions and opportunities. <br /> Our team consists of experienced professionals you will soon meet. <br /> Fill out the form — and let's start collaborating.",
 		"partner_support": "Becoming an Ariet Power partner means entering our <br /> world and gaining access not only to <br /> high-tech products, but also to <br /> personalized support that <br /> sets us apart from others."
 	},
-
-	"Description":{
+	"Description": {
 		"goal": "Our goal",
 		"premium": "— to provide premium-",
 		"equipment": "equipment with\n      an optimal balance",
@@ -213,84 +203,82 @@
 		"service_before_purchase": "We ensure a high level of service both before and",
 		"service_after_purchase": "after purchase,\n    to achieve maximum",
 		"customer_satisfaction": "customer satisfaction.",
-		
-  "experience_text": "years of experience in the development and\nmanufacturing of solutions for\nuninterrupted power supply",
-  "countries_text": "countries where our\nproducts and partner network are represented",
-	"dashboard": "Manage your Ariet Power products in just a few clicks: register or log in to your account to access technical support, check warranty status, or contact our team directly. <br /><br />Registration takes less than 30 seconds! We’ve prepared a simple guide for account activation and system usage — download it below and get started now.",
-	"partners_description": "We don’t just look for distributors — we build partnerships. <br />At Ariet Power, you become part of the team, receiving full support, tools, and knowledge needed for successful business operations. <br />Our partners are primarily expert consultants who know the product in detail and can confidently present it to clients.",
-	 "type": "Type",
-    "type_value": "Online double conversion",
-    "power": "Power",
-    "power_value": "6000 VA / 5400 W",
-    "voltage_form": "Voltage form",
-    "voltage_form_value": "Pure sine wave",
-    "batteries": "Batteries",
-    "batteries_value": "7.5 Ah × 12 pcs",
-    "efficiency": "Efficiency",
-    "efficiency_value": "> 99%",
-    "input_voltage": "Input voltage",
-    "input_voltage_value": "110-300 V",
-    "output_voltage": "Output voltage",
-    "output_voltage_value": "220/230/240 V",
-    "connection": "Connection",
-    "connection_value": "Terminal block"
-	},
 
+		"experience_text": "years of experience in the development and\nmanufacturing of solutions for\nuninterrupted power supply",
+		"countries_text": "countries where our\nproducts and partner network are represented",
+		"dashboard": "Manage your Ariet Power products in just a few clicks: register or log in to your account to access technical support, check warranty status, or contact our team directly. <br /><br />Registration takes less than 30 seconds! We’ve prepared a simple guide for account activation and system usage — download it below and get started now.",
+		"partners_description": "We don’t just look for distributors — we build partnerships. <br />At Ariet Power, you become part of the team, receiving full support, tools, and knowledge needed for successful business operations. <br />Our partners are primarily expert consultants who know the product in detail and can confidently present it to clients.",
+		"type": "Type",
+		"type_value": "Online double conversion",
+		"power": "Power",
+		"power_value": "6000 VA / 5400 W",
+		"voltage_form": "Voltage form",
+		"voltage_form_value": "Pure sine wave",
+		"batteries": "Batteries",
+		"batteries_value": "7.5 Ah × 12 pcs",
+		"efficiency": "Efficiency",
+		"efficiency_value": "> 99%",
+		"input_voltage": "Input voltage",
+		"input_voltage_value": "110-300 V",
+		"output_voltage": "Output voltage",
+		"output_voltage_value": "220/230/240 V",
+		"connection": "Connection",
+		"connection_value": "Terminal block"
+	},
 	"card": {
 		"efficiency": "Efficiency Above EU CoC Requirements for AC UPS",
-		    "snmp_alt": "SNMP Card",
-    "snmp_title": "SNMP Card",
-    "snmp_description": "Connect to your monitoring and management system with real-time data access."
+		"snmp_alt": "SNMP Card",
+		"snmp_title": "SNMP Card",
+		"snmp_description": "Connect to your monitoring and management system with real-time data access."
 	},
-
 	"Form": {
 		"fill_form": "Fill out the form and we\\nwill contact you",
-    "name": "Name",
-    "position": "Position",
-    "phone": "Phone number",
-    "email": "Email",
-    "address": "Address",
-    "zip": "ZIP/Postal code",
-    "city": "City",
-    "country": "Country",
-    "message": "Your message",
-    "is_company": "I am a company",
-    "submit": "Submit"
-  },
+		"name": "Name",
+		"position": "Position",
+		"phone": "Phone number",
+		"email": "Email",
+		"address": "Address",
+		"zip": "ZIP/Postal code",
+		"city": "City",
+		"country": "Country",
+		"message": "Your message",
+		"is_company": "I am a company",
+		"submit": "Submit"
+	},
 
 	"catalog": {
-    "title": "Product Catalog",
+		"title": "Product Catalog",
 		"commercial": "Commercial",
-  "category": "Category"
-  },
-	"Phone":{
+		"category": "Category"
+	},
+	"Phone": {
 		"call_me_back": "Call me back"
 	},
 
-	  "Navigation": {
-    "support": "Technical Support",
-    "partners": "For Partners"
-  },
-	  "categories": {
-    "new": "New Arrivals",
-    "project": "Project Solutions",
-    "best": "Best Sellers"
-  },
-	
-  "dashboard": {
-    "download_guide": "Download Guide"
-  },
+	"Navigation": {
+		"support": "Technical Support",
+		"partners": "For Partners"
+	},
+	"categories": {
+		"new": "New Arrivals",
+		"project": "Project Solutions",
+		"best": "Best Sellers"
+	},
+
+	"dashboard": {
+		"download_guide": "Download Guide"
+	},
 
 	"breadcrumbs": {
-"home": "Home",
-"products": "Products",
-"online_ups":"Online UPS Ariet T3K"
-},
+		"home": "Home",
+		"products": "Products",
+		"online_ups": "Online UPS Ariet T3K"
+	},
 
-  "ups": {
-		 "select_product_variant": "Select a product variant",
+	"ups": {
+		"select_product_variant": "Select a product variant",
 		"ups_model": "Online UPS Ariet T3K",
-  "ups_power": "1 kVA",
+		"ups_power": "1 kVA",
 		"detailed_specs": "Detailed specifications",
 		"model_features": "Key features of the model",
 		"buy_button": "Where to buy?!",
@@ -298,207 +286,238 @@
 		"features_title": "Your capabilities with the Ariet T3K UPS",
 		"subtitle_Lorem": "6kVA/5.4kW - 10kVA/9kW Lorem Ipsum - this is placeholder text often used in printing and web design. Lorem Ipsum is standard placeholder text",
 		"hero_title": "Online UPS Ariet <span>T3K</span>",
-		 "subtitle": "Safe power supply for sensitive equipment.<br /> Protection against lightning and high-frequency interference. Pure sine wave.",
+		"subtitle": "Safe power supply for sensitive equipment.<br /> Protection against lightning and high-frequency interference. Pure sine wave.",
 		"battery_info": "The UPS includes <b>6 powerful HR series batteries with a capacity of 14 Ah each</b>.<br/><br/>This is a premium solution designed for stable and long-lasting operation even under heavy loads.",
-		 "autonomy": {
-      "title": "Autonomous operation up to 30 minutes =",
-      "subtitle": "safety and stability of workflows."
-    },
-    "battery": {
-      "title": "Reliable batteries =",
-      "subtitle": "fewer technical risks and lower replacement costs."
-    },
-    "hr_series": {
-      "title": "HR series =",
-      "subtitle": "the best tool for intensive use."
-    },
+		"autonomy": {
+			"title": "Autonomous operation up to 30 minutes =",
+			"subtitle": "safety and stability of workflows."
+		},
+		"battery": {
+			"title": "Reliable batteries =",
+			"subtitle": "fewer technical risks and lower replacement costs."
+		},
+		"hr_series": {
+			"title": "HR series =",
+			"subtitle": "the best tool for intensive use."
+		},
 		"banner_title": "Maximum <br/> autonomy",
 		"material_title": "We use <br /> special materials and <br /> structural solutions.",
 		"parameters_title": "UPS for your <br /> specifications",
 		"title": "Your possibilities with Ariet T3K UPS",
 		"specs": "6kVA/5.4kW - 10kVA/9kW Lorem Ipsum is a placeholder text, commonly used in printing and web design. Lorem Ipsum is standard placeholder text.",
-    "features": {
-      "no_adapters": {
-        "title": "Connection without adapters",
-        "subtitle": "4 European “Schuko” sockets made of quality plastic. Ideal for medical equipment."
-      },
-      "instant_switch": {
-        "title": "Instant switch in 0 ms",
-        "subtitle": "Cold start and seamless transfer to backup power without equipment shutdown."
-      },
-      "rj45_monitoring": {
-        "title": "Built-in RJ45 monitoring",
-        "subtitle": "Allows monitoring the UPS and connected devices."
-      },
-      "hot_swap": {
-        "title": "Hot-swappable batteries",
-        "subtitle": "No need to turn off the UPS to replace batteries. The system keeps running."
-      }
-    }
-  },
-	  "buyButton": {
-    "label": "Where to buy?!"
-  },
-	  "keyFeatures": {
-    "title": "Key \n features of the model"
-  },
-	  "specifications": {
-    "protection": {
-      "title": "Interference & Surge Protection",
-      "subtitle": "Ferrite cores eliminate any internal signal interference. Built-in UPS surge protection automatically suppresses voltage spikes."
-    },
-    "silent": {
-      "title": "Silent Operation",
-      "subtitle": "The quietest fans available. UPS often placed near ultrasound machines where people are constantly present."
-    }
-  },
+		"features": {
+			"no_adapters": {
+				"title": "Connection without adapters",
+				"subtitle": "4 European “Schuko” sockets made of quality plastic. Ideal for medical equipment."
+			},
+			"instant_switch": {
+				"title": "Instant switch in 0 ms",
+				"subtitle": "Cold start and seamless transfer to backup power without equipment shutdown."
+			},
+			"rj45_monitoring": {
+				"title": "Built-in RJ45 monitoring",
+				"subtitle": "Allows monitoring the UPS and connected devices."
+			},
+			"hot_swap": {
+				"title": "Hot-swappable batteries",
+				"subtitle": "No need to turn off the UPS to replace batteries. The system keeps running."
+			}
+		}
+	},
+	"buyButton": {
+		"label": "Where to buy?!"
+	},
+	"keyFeatures": {
+		"title": "Key \n features of the model"
+	},
+	"specifications": {
+		"protection": {
+			"title": "Interference & Surge Protection",
+			"subtitle": "Ferrite cores eliminate any internal signal interference. Built-in UPS surge protection automatically suppresses voltage spikes."
+		},
+		"silent": {
+			"title": "Silent Operation",
+			"subtitle": "The quietest fans available. UPS often placed near ultrasound machines where people are constantly present."
+		}
+	},
 
-	  "steps": {
-    "medical": "Medical Facilities",
-    "laboratory": "Laboratories",
-    "data_center": "Data Centers & Server Rooms",
-    "telecom": "Telecommunications",
+	"steps": {
+		"medical": "Medical Facilities",
+		"laboratory": "Laboratories",
+		"data_center": "Data Centers & Server Rooms",
+		"telecom": "Telecommunications",
 		"medical_facilities": "Medical facilities",
-    "laboratories": "Laboratories",
-    "data_centers": "Data centers and server rooms"
-  },
-	  "button": {
-    "details": "Detailed specifications",
-    "where_to_buy": "Where to buy?!"
-  },
-	  "technical_info": {
-    "title": "Technical Information",
+		"laboratories": "Laboratories",
+		"data_centers": "Data centers and server rooms"
+	},
+	"button": {
 		"details": "Detailed specifications",
-    "buy": "Where to buy?!"
-  },
+		"where_to_buy": "Where to buy?!"
+	},
+	"technical_info": {
+		"title": "Technical Information",
+		"details": "Detailed specifications",
+		"buy": "Where to buy?!"
+	},
 
-	
-  "filters": {
-    "category": "Product Category",
-    "category_1": "Category Name 1",
-    "category_2": "Category Name 2",
-    "category_3": "Category Name 3",
-    "category_4": "Category Name 4",
-    "category_5": "Category Name 5",
-    "filter_1": "Filter Name 1",
-    "filter_1_option_1": "Category Name 1",
-    "filter_1_option_2": "Category Name 2",
-    "filter_1_option_3": "Category Name 3",
-    "filter_1_option_4": "Category Name 4",
-    "filter_1_option_5": "Category Name 5",
-    "filter_2": "Filter Name 2",
-    "filter_2_option_1": "Category Name 1",
-    "filter_2_option_2": "Category Name 2",
-    "filter_2_option_3": "Category Name 3",
-    "filter_2_option_4": "Category Name 4",
-    "filter_2_option_5": "Category Name 5",
+	"filters": {
+		"category": "Product Category",
+		"category_1": "Category Name 1",
+		"category_2": "Category Name 2",
+		"category_3": "Category Name 3",
+		"category_4": "Category Name 4",
+		"category_5": "Category Name 5",
+		"filter_1": "Filter Name 1",
+		"filter_1_option_1": "Category Name 1",
+		"filter_1_option_2": "Category Name 2",
+		"filter_1_option_3": "Category Name 3",
+		"filter_1_option_4": "Category Name 4",
+		"filter_1_option_5": "Category Name 5",
+		"filter_2": "Filter Name 2",
+		"filter_2_option_1": "Category Name 1",
+		"filter_2_option_2": "Category Name 2",
+		"filter_2_option_3": "Category Name 3",
+		"filter_2_option_4": "Category Name 4",
+		"filter_2_option_5": "Category Name 5",
 		"clear": "Clear Filter",
 		"show": "Show",
-    "hide": "Hide",
-    "title": "filters"
-  },
-	 "support": {
-    "team_text": "Our skilled technical support and sales team is always ready <br /> to assist / <br /> from pre-selection of products to post-sales service.",
+		"hide": "Hide",
+		"title": "filters"
+	},
+	"support": {
+		"team_text": "Our skilled technical support and sales team is always ready <br /> to assist / <br /> from pre-selection of products to post-sales service.",
 		"subtitle": "Same-day shipping and instant technical <br /> assistance from our support team",
-    "title": "support",
+		"title": "support",
 		"title_support": "Technical <br /> support and <br /> services"
-  },
-	  "environment": {
-    "extreme_temperatures": "Extreme\ntemperatures",
-    "high_altitude": "High-altitude\nconditions",
-    "humidity_dust_corrosion": "Humidity, dust,\ncorrosion",
-    "vibrations_mechanical_loads": "Vibrations and mechanical\nloads"
-  },
+	},
+	"environment": {
+		"extreme_temperatures": "Extreme\ntemperatures",
+		"high_altitude": "High-altitude\nconditions",
+		"humidity_dust_corrosion": "Humidity, dust,\ncorrosion",
+		"vibrations_mechanical_loads": "Vibrations and mechanical\nloads"
+	},
 	"reliability": {
-    "title": "Reliability under any external conditions"
-  },
-	  "solutions": {
-    "autonomy": {
-      "title": "Power for hours and even days",
-      "description": "Ariet UPS for Berlin metro keeps systems running for 60 minutes after a shutdown.",
-      "alt": "solution-png"
-    },
+		"title": "Reliability under any external conditions"
+	},
+	"solutions": {
+		"autonomy": {
+			"title": "Power for hours and even days",
+			"description": "Ariet UPS for Berlin metro keeps systems running for 60 minutes after a shutdown.",
+			"alt": "solution-png"
+		},
 		"subtitle": "We design systems for the required power and runtime — from smooth shutdowns to long-term support."
-  },
-	  "kit": {
-			"title": "What's included in the kit",
-    "instruction": "Manual EN, KAZ",
-    "snmp_card": "SNMP Card",
-    "cable_kit": "Connection Kit\nwith 10 m cable"
-  },
-	  "models": {
-    "online_ups": "Online UPS ARIET",
-    "single_phase": "Single-phase UPS",
+	},
+	"kit": {
+		"title": "What's included in the kit",
+		"instruction": "Manual EN, KAZ",
+		"snmp_card": "SNMP Card",
+		"cable_kit": "Connection Kit\nwith 10 m cable"
+	},
+	"models": {
+		"online_ups": "Online UPS ARIET",
+		"single_phase": "Single-phase UPS",
 		"other_models": "Other Popular UPS Models"
-  },
-	  "popular_ups": {
-    "title": "Other Popular UPS Models"
-  },
-	  "features": {
-    "no_adapter": {
-      "title": "Connection Without Adapters",
-      "subtitle": "4 European Schuko sockets made of high-quality plastic. Ideal for medical equipment."
-    },
-    "instant_switch": {
-      "title": "Instant Switching in 0 ms",
-      "subtitle": "Cold start and seamless transition to backup power without equipment shutdown."
-    },
-    "rj45_monitor": {
-      "title": "Built-in RJ45 Monitoring",
-      "subtitle": "Allows you to monitor the UPS and connected devices."
-    },
-    "hot_swap": {
-      "title": "Hot Swap Batteries",
-      "subtitle": "No need to disconnect the UPS to replace batteries. The system continues running."
-    }
-  },
-	  "header": {
-    "title": "Smart <br /> Power Management",
-    "subtitle": "The UPS supports multiple management interfaces. It can be easily <br /> integrated into any IT infrastructure.",
-    "info": "<span>Remote monitoring, automatic <br /> notifications, and safe shutdown <br /> of equipment</span> – everything works smoothly and reliably, wherever you are."
-  },
-	  "buy_button": {
-    "text": "Where to buy?!"
-  },
-	  "specs": {
-    "interference_protection_title": "Protection from interference and lightning",
-    "interference_protection_subtitle": "Ferrite rings eliminate any internal interference in the electrical signal. The UPS's built-in lightning protection automatically suppresses voltage spikes.",
-    "silent_operation_title": "Silent operation",
-    "silent_operation_subtitle": "The quietest fans possible. UPSs are often placed near ultrasound equipment where people are constantly present."
-  },
-	  "gallery": {
-    "title": "Gallery"
-  },
-	  "breadcrumb": {
-    "home": "Home",
-    "products": "Products",
-    "ariet_t3k": "Online UPS Ariet T3K"
-  },
-	  "hero": {
-    "subtitle": "<b>Up to 54 hours of autonomy.</b> Maximum protection from voltage surges.<br />Ideal for mission-critical systems.",
+	},
+	"popular_ups": {
+		"title": "Other Popular UPS Models"
+	},
+	"features": {
+		"no_adapter": {
+			"title": "Connection Without Adapters",
+			"subtitle": "4 European Schuko sockets made of high-quality plastic. Ideal for medical equipment."
+		},
+		"instant_switch": {
+			"title": "Instant Switching in 0 ms",
+			"subtitle": "Cold start and seamless transition to backup power without equipment shutdown."
+		},
+		"rj45_monitor": {
+			"title": "Built-in RJ45 Monitoring",
+			"subtitle": "Allows you to monitor the UPS and connected devices."
+		},
+		"hot_swap": {
+			"title": "Hot Swap Batteries",
+			"subtitle": "No need to disconnect the UPS to replace batteries. The system continues running."
+		}
+	},
+	"header": {
+		"title": "Smart <br /> Power Management",
+		"subtitle": "The UPS supports multiple management interfaces. It can be easily <br /> integrated into any IT infrastructure.",
+		"info": "<span>Remote monitoring, automatic <br /> notifications, and safe shutdown <br /> of equipment</span> – everything works smoothly and reliably, wherever you are."
+	},
+	"buy_button": {
+		"text": "Where to buy?!"
+	},
+	"specs": {
+		"interference_protection_title": "Protection from interference and lightning",
+		"interference_protection_subtitle": "Ferrite rings eliminate any internal interference in the electrical signal. The UPS's built-in lightning protection automatically suppresses voltage spikes.",
+		"silent_operation_title": "Silent operation",
+		"silent_operation_subtitle": "The quietest fans possible. UPSs are often placed near ultrasound equipment where people are constantly present."
+	},
+	"gallery": {
+		"title": "Gallery"
+	},
+	"breadcrumb": {
+		"home": "Home",
+		"products": "Products",
+		"ariet_t3k": "Online UPS Ariet T3K"
+	},
+	"hero": {
+		"subtitle": "<b>Up to 54 hours of autonomy.</b> Maximum protection from voltage surges.<br />Ideal for mission-critical systems.",
 		"title": "Online UPS Ariet",
-    "model": "T3K"
-  },
-	  "cards": {
-    "no_adapters_title": "Connection without adapters",
-    "no_adapters_subtitle": "4 European “Schuko” sockets made of high-quality plastic. Ideal for medical equipment.",
-    "instant_switch_title": "Instant switch in 0 ms",
-    "instant_switch_subtitle": "Cold start and seamless transition to backup power without equipment shutdown.",
-    "rj45_monitoring_title": "Built-in RJ45 monitoring",
-    "rj45_monitoring_subtitle": "4 European “Schuko” sockets made of high-quality plastic. Ideal for medical equipment.",
-    "hot_swap_title": "Hot-swappable batteries",
-    "hot_swap_subtitle": "No need to turn off the UPS to replace batteries. Open the cover, remove the cassette, insert a new one – system continues to work."
-  },
-	  "technical": {
-    "subtitle": "6kVA/5.4kW - 10kVA/9kW Lorem Ipsum is placeholder text commonly used in printing and web design."
-  },
-	  "spec": {
-    "protection_title": "Protection against interference and lightning",
-    "protection_subtitle": "Ferrite cores eliminate any internal interference in the electrical signal. Built-in UPS lightning protection automatically suppresses sudden voltage spikes.",
-    "silent_title": "Silent operation",
-    "silent_subtitle": "The quietest fans possible. UPS is often placed near ultrasound machines where people are constantly present."
-  }
+		"model": "T3K"
+	},
+	"cards": {
+		"no_adapters_title": "Connection without adapters",
+		"no_adapters_subtitle": "4 European “Schuko” sockets made of high-quality plastic. Ideal for medical equipment.",
+		"instant_switch_title": "Instant switch in 0 ms",
+		"instant_switch_subtitle": "Cold start and seamless transition to backup power without equipment shutdown.",
+		"rj45_monitoring_title": "Built-in RJ45 monitoring",
+		"rj45_monitoring_subtitle": "4 European “Schuko” sockets made of high-quality plastic. Ideal for medical equipment.",
+		"hot_swap_title": "Hot-swappable batteries",
+		"hot_swap_subtitle": "No need to turn off the UPS to replace batteries. Open the cover, remove the cassette, insert a new one – system continues to work."
+	},
+	"technical": {
+		"subtitle": "6kVA/5.4kW - 10kVA/9kW Lorem Ipsum is placeholder text commonly used in printing and web design."
+	},
+	"spec": {
+		"protection_title": "Protection against interference and lightning",
+		"protection_subtitle": "Ferrite cores eliminate any internal interference in the electrical signal. Built-in UPS lightning protection automatically suppresses sudden voltage spikes.",
+		"silent_title": "Silent operation",
+		"silent_subtitle": "The quietest fans possible. UPS is often placed near ultrasound machines where people are constantly present.",
+		"fill_form": "Fill out the form and we\\nwill contact you"
+	},
 
+	"LoginForm": {
+		"login": "Email",
+		"password": "Password",
+		"remember_me": "Remember me",
+		"enter": "Enter",
+		"registration": "Registration"
+	},
+	"RegistrationForm": {
+		"statuses": {
+			"client": "Client",
+			"ambassador": "Ambassador",
+			"diller": "Diller"
+		},
+		"name": "Name",
+		"second_name": "Second Name",
+		"phone": "Phone",
+		"email": "Email",
+		"password": "Password",
+		"confirm_password": "Confirm Password",
+		"to_remember_password": "To remember password",
+		"registration": "Registration",
+		"i_have_account": "I have account",
+		"enter": "Enter",
+		"passwords_do_not_match": "Passwords do not match"
+	},
+
+	"Thanks": {
+		"title": "Thank you for your purchase",
+		"order_number": "Order number",
+		"contact_manager": "Our manager will contact you.",
+		"to_catalogue": "To catalogue",
+		"my_orders": "My orders"
+	}
 }
-
-
