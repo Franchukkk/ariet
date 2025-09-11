@@ -105,7 +105,7 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                     {
                         order.products.map((element, index) => {
                             return (
-                                <li key={index} className="flex flex-row gap-[10px] justify-between items-center pl-[14px] pt-[20px] pb-[20px] border-b border-solid border-[#FFFFFF33]">
+                                <StyledLiMoreInfo key={index} className="flex flex-row gap-[10px] justify-between items-center pl-[14px] pt-[20px] pb-[20px] border-b border-solid border-[#FFFFFF33]">
                                     <StyledImgProduct height="48px !important" width="48px !important" src={element.photo.src} alt={element.name} />
                                     <div className="flex flex-auto flex-col gap-[11px] pl-[10px]">
                                         <p className="text-[13px] leading-[13px] text-regular text-[#7F7F7F]">{element.name}</p>
@@ -114,7 +114,7 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                                     <p className="text-[17px] leading-[17px] font-[400] text-[#ffffff]">{element.quantity}x</p>
                                     <p className="text-[17px] leading-[17px] font-[600] text-[#ffffff]">{element.price * element.quantity} {t("MyAccount.currency")}</p>
 
-                                </li>
+                                </StyledLiMoreInfo>
                             )
                         })
                     }
@@ -127,26 +127,26 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                     </div>
                 </div>
             </MoreInfoBlock>
-            <div className="pl-[30px] w-[400px]">
-                <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.price")}</p>
+            <TotalPriceWraper className="pl-[30px] w-[400px]">
+                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                    <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.price")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[14px] leading[18px] font-bold">{formatPrice(order.price)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </div>
-                <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.delivery")}</p>
+                </TotalPriceBlock>
+                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                    <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.delivery")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[14px] leading[18px] font-bold">{formatPrice(order.delivery)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </div>
-                <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.total")}</p>
+                </TotalPriceBlock>
+                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                    <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.total")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{formatPrice(order.total)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </div>
-            </div>
+                </TotalPriceBlock>
+            </TotalPriceWraper>
         </li >
     );
 };
@@ -214,6 +214,12 @@ const TotalPrice = styled.div`
     }
 `;
 
+const StyledPrice = styled.p`
+    @media (max-width: 764px) {
+        border-bottom: none !important;
+    }
+`;
+
 const BigData = styled.p`
     @media (max-width: 764px) {
         display: none !important;
@@ -239,8 +245,39 @@ const MoreInfoBlock = styled.div`
          margin: auto;
          margin-bottom: 30px;
         }
-    }
-    
+    }  
+`;
 
-    
+const StyledLiMoreInfo = styled.li`
+    @media (max-width: 764px) {
+        padding: 20px 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+        border-bottom: none;
+        border-top: 1px solid #FFFFFF33;
+        margin-bottom: 20px;
+        margin-top  : 20px;
+    }
+`;
+
+const TotalPriceBlock = styled.div`
+   
+`;
+
+const TotalPriceWraper = styled.div`
+    @media (max-width: 764px) {
+        width: 100%;
+
+        > div {
+            flex-direction: column;
+            align-items: center;
+            margin-left: -20px;
+
+            > p:last-child {
+            padding: 0; 
+            }
+        }
+    }
 `;
