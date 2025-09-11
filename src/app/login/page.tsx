@@ -58,7 +58,11 @@ const CanvasBlock = styled.div`
     z-index: -2;
     overflow: hidden;
 
-    @media (max-width: 1000px) {
+    & > div {
+        opacity: 0.3;
+    }
+
+     @media (max-width: 1000px) {
         right: -500px;
     }
 `;

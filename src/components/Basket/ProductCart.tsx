@@ -30,11 +30,11 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
             index={index}
             className={`flex flex-row justify-between py-[20px] px-[35px] border border-dashed p-4 border-[#ffffff42] items-center ${index === 0 ? 'border-t-1' : 'border-t-0'}`}
         >
-            <img className="mr-[37px]" width={124} height={80} alt={product.name} src={product.photo.src} />
-            <div className="pr-[20px] relative">
+            <WrapperImg className="mr-[37px]" width={124} height={80} alt={product.name} src={product.photo.src} />
+            <WrapperDescription className="pr-[20px] relative">
                 <p className="text-[14px] pl-[10px] font-medium text-[#7F7F7F] absolute top-[-20px] left-0">{product.description}</p>
                 <p className="text-[22px] pl-[10px] font-bold w-[250px]">{product.name}</p>
-            </div>
+            </WrapperDescription>
             <p className="text-[20px] font-bold w-[100px] text-center"> {formatPrice(product.price)} {t("Basket.currency")}</p>
 
             <label className="relative">
@@ -107,4 +107,26 @@ const WrapperLi = styled.li<{ index: number }>`
       height: 30px;
     }
   }
+`;
+
+const WrapperDescription = styled.div`
+    @media (max-width: 1000px) {
+        >p:first-child {
+           position: relative;
+           top: 0;
+           left: 0;
+        }
+        >p:last-child {
+            margin: auto;
+            margin-top: 20px;
+            padding: 0 20px;
+            width: 100%;
+        }
+    }
+`;
+
+const WrapperImg = styled.img`
+    @media (max-width: 1000px) {
+        margin: auto;
+    }
 `;
