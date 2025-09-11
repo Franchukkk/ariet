@@ -70,16 +70,17 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                 className={`h-[90px] relative pl-[30px] pt-[18px] pb-[15px] pr-[67px] transition-all duration-300}`}
             >
                 <div className="flex flex-col gap-[10px]">
-                    <p className="text-[14px]  text-[#7F7F7F]"> {t("MyAccount.order")} {order.id}, {formatDate(order.date, i18n.language)}</p>
+                    <BigData className="text-[14px]  text-[#7F7F7F]"> {t("MyAccount.order")} {order.id}, {formatDate(order.date, i18n.language)}</BigData>
+                    <ShortData className="text-[14px]  text-[#7F7F7F]">{formatDate(order.date, i18n.language)}</ShortData>
                     <p className="text-[14px] text-[22px] leading-[22px] !font-[600] font-medium text-[#ffffff]">{order.status}</p>
                 </div>
 
-                <div className="flex flex-col gap-[10px]">
+                <TotalPrice className="flex flex-col gap-[10px]">
                     <p className="text-[14px]  text-[#7F7F7F] ml-[130px]">{t("MyAccount.summary")} {t("MyAccount.currency")}</p>
                     <p className="text-[14px] text-[22px] leading-[22px] ml-[130px] !font-[600] font-medium text-[#ffffff]"> {formatPrice(order.price)} {t("MyAccount.currency")}</p>
-                </div>
+                </TotalPrice>
 
-                <div className="flex flex-row gap-[10px] w-[262px] select-none m-[auto]">
+                <ImgBlock className="flex flex-row gap-[10px] w-[262px] select-none m-[auto]">
                     {
                         order.products.map((element, index) => {
                             if (index > 3) {
@@ -89,8 +90,9 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                         })
                     }
 
-                </div>
-                {order.products.length > 4 ? <StyledFor className="absolute top-1/2 right-[80px] translate-y-[-50%] text-[13px] text-regular text-[#7F7F7F] ">+4</StyledFor> : null}
+                </ImgBlock>
+
+                {order.products.length > 4 ? <StyledFor>+4</StyledFor> : null}
 
                 <ArrowIcon
                     className={`cursor-pointer absolute top-1/2 right-[23px] translate-y-[-50%] transition-all duration-300 ${isOpen ? "rotate-0" : "rotate-180"}`}
@@ -98,8 +100,8 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                     onClick={() => setIsOpen(!isOpen)}
                 />
             </StyledDiv>
-            <div className={`flex justify-between ${isOpen ? "max-h-[2000px]" : "max-h-[95px]"} overflow-hidden transition-all duration-300`}>
-                <ul className="w-[60%] pl-[28px] pt-[20px] pb-[15px] pr-[67px] ">
+            <MoreInfoBlock className={`flex justify-between ${isOpen ? "max-h-[2000px]" : "max-h-[95px]"} overflow-hidden transition-all duration-300`}>
+                <ul className="w-[70%] pl-[28px] pt-[20px] pb-[15px] pr-[67px] ">
                     {
                         order.products.map((element, index) => {
                             return (
@@ -124,7 +126,7 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                         <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{t("MyAccount.declaration_number")} {order.deliveyId}</p>
                     </div>
                 </div>
-            </div>
+            </MoreInfoBlock>
             <div className="pl-[30px] w-[400px]">
                 <div className="flex flex-row justify-between mb-[30px]">
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.price")}</p>
@@ -152,10 +154,11 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
 const StyledLi = styled.div` 
     display: grid;
     grid-template-columns: 350px 300px 1fr;
-
-    @media (max-width: 1000px) {
-        grid-template-columns: 1fr;
+    @media (max-width: 1200px) {
+         grid-template-columns: 350px 300px 
     }
+
+  
 `;
 
 
@@ -180,13 +183,64 @@ const StyledDiv = styled(StyledLi) <{ $status: string }>`
 `;
 
 const StyledImgProduct = styled.img`
-    @media (max-width: 1024px) {
-        display: none;
+    // @media (max-width: 1024px) {
+    //     display: none;
     }`
     ;
 
 const StyledFor = styled.p`
-    @media (max-width: 1100px) {
-        display: none;
-    }`
-    ;
+    position: absolute;
+    top: 50%;
+    right: 80px;
+    transform: translateY(-50%);
+    font-size: 13px;
+    font-weight: 400;
+    color: #7F7F7F;
+
+    @media (max-width: 1200px) {
+        display: none !important;
+    }
+`;
+
+const ImgBlock = styled.div`
+    @media (max-width: 1200px) {
+        display: none !important;
+    }
+`;
+
+const TotalPrice = styled.div`
+    @media (max-width: 764px) {
+        display: none !important;
+    }
+`;
+
+const BigData = styled.p`
+    @media (max-width: 764px) {
+        display: none !important;
+    }
+`;
+
+const ShortData = styled.p`
+    display: none !important;
+    @media (max-width: 764px) {
+        display: block !important;
+    }
+`;
+
+const MoreInfoBlock = styled.div`
+    @media (max-width: 1000px) {
+        display: block;
+
+        ul {
+            width: 100%;
+        }
+        
+        > div {
+         margin: auto;
+         margin-bottom: 30px;
+        }
+    }
+    
+
+    
+`;
