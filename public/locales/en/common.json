@@ -51,6 +51,21 @@
 		}
 	},
 	"advantages": {
+		"title": "Our advantages",
+		"About": {
+			"peace_confidence": {
+				"title": "Peace and confidence",
+				"description": "3-year warranty on most UPS models (upgradeable to 5 years for select products)"
+			},
+			"fast_delivery": {
+				"title": "Fast delivery and support",
+				"description": "Same-day shipping and immediate technical assistance from our support team"
+			},
+			"ups_configurator": {
+				"title": "UPS Configurator",
+				"description": "A convenient tool that allows you to get an accurate offer for your solution in a few clicks"
+			}
+		},
 		"peace_of_mind_and_confidence_description": "3-year warranty on most UPS models (upgradeable to 5 years for select products)",
 		"fast_delivery_and_support_description": "Same-day delivery and instant technical assistance from our support team",
 		"ups_configurator_description": "A convenient tool that allows you to get an exact offer for your solution in a few clicks",
