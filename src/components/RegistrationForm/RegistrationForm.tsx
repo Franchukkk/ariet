@@ -15,6 +15,8 @@ export default function RegistrationForm() {
 
     const { t } = useTranslation("common");
 
+    console.log(selected);
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -27,7 +29,7 @@ export default function RegistrationForm() {
         if (password !== confirmPassword) {
             alert(t("RegistrationForm.passwords_do_not_match"));
             ;
-         }
+        }
 
         console.log({ name, secondName, phone, email, rememberMe, password, confirmPassword });
     }
@@ -35,9 +37,9 @@ export default function RegistrationForm() {
     return (
         <StyledForm onSubmit={handleSubmit}>
             <LabelWrapper className="flex flex-row justify-between mb-[70px] w-[100%]">
-                <label
+                <MediaLabel
                     style={selected === "client" ? { boxShadow: "0px 9px 20.9px 0px #1DCF9440", } : { color: "#7F7F7F" }}
-                    className={`uppercase text-[600] w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "client" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
+                    className={`uppercase text-600 w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "client" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
                 >
                     <input
                         type="radio"
@@ -45,16 +47,17 @@ export default function RegistrationForm() {
                         value="client"
                         checked={selected === "client"}
                         onChange={(e) => setSelected(e.target.value)}
-                        className="accent-[#E1E1E1] appearance-none w-[16px] h-[16px] rounded-full border border-[8px] border-[#FFFFFFC4]  
+                        className="accent-[#E1E1E1] appearance-none w-[16px] h-[16px] rounded-full border border-[8px] border-[##FFFFFFC4]  
          checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
                     />
                     <span>{t("RegistrationForm.statuses.client")}</span>
-                </label>
+                </MediaLabel>
 
-                <label
+                <MediaLabel
                     style={selected === "ambassador" ? { boxShadow: "0px 9px 20.9px 0px #1DCF9440" } : { color: "#7F7F7F" }}
-                    className={`uppercase text-[600] w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "ambassador" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
-                >    <input
+                    className={`uppercase text-600 w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "ambassador" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
+                >
+                    <input
                         type="radio"
                         name="myOptions"
                         value="ambassador"
@@ -64,11 +67,11 @@ export default function RegistrationForm() {
          checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
                     />
                     <span>{t("RegistrationForm.statuses.ambassador")}</span>
-                </label>
+                </MediaLabel>
 
-                <label
+                <MediaLabel
                     style={selected === "diller" ? { boxShadow: "0px 9px 20.9px 0px #1DCF9440" } : { color: "#7F7F7F" }}
-                    className={`uppercase text-[600] w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "diller" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
+                    className={`uppercase text-600 w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "diller" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
                 >    <input
                         type="radio"
                         name="myOptions"
@@ -79,7 +82,7 @@ export default function RegistrationForm() {
          checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
                     />
                     <span>{t("RegistrationForm.statuses.diller")}</span>
-                </label>
+                </MediaLabel>
             </LabelWrapper>
 
             <InputWrapper className="w-full grid grid-cols-2 gap-4">
@@ -143,7 +146,10 @@ const LabelWrapper = styled.div`
     flex-direction: column;
     gap: 20px;
 
-    label {
+    @media (max-width: 1000px) {
+       gap: 10px;
+       margin-bottom: 20px;
+    }
    }
 `;
 
@@ -166,8 +172,8 @@ const StyledInput = styled.input`
     &:-webkit-autofill:focus,
     &:-webkit-autofill:active {
     
-    -webkit-text-fill-color: #ffffff; /* Устанавливает цвет текста (опционально) */
-    transition: background-color 5000s ease-in-out 0s; /* Для плавного изменения цвета текста */
+    -webkit-text-fill-color: #ffffff; 
+    transition: background-color 5000s ease-in-out 0s;
 }
    
 `;
@@ -241,5 +247,18 @@ const InputWrapper = styled.div`
     @media (max-width: 500px) {
         grid-template-columns: 1fr;
         gap: 20px;
+    }
+`;
+
+const MediaLabel = styled.label`
+    background: #0d0c0c7d;
+    overflow: hidden;
+    @media (max-width: 1000px) {
+        width: 100%;
+        max-width: 200px;
+        line-height: 14px;
+        height: 54px;
+        padding: 5px 20px;
+        font-size: 14px;
     }
 `;

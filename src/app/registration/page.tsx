@@ -43,9 +43,11 @@ const StyledTitle = styled.h1`
   text-transform: uppercase;  
   color: #ffffff;
   margin-bottom: 80px;
+  margin-top: 20px;
 
   @media (max-width: 800px) {
     text-align: center;
+    margin-bottom: 20px;
   }
 `;
 
@@ -57,6 +59,10 @@ const CanvasBlock = styled.div`
     height: 644px;
     z-index: -2;
     overflow: hidden;
+
+    & > div {
+        opacity: 0.3;
+    }
 
      @media (max-width: 1000px) {
         right: -500px;

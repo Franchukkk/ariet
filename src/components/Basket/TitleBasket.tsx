@@ -15,9 +15,14 @@ const StyledTitle = styled.h3`
   letter-spacing: 0%;
   text-transform: uppercase;  
   color: #ffffff;
+  margin-bottom: 37px;
 
   @media (max-width: 1280px) {
     text-align: center;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 1000px) {
     margin-bottom: 20px;
   }
 `;

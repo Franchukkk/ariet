@@ -28,6 +28,10 @@ const products = [
     }
 ]
 
+function formatPrice(num: number) {
+    return Number(num).toLocaleString('en-US').replace(',', ' ');
+}
+
 export const BasketList = () => {
     const { t } = useTranslation("common");
     const [promocode, setPromocode] = useState("");
@@ -39,7 +43,7 @@ export const BasketList = () => {
 
     useEffect(() => {
         localStorage.setItem("quantities", JSON.stringify(quantities));
-        
+
     }, [quantities]);
 
     const handleQuantityChange = (id: number, value: number) => {
@@ -57,8 +61,6 @@ export const BasketList = () => {
         )
     }
 
-
-    console.log(quantities);
     return (
         <Wrapper className="flex flex-row gap-[20px]">
             <ul className="flex flex-col w-[100%]">
@@ -74,28 +76,28 @@ export const BasketList = () => {
             </ul>
             <div className="w-[100%] max-w-[435px] px-[20px] py-[28px] bg-[#1B1919] rounded-[8px]">
                 <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.price")}:</p>
-                    <p className="w-[45%] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
-                        4 550 {t("Basket.currency")}
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.price")}:</p>
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
+                        {formatPrice(4500)} {t("Basket.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
 
                 </div>
                 <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.delivery")}:</p>
-                    <p className="w-[45%] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
-                        200 {t("Basket.currency")}
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.delivery")}:</p>
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
+                        {formatPrice(200)} {t("Basket.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
 
                 </div>
                 <div className="flex flex-row justify-between mb-[30px]">
-                    <p className="w-[45%] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.total")}:</p>
-                    <p className="w-[45%] text-[#FFFFFFA8] relative inline-block text-[18px] text-[#FFFFFF] font-bold">
-                        {products.reduce(
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.total")}:</p>
+                    <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[18px] text-[#FFFFFF] font-bold">
+                        {formatPrice(products.reduce(
                             (sum, product) => sum + product.price * (quantities[product.id] || 1),
                             0
-                        )} {t("Basket.currency")}
+                        ))} {t("Basket.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
                 </div>
@@ -103,7 +105,7 @@ export const BasketList = () => {
                     <button className="bg-[#4BC785] w-[100%] mb-[30px] rounded-[61px] h-[58px] font-bold text-[15px] text-center text-[#000000] cursor-pointer">{t("Basket.make_order")}</button>
                 </div>
                 <div className="flex flex-row justify-between">
-                    <div className="w-full flex flex-col relative">
+                    <div className="flex flex-col relative w-[60%]">
                         <StyledInput value={promocode} placeholder=" " required name="promocode" type="text" onChange={(e) => { setPromocode(e.target.value) }} />
                         <StyledLabel>{t("Basket.promo_code")}</StyledLabel>
                     </div>
