@@ -6,7 +6,7 @@ import styled from "styled-components";
 
 const orderNumber = "234234234234";
 
-export default function ThanksForOrderView() {
+export default function Page() {
     return (
         <>
             <WrapperThanksForOrder className="main-wrapper text-center pt-[75px] pb-[400px]">

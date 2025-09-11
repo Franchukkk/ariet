@@ -5,7 +5,7 @@ import RegistrationForm from "@/components/RegistrationForm/RegistrationForm";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-export default function Registration() {
+export default function Page() {
     const { t } = useTranslation("common");
     return (
         <RegistrationWrapper >

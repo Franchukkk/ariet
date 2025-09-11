@@ -79,7 +79,7 @@ export const BasketList = () => {
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.price")}:</p>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
                         {formatPrice(4500)} {t("Basket.currency")}
-                        <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
+                        <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
 
                 </div>
@@ -87,7 +87,7 @@ export const BasketList = () => {
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("Basket.delivery")}:</p>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold">
                         {formatPrice(200)} {t("Basket.currency")}
-                        <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
+                        <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
 
                 </div>
@@ -98,7 +98,7 @@ export const BasketList = () => {
                             (sum, product) => sum + product.price * (quantities[product.id] || 1),
                             0
                         ))} {t("Basket.currency")}
-                        <span className="absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent"></span>
+                        <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
                 </div>
                 <div className="flex flex-row justify-between">

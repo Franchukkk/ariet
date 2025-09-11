@@ -510,5 +510,22 @@
 		"version": "Version of the product:",
 		"socket": "Socket of the product:",
 		"description": "Description"
+	},
+	"MyAccount": {
+		"title": "My Account",
+		"order": "Order №",
+		"statuses": {
+			"delivered": "Delivered",
+			"paid": "Paid",
+			"sent": "Sent",
+			"draft": "Draft"
+		},
+		"summary": "Summary",
+		"currency": "currency",
+		"tel": "Tel",
+		"declaration_number": "Declaration number",
+		"total": "Total:",
+		"price": "Price:",
+		"delivery": "Delivery:"
 	}
 }

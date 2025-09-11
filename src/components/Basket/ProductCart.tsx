@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-
+import ArrowUp from "@/assets/img/arrow-up.svg"
+import binIcon from "@/assets/img/bin.png";
+import { formatPrice } from "@/helpers/formatPrice";
 
 
 interface Product {
@@ -19,16 +21,12 @@ interface ProductCartProps {
     onQuantityChange: (id: number, value: number) => void;
 }
 
-function formatPrice(num: number) {
-    return Number(num).toLocaleString('en-US').replace(',', ' ');
-}
-
 export const ProductCart = ({ product, index, quantity, onQuantityChange }: ProductCartProps) => {
     const { t } = useTranslation("common");
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <WrapperLi 
+        <WrapperLi
             index={index}
             className={`flex flex-row justify-between py-[20px] px-[35px] border border-dashed p-4 border-[#ffffff42] items-center ${index === 0 ? 'border-t-1' : 'border-t-0'}`}
         >
@@ -40,12 +38,9 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
             <p className="text-[20px] font-bold w-[100px] text-center"> {formatPrice(product.price)} {t("Basket.currency")}</p>
 
             <label className="relative">
-                <img
-                    className={`!absolute top-1/2 right-[5px] -translate-y-1/2 rotate-180 
-                    transition-all duration-300 
-                    ${isOpen ? "rotate-0" : ""}`}
-                    src="/image/arrow-up.svg"
-                    alt="arrow"
+                <ArrowUp
+                    aria-label="arrow"
+                    className={`!absolute top-1/2 right-[5px] -translate-y-1/2 rotate-180 transition-all duration-300 ${isOpen ? "rotate-0" : ""}`}
                 />
                 <CustomSelect
                     value={quantity}
@@ -63,7 +58,7 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
                 {formatPrice(product.price * quantity)} {t("Basket.currency")}
             </p>
             <button>
-                <img className="h-[24px] w-[24px]" src="/image/bin.png" alt="Delete" />
+                <img className="h-[24px] w-[24px]" src={binIcon.src} alt="Delete" />
             </button>
         </WrapperLi >
     );

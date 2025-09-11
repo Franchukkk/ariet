@@ -540,5 +540,23 @@
 		"version": "Версия товара:",
 		"socket": "Розетка:",
 		"description": "Описание"
+	},
+	"MyAccount": {
+		"title": "Мой аккаунт",
+		"order": "Заказ №",
+		"statuses": {
+			"delivered": "Доставлен",
+			"paid": "Оплачен",
+			"sent": "Отправлен",
+			"draft": "Черновик"
+		},
+		"summary": "Сума",
+		"currency": "грн",
+		"tel": "Телефон",
+		
+		"declaration_number": "Номер декларации",
+		"total": "Общая сума заказа:",
+		"price": "Цена товаров:",
+		"delivery": "Доставка:"
 	}
 }

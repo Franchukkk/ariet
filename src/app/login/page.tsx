@@ -5,7 +5,7 @@ import LoginForm from "@/components/LoginForm/LoginForm";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-export default function Login() {
+export default function Page() {
     const { t } = useTranslation("common");
     return (
         <LoginWrapper >

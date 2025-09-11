@@ -10,6 +10,10 @@ import type { StaticImageData } from "next/image"
 import cardBorder from "@/assets/img/specification-border.png"
 import { Background } from "../Autonomy/Banner/Background";
 import { useState } from "react";
+import ProductImg from "@/assets/img/product.png";
+import ProductBg from "@/assets/img/product-bg.png";
+import ArrowUp from "@/assets/img/arrow-up.svg";
+
 
 type ImgLike = string | StaticImageData;
 
@@ -17,25 +21,25 @@ const slidesData = [
     {
         title: "",
         subtitle: "",
-        photo: "/image/product.png",
+        photo: ProductImg,
         slide: 1,
     },
     {
         title: "",
         subtitle: "",
-        photo: "/image/product.png",
+        photo: ProductImg,
         slide: 2,
     },
     {
         title: "",
         subtitle: "",
-        photo: "/image/product.png",
+        photo: ProductImg,
         slide: 3,
     },
     {
         title: "",
         subtitle: "",
-        photo: "/image/product.png",
+        photo: ProductImg,
         slide: 4,
     },
 ];
@@ -172,7 +176,7 @@ export const ProductInformation = () => {
                         <CanvasBlockTwo>
                             <Background />
                         </CanvasBlockTwo>
-                        <img src="/image/product-bg.png" alt="product-bg" className="w-full h-full absolute top-0 left-0 z-[0]" />
+                        <img src={ProductBg.src} alt="product-bg" className="w-full h-full absolute top-0 left-0 z-[0]" />
 
                         <SwiperWrapper className="w-full h-full relative">
                             {slidesData.map((slide, index) => (
@@ -193,7 +197,7 @@ export const ProductInformation = () => {
                     </Swiper>
                 </StyledList>
             </WrapperContent>
-            <SeconndInfo className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
+            <SecondInfo className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
                 <div className="flex flex-row justify-between mb-[7px]">
                     <CenterText className="text-[18px] font-light text-[#FFFFFFA8]">
                         {t("ProductItem.article")}: {product.id}
@@ -249,8 +253,8 @@ export const ProductInformation = () => {
 
                     <DescriptionText className="flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-bold text-[#FFFFFF] mb-[18px] mt-[22px]">
                         {t("ProductItem.description")}
-                        <ImgIcon className={`w-[24px] h-[24px] transition-all duration-300 ${showDescription ? "rotate-0" : "rotate-180"}`}
-                            src="/image/arrow-up.svg" alt="arrow-down" />
+                        <ArrowUp className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${showDescription ? "rotate-0" : "rotate-180"}`}
+                            aria-label="arrow-down" />
                     </DescriptionText>
                     <p
                         className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${showDescription ? "max-h-[200px] overflow-y-auto" : "max-h-0"
@@ -263,7 +267,7 @@ export const ProductInformation = () => {
                 </div>
 
 
-            </SeconndInfo>
+            </SecondInfo>
         </Wrapper>
     )
 }
@@ -280,14 +284,6 @@ const DescriptionText = styled(CenterText)`
         justify-content: center;
     }
 `;
-
-const ImgIcon = styled.img`
-    cursor: pointer;
-    @media (max-width: 1000px) {
-       
-    }
-`;
-
 
 const BuyButton = styled.button`
     @media (max-width: 1000px) {
@@ -353,7 +349,7 @@ const WrapperContent = styled.div`
     }
 `;
 
-const SeconndInfo = styled.div`
+const SecondInfo = styled.div`
     @media (max-width: 1000px) {
         width: 100%;
         border-left: none;
