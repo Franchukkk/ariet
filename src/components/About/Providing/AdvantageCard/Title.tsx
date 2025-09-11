@@ -7,9 +7,9 @@ interface Props {
 export const Title = ({ title }: Props) => <StyledTitle>{title}</StyledTitle>
 
 const StyledTitle = styled.h4`
-	font-weight: 500;
+	font-weight: 600;
 	font-size: 17px;
-	line-height: 120%;
+	line-height: 100%;
 	letter-spacing: 1%;
 	text-transform: uppercase;
 	color: #ffffff;
