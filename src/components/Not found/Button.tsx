@@ -31,4 +31,14 @@ const StyledButton = styled.button`
 	&:hover {
 		background-color: #4ade80;
 	}
+
+	@media (max-width: 768px) {
+		padding: 1rem 2rem;
+		font-size: 0.9rem;
+	}
+
+	@media (max-width: 480px) {
+		width: 100%;
+		max-width: 300px;
+	}
 `

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 const CardWrapper = styled.div`
@@ -70,9 +71,10 @@ type TrainingsCardProps = {
 }
 
 export default function TrainingsCard({ trainings }: TrainingsCardProps) {
+	const { t } = useTranslation('common')
 	return (
 		<CardWrapper>
-			<Title>МОИ ТРЕНИНГИ</Title>
+			<Title>{t('ambassador.TrainingsCard.trainings')}</Title>
 			<List>
 				{trainings.map((t, i) => (
 					<ListItem key={i}>{t}</ListItem>

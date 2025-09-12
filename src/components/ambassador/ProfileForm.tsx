@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from 'react-i18next'
 import { FaFacebookF, FaInstagram } from 'react-icons/fa'
 import styled from 'styled-components'
 
@@ -93,35 +94,36 @@ const Button = styled.button`
 `
 
 export default function ProfileForm() {
+	const { t } = useTranslation('common')
 	return (
 		<FormWrapper>
-			<Title>РЕДАКТИРОВАТЬ ПРОФИЛЬ</Title>
+			<Title>{t('ambassador.profileForm.title')}</Title>
 			<Grid>
 				<InputWrapper>
 					<Input
 						type='text'
-						placeholder='Имя'
+						placeholder={t('ambassador.forma.name')}
 						defaultValue='Ирина'
 					/>
 				</InputWrapper>
 				<InputWrapper>
 					<Input
 						type='text'
-						placeholder='Фамилия'
+						placeholder={t('ambassador.forma.Surname')}
 						defaultValue='Овчаренко'
 					/>
 				</InputWrapper>
 				<InputWrapper>
 					<Input
 						type='text'
-						placeholder='Телефон'
+						placeholder={t('ambassador.forma.Telephone')}
 						defaultValue='+38 (068) 879-03-13'
 					/>
 				</InputWrapper>
 				<InputWrapper>
 					<Input
 						type='email'
-						placeholder='Email'
+						placeholder={t('ambassador.forma.email')}
 						defaultValue='info@gmail.com'
 					/>
 				</InputWrapper>
@@ -149,7 +151,7 @@ export default function ProfileForm() {
 				/>
 			</InputWrapper>
 
-			<Button>Сохранить изменение</Button>
+			<Button>{t('ambassador.profileForm.button')}</Button>
 		</FormWrapper>
 	)
 }

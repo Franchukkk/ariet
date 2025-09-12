@@ -9,13 +9,13 @@ import { Title } from '@/components/Not found/Title'
 export default function NotFound() {
 	return (
 		<Container>
-			<ContentWrapper>
+			<ImgWrapper>
 				<Img />
-				<TextBlock>
-					<Title />
-					<Button />
-				</TextBlock>
-			</ContentWrapper>
+			</ImgWrapper>
+			<TextBlock>
+				<Title />
+				<Button />
+			</TextBlock>
 		</Container>
 	)
 }
@@ -28,19 +28,31 @@ const Container = styled.div`
 	align-items: center;
 	justify-content: flex-start;
 	background: #000;
-	overflow: hidden;
-	padding-bottom: 10rem;
+
+	text-align: center;
+
+	@media (max-width: 768px) {
+		padding: 2rem 1rem;
+	}
 `
 
-const ContentWrapper = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+const ImgWrapper = styled.div`
+	max-width: 500px;
+	width: 100%;
+
+	@media (max-width: 768px) {
+		max-width: 90%;
+	}
 `
 
 const TextBlock = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	text-align: center;
+	gap: 1.25rem;
+	max-width: 600px;
+
+	@media (max-width: 768px) {
+		max-width: 90%;
+	}
 `

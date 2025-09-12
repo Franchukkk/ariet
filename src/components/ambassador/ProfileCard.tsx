@@ -112,7 +112,7 @@ const Label = styled.p`
 const PromoButton = styled.button`
 	margin-top: 8px;
 	width: 100%;
-	padding: 5px 60px;
+	padding: 5px 50px;
 	border: 1px solid #4bc785;
 	border-radius: 8px;
 	font-weight: 600;

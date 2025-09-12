@@ -30,7 +30,7 @@ const Value = styled.div`
 
 const Label = styled.div`
 	margin-bottom: 13px;
-	max-width: 10px;
+	max-width: 70px;
 	max-height: 165px;
 	font-weight: 600;
 	font-size: 15px;

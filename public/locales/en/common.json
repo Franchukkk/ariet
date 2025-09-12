@@ -608,5 +608,28 @@
 		"no_results": "No results for the request «{{ query }}»",
 		"hint": "You may have entered an incorrect query. Check your spelling. Try to use only keywords.",
 		"models": "Especially for you"
+	},
+	"ambassador": {
+		"title": "AMBASSADOR ACCOUNT",
+		"role": "AMBASSADOR",
+		"promo_code": "My promo code",
+		"forma": {
+			"name": "First name",
+			"Surname": "Last name",
+			"Telephone": "Telephone",
+			"email": "Email"
+		},
+		"label": {
+			"bonuses": "Number of orders",
+			"amount": "Sales amount",
+			"orders": "Accrued bonuses"
+		},
+		"profileForm": {
+			"title": "EDIT PROFILE",
+			"button": "Save changes"
+		},
+		"TrainingsCard": {
+			"trainings": "MY TRAININGS"
+		}
 	}
 }
