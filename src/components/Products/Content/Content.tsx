@@ -104,7 +104,7 @@ export const Content = () => {
 					onToggleShowFilters={handleToggleFilters}
 				/>
 
-				{/* 🔍 Пошук */}
+			
 				<SearchWrapper>
 					<SearchInput
 						type='text'
@@ -130,7 +130,7 @@ export const Content = () => {
 						<p>{t('search.no_results', { query })}</p>
 						<p>{t('search.hint')}</p>
 						<ModelsWrapper>
-							<Models /> {/* 👈 показуємо альтернативні моделі */}
+							<Models />
 						</ModelsWrapper>
 					</NoResults>
 				)}
@@ -172,30 +172,30 @@ const ModelsWrapper = styled.div`
 
 const StyledContent = styled.div`
 	display: grid;
-	grid-template-columns: minmax(280px, 390px) 1fr; /* 🔑 більш гнучко */
+	grid-template-columns: minmax(280px, 390px) 1fr;
 	gap: 40px;
 	grid-auto-rows: max-content;
 	margin-bottom: 173px;
 
-	/* середні екрани */
+	
 	@media (max-width: 1200px) {
 		grid-template-columns: minmax(220px, 300px) 1fr;
 		gap: 30px;
 	}
 
-	/* планшети */
+	
 	@media (max-width: 1000px) {
 		grid-template-columns: 1fr;
 		gap: 25px;
 	}
 
-	/* мобілки */
+	
 	@media (max-width: 600px) {
 		margin-bottom: 100px;
 	}
 `
 
-// пошук
+
 const SearchWrapper = styled.div`
 	position: relative;
 	width: 100%;
