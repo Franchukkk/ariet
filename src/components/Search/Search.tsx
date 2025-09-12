@@ -18,7 +18,7 @@ export const SearchPage = () => {
 			<SearchWrapper>
 				<SearchInput
 					type='text'
-					placeholder={t('search.placeholder') || 'Введите название модели'}
+					placeholder={t('search.placeholder')}
 					value={query}
 					onChange={e => setQuery(e.target.value)}
 				/>
