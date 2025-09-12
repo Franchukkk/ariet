@@ -542,5 +542,26 @@
 		"total": "Total:",
 		"price": "Price:",
 		"delivery": "Delivery:"
+	},
+	"AdminDashboard": {
+		"title": "Admin Dashboard",
+		"my_promocode": "My Promocode",
+		"add_order": "Add Order",
+		"orders_sum": "Orders Sum",
+		"sold_sum": "Sold Sum",
+		"avr_order_price": "Average Order Price",
+		"new_orders": "New/Expired Orders",
+		"statuses": {
+			"delivered": "Delivered",
+			"paid": "Paid",
+			"sent": "Sent",
+			"draft": "Draft"
+		},
+		"sort_by_date": "Sort by Date",
+		"order_id": "Order №",
+		"search": "Search",
+		"sort": "Sort",
+		"change_status": "Change Status",
+		"delete": "Delete"
 	}
 }
