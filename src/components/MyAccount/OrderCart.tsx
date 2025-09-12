@@ -128,24 +128,24 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                 </div>
             </MoreInfoBlock>
             <TotalPriceWraper className="pl-[30px] w-[400px]">
-                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                <div className="flex flex-row justify-between mb-[30px]">
                     <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.price")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[14px] leading[18px] font-bold">{formatPrice(order.price)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </TotalPriceBlock>
-                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                </div>
+                <div className="flex flex-row justify-between mb-[30px]">
                     <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.delivery")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[14px] leading[18px] font-bold">{formatPrice(order.delivery)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </TotalPriceBlock>
-                <TotalPriceBlock className="flex flex-row justify-between mb-[30px]">
+                </div>
+                <div className="flex flex-row justify-between mb-[30px]">
                     <StyledPrice className="w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{t("MyAccount.total")}</StyledPrice>
                     <p className="w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{formatPrice(order.total)} {t("MyAccount.currency")}
                         <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
                     </p>
-                </TotalPriceBlock>
+                </div>
             </TotalPriceWraper>
         </li >
     );
@@ -260,10 +260,6 @@ const StyledLiMoreInfo = styled.li`
         margin-bottom: 20px;
         margin-top  : 20px;
     }
-`;
-
-const TotalPriceBlock = styled.div`
-   
 `;
 
 const TotalPriceWraper = styled.div`

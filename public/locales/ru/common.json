@@ -569,7 +569,18 @@
 		"not_availability": "Нет в наличии",
 		"version": "Версия товара:",
 		"socket": "Розетка:",
-		"description": "Описание"
+		"description": "Описание",
+		"technical_info": {
+			"title": "Технические характеристики",
+			"type": "Тип",
+			"power": "Мощность",
+			"form": "Форма напряжения",
+			"batteries": ",батареи",
+			"efficiency": "КПД",
+			"input_voltage": "Входное напряжение",
+			"output_voltage": "Выходное напряжение",
+			"connection": "Подключение"
+		}
 	},
 	"MyAccount": {
 		"title": "Мой аккаунт",
@@ -583,7 +594,6 @@
 		"summary": "Сума",
 		"currency": "грн",
 		"tel": "Телефон",
-		
 		"declaration_number": "Номер декларации",
 		"total": "Общая сума заказа:",
 		"price": "Цена товаров:",
