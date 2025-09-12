@@ -54,8 +54,7 @@ export const List = () => {
 				loop={true}
 				pagination={{ clickable: true }}
 				breakpoints={{
-					1024: { slidesPerView: 3 },
-					800: { slidesPerView: 2 },
+					1024: { slidesPerView: 2 },
 					0: { slidesPerView: 1 }
 				}}
 			>
@@ -78,4 +77,9 @@ export const List = () => {
 const StyledList = styled.div`
 	border-top: 1px dashed #ffffff50;
 	padding: 12px 0 14px;
+	max-width: 700px;
+	margin: 0 auto;
+	@media (max-width: 600px) {
+		max-width: 300px;
+	}
 `

@@ -543,6 +543,95 @@
 		"price": "Price:",
 		"delivery": "Delivery:"
 	},
+	"NotFound": {
+		"title": "Something seems to have gone wrong!",
+		"description": "The page you are requesting does not exist.",
+		"button": "Home"
+	},
+
+	"complete_contract": {
+		"title": "Order",
+		"name_form": "1. Contact details",
+		"form": {
+			"Name": "First name",
+			"Surname": "Last name",
+			"Phone": "Phone",
+			"Email": "Mail",
+			"City": "City",
+			"Zip_code": "Zip code",
+			"Address": "Address",
+			"Transport_company_address": "Transport company address",
+			"TC_number": "TC number",
+			"Field_3": "Field 3"
+		},
+		"cart": {
+			"products_price": "Product price:",
+			"delivery": "Delivery:",
+			"total": "Total order amount:",
+			"confirm": "Order confirmation"
+		},
+		"delivery": {
+			"title": "2. DELIVERY METHOD",
+			"options": {
+				"nova_poshta": {
+					"label": "Pick up at Nova Poshta office",
+					"duration": "2 - 3 days",
+					"price": "FREE"
+				},
+				"ukrposhta": {
+					"label": "Pick up at Ukrposhta office",
+					"duration": "7 - 9 days",
+					"price": "FREE"
+				},
+				"pickup": {
+					"label": "Self pick-up",
+					"duration": "7 - 9 days",
+					"price": "FREE"
+				}
+			}
+		},
+		"payment": {
+			"title": "3. PAYMENT METHOD",
+			"comment": "Order comment",
+			"options": {
+				"visa": "Visa",
+				"googlepay": "Google Pay",
+				"mastercard": "Mastercard",
+				"applepay": "Apple Pay",
+				"payu": "PayU"
+			}
+		}
+	},
+
+	"search": {
+		"placeholder": "Search",
+		"no_results": "No results for the request «{{ query }}»",
+		"hint": "You may have entered an incorrect query. Check your spelling. Try to use only keywords.",
+		"models": "Especially for you"
+	},
+	"ambassador": {
+		"title": "AMBASSADOR ACCOUNT",
+		"role": "AMBASSADOR",
+		"promo_code": "My promo code",
+		"forma": {
+			"name": "First name",
+			"Surname": "Last name",
+			"Telephone": "Telephone",
+			"email": "Email"
+		},
+		"label": {
+			"bonuses": "Number of orders",
+			"amount": "Sales amount",
+			"orders": "Accrued bonuses"
+		},
+		"profileForm": {
+			"title": "EDIT PROFILE",
+			"button": "Save changes"
+		},
+		"TrainingsCard": {
+			"trainings": "MY TRAININGS"
+		}
+	},
 	"AdminDashboard": {
 		"title": "Admin Dashboard",
 		"my_promocode": "My Promocode",
