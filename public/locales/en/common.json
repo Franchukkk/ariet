@@ -526,7 +526,6 @@
 		"socket": "Socket of the product:",
 		"description": "Description"
 	},
-<<<<<<< HEAD
 	"MyAccount": {
 		"title": "My Account",
 		"order": "Order №",
@@ -543,8 +542,7 @@
 		"total": "Total:",
 		"price": "Price:",
 		"delivery": "Delivery:"
-=======
-
+	},
 	"NotFound": {
 		"title": "Something seems to have gone wrong!",
 		"description": "The page you are requesting does not exist.",
@@ -610,6 +608,5 @@
 		"no_results": "No results for the request «{{ query }}»",
 		"hint": "You may have entered an incorrect query. Check your spelling. Try to use only keywords.",
 		"models": "Especially for you"
->>>>>>> 4ffb9b9 (Пошук, підтвердити замовленя, правки)
 	}
 }
