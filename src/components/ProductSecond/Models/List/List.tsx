@@ -13,11 +13,11 @@ export const List = () => {
   const { t } = useTranslation("common");
 
   const MODELS = [
-    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
-    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: true },
-    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
-    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
-    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/products/2", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/products/3", isNew: true },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/products/4", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/products/5", isNew: false },
+    { title: t("models.online_ups"), category: t("models.single_phase"), link: "/products/6", isNew: false },
   ];
 
   return (

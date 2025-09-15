@@ -3,6 +3,7 @@ import styled from "styled-components"
 import { Info } from "./Info"
 import { NewTag } from "./NewTag"
 import { Photo } from "./Photo"
+import Link from "next/link"
 
 type ImgLike = string | StaticImageData;
 
@@ -10,7 +11,7 @@ interface Props {
   photo: ImgLike;
   title: string;
   category: string;
-
+  link: string;
   isNew?: boolean;
   className?: string;
 }
@@ -19,14 +20,16 @@ export const ModelCard = ({
   photo,
   title,
   category,
-  
+  link,
   isNew,
   className,
 }: Props) => (
   <StyledModelCard className={className}>
-    {isNew ? <NewTag /> : null}
-    <Photo photo={photo} />
-    <Info title={title} category={category} />
+    <Link href={link}>
+      {isNew ? <NewTag /> : null}
+      <Photo photo={photo} />
+      <Info title={title} category={category} />
+    </Link>
   </StyledModelCard>
 );
 

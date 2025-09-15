@@ -1,8 +1,8 @@
 "use client";
 
-import { Background } from "@/components/About/Hero/Background";
 import { ThanksForOrder } from "@/components/thanks-for-order/thanks-for-order";
 import styled from "styled-components";
+import { Background } from "@/components/About/Hero/Background";
 
 const orderNumber = "234234234234";
 
@@ -11,31 +11,37 @@ export default function Page() {
         <>
             <WrapperThanksForOrder className="main-wrapper text-center pt-[75px] pb-[400px]">
                 <ThanksForOrder orderNumber={orderNumber} />
+                <CanvasBlock>
+                    <Background />
+                </CanvasBlock>
             </WrapperThanksForOrder>
-            <CanvasBlock>
-                <Background />
-            </CanvasBlock>
-
         </>
     )
 }
 
 const WrapperThanksForOrder = styled.div`
+    position: relative;
+    overflow: hidden;
     @media (max-width: 1000px) {
         padding: 100px 0;
     }
 `;
 
 const CanvasBlock = styled.div`
-    transform: rotate(-24deg);
+    transform: rotate(-78deg);
     position: absolute;
-    right: -200px;
-    width: 840px;
-    height: 644px;
-    z-index: -2;
+    top: 180px;
+    right: -837px;
+    width: 160vw;
+    height: 79vh;
     overflow: hidden;
+    z-index: -1;
 
-    @media (max-width: 1000px) {
-        right: -500px;
+    & > div {
+        opacity: 0.3;
+    }
+
+     @media (max-width: 1000px) {
+        right: -150px;
     }
 `;

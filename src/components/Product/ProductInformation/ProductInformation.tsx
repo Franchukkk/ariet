@@ -1,6 +1,7 @@
 "use client";
 
 // import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -158,10 +159,9 @@ function formatPrice(num: number) {
 }
 
 export const ProductInformation = () => {
+    const router = useRouter();
     const [version, setVersion] = useState(`version-${product.variants[0].id}`);
     const [showDescription, setShowDescription] = useState(false);
-    // const params = useParams();
-    // const id = params.id;
 
     const separatedName = product.name.split(" ");
     const { t } = useTranslation("common");
@@ -219,7 +219,7 @@ export const ProductInformation = () => {
 
                     </div>
                     <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</CenterText>
-                    <BuyButton className="mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
+                    <BuyButton onClick={() => router.push("/thanks-for-order")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
                     <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
                     <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
                     <div className="pb-[30px] border-b border-dashed border-[#313131]!">

@@ -95,9 +95,9 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                 </ul>
                 <div className="mr-[67px] pl-[20px] pr-[20px] pt-[28px] pb-[20px] bg-[#1B1919] mt-[25px] max-w-[350px] self-start rounded-[8px]">
                     <div>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{t("MyAccount.tel")} <a href={`tel:${order.tel}`}>{order.tel}</a></p>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{order.address}</p>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{t("MyAccount.declaration_number")} {order.deliveyId}</p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{t("MyAccount.tel")} <a href={`tel:${order.tel}`}>{order.tel}</a></p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{order.address}</p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{t("MyAccount.declaration_number")} {order.deliveyId}</p>
                     </div>
                 </div>
             </MoreInfoBlock>

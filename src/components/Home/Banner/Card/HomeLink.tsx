@@ -7,7 +7,7 @@ import styled from "styled-components"
 export const HomeLink = () => {
   const { t } = useTranslation("common");
   return (
-    <StyledLink href="/">
+    <StyledLink href="/products">
       {t("HomeLink.to_catalog")}
     </StyledLink>
   );

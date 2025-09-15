@@ -13,15 +13,18 @@ export const ThanksForOrder = ({ orderNumber }: { orderNumber: string }) => {
             <p className="text-[#1DCF94] text-[30px] font-bold mb-[40px]">{orderNumber}</p>
             <p className="text-[22px] font-bold text-center mb-[40px]">{t("Thanks.contact_manager")}</p>
 
-            <div className="flex gap-[20px] justify-center buttons">
-                <Link href="/" className="w-[50%] max-w-[394px] text-[#000000] h-[58px] flex items-center justify-center bg-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.to_catalogue")}</Link>
-                <Link href="/" className="w-[50%] max-w-[394px] text-[#1DCF94] h-[58px] flex items-center justify-center bg-[transparent] border border-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.my_orders")}</Link>
-            </div>
+            <ButtonBlock className="flex gap-[20px] justify-center buttons">
+                <Link href="/products" className="w-[50%] max-w-[394px] text-[#000000] h-[58px] flex items-center justify-center bg-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.to_catalogue")}</Link>
+                <Link href="/my-account" className="w-[50%] max-w-[394px] text-[#1DCF94] h-[58px] flex items-center justify-center bg-[transparent] border border-[#1DCF94] rounded-[61px] px-[20px] py-[10px]" >{t("Thanks.my_orders")}</Link>
+            </ButtonBlock>
+           
         </WrapperThanksForOrder>
     )
 }
 
 const WrapperThanksForOrder = styled.div`
+    overflow: hidden;
+    position: relative;
    @media (max-width: 1000px) {
    h1 {
     font-size: 30px;
@@ -36,4 +39,12 @@ const WrapperThanksForOrder = styled.div`
         gap: 20px;
     }
 }
+`;
+
+const ButtonBlock = styled.div`
+   > a {
+    @media (max-width: 1000px) {
+        width: 100%;
+    }
+   }
 `;

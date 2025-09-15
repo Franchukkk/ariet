@@ -1,15 +1,18 @@
+import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import styled from "styled-components"
 
 export const Button = () => {
-  const {t} = useTranslation("common")
+  const { t } = useTranslation("common")
 
   return (
-  <StyledButton>{t("Button.catalog")}</StyledButton>
+    <StyledButton href="/products">
+      {t("Button.catalog")}
+    </StyledButton>
   )
 }
 
-const StyledButton = styled.button`
+const StyledButton = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: center;
