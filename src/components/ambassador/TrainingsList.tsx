@@ -10,6 +10,10 @@ const CardWrapper = styled.div`
 	display: flex;
 	flex-direction: column;
 	max-height: 350px;
+
+	@media (max-width: 768px) {
+		padding: 16px; /* компактніше на мобільних */
+	}
 `
 
 const Title = styled.h3`
@@ -18,8 +22,12 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
+
+	@media (max-width: 768px) {
+		font-size: 20px;
+		line-height: 28px;
+	}
 `
 
 const List = styled.ul`
@@ -44,25 +52,26 @@ const List = styled.ul`
 const ListItem = styled.li`
 	display: flex;
 	align-items: center;
-
 	color: #eaeaea;
 	padding-bottom: 40px;
-
 	font-weight: 400;
-	font-style: Regular;
 	font-size: 17px;
-
-	line-height: 100%;
-	letter-spacing: 1%;
 
 	&::before {
 		content: '›';
-		color: #3b3b3b;
-		margin-right: 8px;
+		color: #7f7f7f;
+		margin-right: 12px;
+		font-size: 20px;
+		font-weight: bold;
 	}
 
 	&:hover {
 		color: #4bc785;
+	}
+
+	@media (max-width: 768px) {
+		font-size: 15px;
+		padding-bottom: 24px;
 	}
 `
 

@@ -92,7 +92,7 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 }
 
 const Container = styled.div`
-	background: #1f1f1f;
+	background: #1b1919;
 	color: white;
 	padding: 20px;
 	border-radius: 10px;
@@ -110,6 +110,7 @@ const Container = styled.div`
 const Product = styled.div`
 	display: flex;
 	gap: 15px;
+	margin-bottom: 23px;
 `
 
 const ImageWrapper = styled.div`
@@ -126,14 +127,15 @@ const Details = styled.div`
 `
 
 const Category = styled.span`
+	font-weight: 400;
+	font-style: Regular;
 	font-size: 13px;
-	color: #b5b5b5;
 `
 
 const Name = styled.h4`
 	font-size: 17px;
 	color: #ffffff;
-
+	font-weight: 600;
 	margin: 0;
 `
 
@@ -142,15 +144,17 @@ const Info = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	width: 200px;
+
 	span {
-		font-size: 14px;
-		color: #aaa;
+		font-weight: 600;
+		font-style: DemiBold;
+		font-size: 17px;
 	}
 `
 
 const Price = styled.span`
 	font-weight: 600;
-	font-size: 14px;
+	font-size: 15px;
 `
 
 const Divider = styled.hr`

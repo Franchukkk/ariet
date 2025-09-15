@@ -6,6 +6,7 @@ import styled from 'styled-components'
 const TitleWrapper = styled.div`
 	position: relative;
 	margin-bottom: 34px;
+	margin-top: 70px;
 	display: inline-block;
 `
 
@@ -17,8 +18,9 @@ const TitleText = styled.h1`
 	letter-spacing: 0%;
 	text-transform: uppercase;
 
-	@media (min-width: 768px) {
-		font-size: 36px;
+	@media (max-width: 768px) {
+		font-size: 28px;
+		line-height: 36px;
 	}
 `
 

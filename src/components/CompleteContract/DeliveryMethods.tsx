@@ -12,8 +12,8 @@ type DeliveryOption = {
 
 const deliveryOptions: DeliveryOption[] = [
 	{ id: 1, logo: '/nova-poshta.svg', key: 'nova_poshta' },
-	{ id: 2, logo: '/Ukrposhta.svg', key: 'ukrposhta' },
-	{ id: 3, logo: '/Pickup.svg', key: 'pickup' }
+	{ id: 2, logo: '/ukrposhta.svg', key: 'ukrposhta' },
+	{ id: 3, logo: '/pickup.svg', key: 'pickup' }
 ]
 
 export const DeliveryMethods = () => {

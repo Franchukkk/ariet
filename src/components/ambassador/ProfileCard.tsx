@@ -13,6 +13,10 @@ const CardWrapper = styled.div`
 	border-radius: 16px;
 	padding: 70px 40px;
 	text-align: center;
+
+	@media (max-width: 768px) {
+		padding: 40px 20px; /* менші відступи на мобільних */
+	}
 `
 
 const Corner = styled.div<{ pos: 'tl' | 'tr' | 'bl' | 'br' }>`
@@ -24,9 +28,9 @@ const Corner = styled.div<{ pos: 'tl' | 'tr' | 'bl' | 'br' }>`
 		pos === 'tl' && `top: -10px; left: -10px; transform: rotate(0deg);`}
 	${({ pos }) =>
 		pos === 'tr' && `top: -10px; right: -10px; transform: rotate(90deg);`}
-  ${({ pos }) =>
+	${({ pos }) =>
 		pos === 'br' && `bottom: -10px; right: -10px; transform: rotate(180deg);`}
-  ${({ pos }) =>
+	${({ pos }) =>
 		pos === 'bl' && `bottom: -10px; left: -10px; transform: rotate(270deg);`}
 `
 
@@ -39,11 +43,15 @@ const AvatarWrapper = styled.div`
 	width: 240px;
 	height: 240px;
 	border-radius: 50%;
-
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
+
+	@media (max-width: 768px) {
+		width: 150px;
+		height: 150px; /* зменшена аватарка */
+	}
 `
 
 const AvatarImage = styled(Image)`
@@ -83,6 +91,11 @@ const Name = styled.h2`
 	line-height: 58px;
 	letter-spacing: 0%;
 	text-align: center;
+
+	@media (max-width: 768px) {
+		font-size: 22px;
+		line-height: 32px;
+	}
 `
 
 const Role = styled.p`
@@ -93,20 +106,25 @@ const Role = styled.p`
 	letter-spacing: 0%;
 	text-align: center;
 	text-transform: uppercase;
+
+	@media (max-width: 768px) {
+		font-size: 16px;
+		line-height: 28px;
+	}
 `
 
 const Label = styled.p`
-	font-size: 13px;
-	color: #a3a3a3;
-
-	font-weight: 300;
-	font-style: Light;
 	font-size: 18px;
-
+	color: #a3a3a3;
+	font-weight: 300;
 	line-height: 58px;
 	letter-spacing: 0%;
 	text-align: center;
-	vertical-align: middle;
+
+	@media (max-width: 768px) {
+		font-size: 14px;
+		line-height: 24px;
+	}
 `
 
 const PromoButton = styled.button`
@@ -126,6 +144,12 @@ const PromoButton = styled.button`
 	&:hover {
 		background: #4bc785;
 		color: #000;
+	}
+
+	@media (max-width: 768px) {
+		font-size: 16px;
+		line-height: 36px;
+		padding: 5px 20px;
 	}
 `
 

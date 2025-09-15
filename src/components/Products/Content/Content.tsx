@@ -38,13 +38,13 @@ export const Content = () => {
 				link: '/'
 			},
 			{
-				title: t('products.offline_ups'),
-				category: t('products.three_phase'),
+				title: t('products.online_ups'),
+				category: t('products.single_phase'),
 				photo: productImg,
 				link: '/'
 			},
 			{
-				title: t('products.line_interactive'),
+				title: t('products.online_ups'),
 				category: t('products.single_phase'),
 				photo: productImg,
 				link: '/'

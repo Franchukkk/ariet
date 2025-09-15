@@ -60,7 +60,7 @@ const Wrapper = styled.div`
 const TitleD = styled.div`
 	width: 100%;
 	max-width: 1500px;
-	margin: 0 auto;
+	margin: 100px auto 0 auto;
 	padding: 0 20px;
 `
 const DeliveryWrapper = styled.div`

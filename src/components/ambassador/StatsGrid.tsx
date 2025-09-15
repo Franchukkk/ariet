@@ -26,6 +26,10 @@ const Value = styled.div`
 	font-size: 40px;
 	line-height: 100%;
 	letter-spacing: 1%;
+
+	@media (max-width: 768px) {
+		font-size: 26px; /* менше на мобільних */
+	}
 `
 
 const Label = styled.div`
@@ -36,15 +40,22 @@ const Label = styled.div`
 	font-size: 15px;
 	line-height: 100%;
 	letter-spacing: 1%;
+
+	@media (max-width: 768px) {
+		font-size: 13px;
+	}
 `
 
 const Percent = styled.div`
 	color: #d6d6d6;
 	font-weight: 300;
-	font-style: Light;
 	font-size: 15px;
 	line-height: 100%;
 	letter-spacing: 1%;
+
+	@media (max-width: 768px) {
+		font-size: 13px;
+	}
 `
 
 const Chart = styled.div`
