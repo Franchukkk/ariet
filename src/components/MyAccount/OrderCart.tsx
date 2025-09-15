@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import ArrowIcon from "@/assets/img/arrow-up.svg";
 import { useState } from "react";
+import { formatDate } from "@/helpers/formatDate";
 
 interface OrderProps {
     id: number;
@@ -32,33 +33,6 @@ interface Product {
 export const OrderCart = ({ order }: { order: OrderProps }) => {
     const { t, i18n } = useTranslation("common");
     const [isOpen, setIsOpen] = useState(false);
-
-    function formatDate(input: string, locale: string = 'ru') {
-        const [datePart, hourStr, minuteStr] = input.split(/[:]/);
-        const [year, month, day] = datePart.split('-').map(Number);
-        const hour = Number(hourStr);
-        const minute = Number(minuteStr);
-
-        const date = new Date(year, month - 1, day, hour, minute);
-
-        // Розбираємо на частини, щоб прибрати "г."
-        const parts = new Intl.DateTimeFormat(locale, {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-        }).formatToParts(date);
-
-        // Збираємо вручну
-        const formattedDate = parts
-            .filter(p => p.type !== 'literal' || p.value.trim() !== 'г.')
-            .map(p => p.value)
-            .join('');
-
-        // Форматуємо час HH:MM
-        const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-
-        return `${formattedDate} / ${formattedTime}`;
-    }
 
     return (
         <li key={order.id} className={`relative border border-dashed transition-all duration-300 ${isOpen ? "border-[#4BC785] max-h-[2000px]" : "border-[#FFFFFF80] max-h-[95px]"}  overflow-hidden`}>

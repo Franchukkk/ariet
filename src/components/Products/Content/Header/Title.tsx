@@ -7,7 +7,7 @@ export const Title = () => {
 };
 
 const StyledTitle = styled.h1`
-  font-weight: 400;
+  font-weight: 600;
   font-size: 43.3px;
   line-height: 48.91px;
   letter-spacing: 0%;

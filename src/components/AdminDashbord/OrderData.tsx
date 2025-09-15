@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import ArrowDown from "@/assets/img/arrow-up.svg";
 import Glass from "@/assets/img/glass.svg";
 import edit from "@/assets/img/edit.png";
 import { fakeData } from "./fakeData";
+import { OrderCard } from "./OrderCard";
+import { ModalCart } from "./ModalCart";
 
-const fakeDataList = fakeData;
+let fakeDataList = fakeData;
 
 type StatusCounts = {
     delivered: number;
@@ -17,47 +19,60 @@ type StatusCounts = {
     sent: number;
 };
 
-const countStatuses = (data: object): StatusCounts => {
+const countStatuses = (data: any[]): StatusCounts => {
     const counted: StatusCounts = {
         delivered: 0,
         paid: 0,
         draft: 0,
         sent: 0,
     }
-    fakeDataList.forEach(item => {
-        if (item.status === "Доставлено") {
+    data.forEach(item => {
+        if (item.status === "Доставлено" || item.status === "Delivered") {
             counted.delivered++;
-        } else if (item.status === "Оплачено") {
+        } else if (item.status === "Оплачено" || item.status === "Paid") {
             counted.paid++;
-        } else if (item.status === "Отправлен") {
+        } else if (item.status === "Отправлен" || item.status === "Sent") {
             counted.sent++;
-        } else if (item.status === "Черновик") {
+        } else if (item.status === "Черновик" || item.status === "Draft") {
             counted.draft++;
         }
     })
     return counted;
 }
 
-const sortOfStatuses = (data: object) => {
+const sortOfStatuses = (data: any[]) => {
     const orders: Record<string, any[]> = {
         delivered: [],
         paid: [],
         draft: [],
         sent: [],
     }
-    fakeDataList.forEach(item => {
-        if (orders[item.status]) {
-            orders[item.status].push(item);
+    data.forEach((item: any, index: number) => {
+        if (item.status === "Доставлено" || item.status === "Delivered") {
+            orders["delivered"].push(item);
+        } else if (item.status === "Оплачено" || item.status === "Paid") {
+            orders["paid"].push(item);
+        } else if (item.status === "Черновик" || item.status === "Draft") {
+            orders["draft"].push(item);
+        } else if (item.status === "Отправлен" || item.status === "Sent") {
+            orders["sent"].push(item);
         }
     })
     return orders;
 }
 
 export const OrderData = () => {
+    const [orders, setOrders] = useState(fakeData)
     const [selectValue, setSelectValue] = useState<string>("Дефолт");
-    const [countStatusesValue, setCountStatusesValue] = useState<StatusCounts>(countStatuses(fakeDataList));
-    const [sortOfStatusesValue, setSortOfStatusesValue] = useState<Record<string, any[]>>(sortOfStatuses(fakeDataList));
+    const [countStatusesValue, setCountStatusesValue] = useState<StatusCounts>(countStatuses(orders));
+    const [sortOfStatusesValue, setSortOfStatusesValue] = useState<Record<string, any[]>>(sortOfStatuses(orders));
+    const [selectOrder, setSelectOrder] = useState<boolean | number>(false);
+    const [searchValue, setSearchValue] = useState<string>("");
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
+    useEffect(() => {
+        setOrders(fakeData)
+    })
 
     const { t } = useTranslation("common");
 
@@ -67,6 +82,45 @@ export const OrderData = () => {
         selectRef.current?.click();
     }
 
+    const handleDeleteOrder = () => {
+        const updatedOrders = orders.filter((item) => item.id !== selectOrder);
+        setOrders(updatedOrders);
+        setCountStatusesValue(countStatuses(updatedOrders));
+        setSortOfStatusesValue(sortOfStatuses(updatedOrders));
+        setSelectOrder(false);
+    }
+
+    const handleChangeStatus = () => {
+        const updatedOrders = orders.map((item) => item.id === selectOrder ? { ...item, status: "Доставлено" } : item);
+        setOrders(updatedOrders);
+        setCountStatusesValue(countStatuses(updatedOrders));
+        setSortOfStatusesValue(sortOfStatuses(updatedOrders));
+    }
+
+    const handerSortByDate = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectValue(e.target.value);
+        const search = searchValue.length > 0 ? orders.filter((item) => item.id.toString().includes(searchValue)) : orders;
+
+        const sort = e.target.value === "Сортировать по дате" ? search.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) : search;
+
+        setCountStatusesValue(countStatuses(sort));
+        setSortOfStatusesValue(sortOfStatuses(sort));
+    }
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchValue(e.target.value);
+        setSortOfStatusesValue(sortOfStatuses(orders.filter((item) => item.id.toString().includes(e.target.value))));
+        setCountStatusesValue(countStatuses(orders.filter((item) => item.id.toString().includes(e.target.value))));
+
+    }
+
+    const handlerCardClick = (id: number, e: React.MouseEvent): void => {
+        if (e.target instanceof SVGElement) {
+            setIsOpen(!isOpen);
+        }
+        setSelectOrder(selectOrder === id ? false : id)
+    }
+    // console.log("isOpen", isOpen);
     return (
         <Wrapper className="flex flex-col justify-between">
             <Filters className="flex flex-row justify-between w-full gap-[10px] items-center mb-[30px]">
@@ -75,7 +129,7 @@ export const OrderData = () => {
                         <p>{t("AdminDashboard.sort")}</p>
                         <ArrowDown className="rotate-180" />
                     </button>
-                    <select ref={selectRef} className="cursor-pointer h-[30px] opacity-0 mt-[-50px] w-[130px]" value={selectValue} onChange={(e) => setSelectValue(e.target.value)}>
+                    <select ref={selectRef} className="cursor-pointer h-[30px] opacity-0 mt-[-50px] w-[130px]" value={selectValue} onChange={handerSortByDate}>
                         <option value="">{t("AdminDashboard.sort")}</option>
                         <option value="Сортировать по дате">{t("AdminDashboard.sort_by_date")}</option>
                         <option value="Другое">{t("AdminDashboard.sort_by_enoth")}</option>
@@ -85,37 +139,70 @@ export const OrderData = () => {
 
                     <label className="relative max-w-[540px] w-full flex-1">
                         <Glass className="absolute right-[20px] top-[50%] transform -translate-y-1/2" />
-                        <input className="border border-[#333333] rounded-[61px] pr-[22px] pl-[40px] max-w-[540px] w-full h-[50px] bg-[transparent] outline-none" type="text" placeholder={t("AdminDashboard.search")} />
+                        <input className="border border-[#333333] rounded-[61px] pr-[22px] pl-[40px] max-w-[540px] w-full h-[50px] bg-[transparent] outline-none" type="text" placeholder={t("AdminDashboard.search")} value={searchValue} onChange={handleSearch} />
                     </label>
                 </Find>
-                <ResultFilter className="text-right w-[160px] text-center text-[#4BC785] font-[500] text-[15px]">{selectValue}</ResultFilter>
+                <ResultFilter className="text-right text-center text-[#4BC785] font-[500] text-[15px]">{selectValue}</ResultFilter>
             </Filters>
-            <Lists className="grid grid-cols-4 gap-[20px]">
-                <StatusWrapper className="flex flex-row justify-between items-center" $status="delivered">
-                    <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
-                    <p>{t("AdminDashboard.statuses.delivered")}</p>
-                    <CountStatus>{countStatusesValue.delivered}</CountStatus>
-                </StatusWrapper>
-                <StatusWrapper className="flex flex-row justify-between items-center" $status="paid">
-                    <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
-                    <p>{t("AdminDashboard.statuses.paid")}</p>
-                    <CountStatus>{countStatusesValue.paid}</CountStatus>
-                </StatusWrapper>
-                <StatusWrapper className="flex flex-row justify-between items-center" $status="draft">
-                    <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
-                    <p>{t("AdminDashboard.statuses.draft")}</p>
-                    <CountStatus>{countStatusesValue.draft}</CountStatus>
-                </StatusWrapper>
-                <StatusWrapper className="flex flex-row justify-between items-center" $status="sent">
-                    <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
-                    <p>{t("AdminDashboard.statuses.sent")}</p>
-                    <CountStatus>{countStatusesValue.sent}</CountStatus>
-                </StatusWrapper>
-            </Lists>
+            <div className="overflow-x-auto pt-[7px]">
+                <Lists className="w-[1000px] inline-grid grid-cols-4 gap-[20px] mb-[30px]">
+                    <div className="flex flex-col gap-[20px] w-[235px]">
+                        <StatusWrapper className="flex flex-row justify-between items-center" $status="delivered">
+                            <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
+                            <p>{t("AdminDashboard.statuses.delivered")}</p>
+                            <CountStatus>{countStatusesValue.delivered}</CountStatus>
+                        </StatusWrapper>
+                        <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
+                            {sortOfStatusesValue.delivered.map((item) => {
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                            })}
+                        </ul>
+                    </div>
+                    <div className="flex flex-col gap-[20px] w-[235px]">
+                        <StatusWrapper className="flex flex-row justify-between items-center" $status="paid">
+                            <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
+                            <p>{t("AdminDashboard.statuses.paid")}</p>
+                            <CountStatus>{countStatusesValue.paid}</CountStatus>
+                        </StatusWrapper>
+                        <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
+                            {sortOfStatusesValue.paid.map((item) => {
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                            })}
+                        </ul>
+                    </div>
+                    <div className="flex flex-col gap-[20px] w-[235px]">
+                        <StatusWrapper className="flex flex-row justify-between items-center" $status="draft">
+                            <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
+                            <p>{t("AdminDashboard.statuses.draft")}</p>
+                            <CountStatus>{countStatusesValue.draft}</CountStatus>
+                        </StatusWrapper>
+                        <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
+                            {sortOfStatusesValue.draft.map((item) => {
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                            })}
+                        </ul>
+                    </div>
+                    <div className="flex flex-col gap-[20px] w-[235px]">
+                        <StatusWrapper className="flex flex-row justify-between items-center" $status="sent">
+                            <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />
+                            <p>{t("AdminDashboard.statuses.sent")}</p>
+                            <CountStatus>{countStatusesValue.sent}</CountStatus>
+                        </StatusWrapper>
+                        <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
+                            {sortOfStatusesValue.sent.map((item) => {
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                            })}
+                        </ul>
+                    </div>
 
-            <BottomSet>
-
+                </Lists >
+            </div>
+            <BottomSet className="flex flex-row justify-end gap-[10px]">
+                <button onClick={handleChangeStatus} className="rounded-full w-[206px] h-[50px] bg-[#transparent] text-[#ffffff] font-[500] text-[15px] rounded-[10px] border border-[#1DCF94] cursor-pointer text-center text-[15px] leading-[15px] fonnt-[600]">{t("AdminDashboard.change_status")}</button>
+                <button onClick={handleDeleteOrder} className="rounded-full w-[206px] h-[50px] bg-[#transparent] text-[#ffffff] font-[500] text-[15px] rounded-[10px] border border-[#1DCF94] cursor-pointer text-center text-[15px] leading-[15px] fonnt-[600]">{t("AdminDashboard.delete")}</button>
             </BottomSet>
+
+            {isOpen && <ModalCart setIsOpen={setIsOpen} item={orders[selectOrder as number]} />}
         </Wrapper >
     )
 }
@@ -126,6 +213,9 @@ const Wrapper = styled.div`
 
 const Filters = styled.div`
 
+    @media (max-width: 800px) {
+        flex-direction: column;
+    }
 `;
 
 const Lists = styled.div`

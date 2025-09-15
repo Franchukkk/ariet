@@ -55,6 +55,11 @@ const UserWrapper = styled.div<{ $bg: ImgLike }>`
     @media (max-width: 600px) {
         max-width: 280px;
     }
+
+    @media (max-width: 800px) {
+        margin: auto;
+        margin-bottom: 20px;
+    }
 `
 
 const NamePerson = styled.p`

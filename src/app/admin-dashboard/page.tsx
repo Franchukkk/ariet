@@ -13,9 +13,9 @@ export default function Page() {
     return (
         <MainWrapper className="main-wrapper !mb-[130px]">
             <TitleAdminDashboard />
-            <Wrapper className="flex flex-row justify-between">
+            <Wrapper className="flex flex-row justify-between items-start">
                 <UserAdminInfo />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                     <OrderInfo orderInfo={ordersInfo} />
                     <OrderData />
                 </div>
@@ -37,5 +37,9 @@ const Wrapper = styled.div`
         align-items: center;
         flex-direction: column;
         gap: 30px;
+    }
+
+    @media (max-width: 800px) {
+        flex-direction: column;
     }
 `

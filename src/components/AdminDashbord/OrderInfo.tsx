@@ -27,7 +27,7 @@ export const OrderInfo = ({ orderInfo }: OrderInfoProps) => {
             </Button>
             <div className="grid grid-cols-4 gap-[14px]">
                 <WrapperInfo>
-                    <ResultInfo>{formatPrice(orderInfo.totalOrders)} {t("AdminDashboard.currency")}</ResultInfo>
+                    <ResultInfo>{formatPrice(orderInfo.totalOrders)}</ResultInfo>
                     <p>{t("AdminDashboard.orders_count")} {orderInfo.date}</p>
 
                 </WrapperInfo>

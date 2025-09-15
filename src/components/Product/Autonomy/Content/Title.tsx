@@ -5,13 +5,14 @@ export const Title = () => {
   const { t } = useTranslation("common");
 
   return (
-    <StyledTitle
-      dangerouslySetInnerHTML={{ __html: t("battery.hr_title") }}
-    />
+    <>
+      <StyledTitle className="!mb-[30px]"> {t("battery.hr_title")} <span className="text-[#4BC785]">{t("battery.hr_title_2")}</span></StyledTitle>
+      <StyledTitle>{t("battery.hr_title_3")}</StyledTitle>
+    </>
   );
 };
 
-const StyledTitle = styled.div`
+const StyledTitle = styled.p`
   font-weight: 400;
   font-size: 23px;
   line-height: 33px;
