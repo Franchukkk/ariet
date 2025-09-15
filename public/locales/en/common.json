@@ -651,6 +651,9 @@
 		"search": "Search",
 		"sort": "Sort",
 		"change_status": "Change Status",
-		"delete": "Delete"
+		"delete": "Delete",
+		"currency": "USD",
+		"email": "E-mail",
+		"tel": "Phone"
 	}
 }

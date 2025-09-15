@@ -711,6 +711,8 @@
 		"sort": "Сортировать",
 		"change_status": "Сменить статус",
 		"delete": "Удалить",
-		"currency": "грн"
+		"currency": "грн",
+		"email": "E-mail",
+		"tel": "Телефон"
 	}
 }

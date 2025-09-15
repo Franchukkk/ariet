@@ -15,8 +15,6 @@ export const OrderCard = ({ item, onClick, select }: OrderCardProps) => {
 
     const { t, i18n } = useTranslation("common");
 
-
-
     return (
         <WrapperCard $status={item.status} $selectProp={select === item.id} className="transition-all duration-300 cursor-pointer w-full border border-dashed border-[#FFFFFF80] pl-[21px] pt-[13px] px-[11px] relative" onClick={onClick}>
             <p className="text-[13px] text-[#7F7F7F] font-[400] mb-[10px] leading-[13px]" >{t("AdminDashboard.order_id")} {item.id}</p>

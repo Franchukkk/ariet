@@ -66,7 +66,7 @@ export const OrderData = () => {
     const [selectValue, setSelectValue] = useState<string>("Дефолт");
     const [countStatusesValue, setCountStatusesValue] = useState<StatusCounts>(countStatuses(orders));
     const [sortOfStatusesValue, setSortOfStatusesValue] = useState<Record<string, any[]>>(sortOfStatuses(orders));
-    const [selectOrder, setSelectOrder] = useState<boolean | number>(false);
+    const [selectOrder, setSelectOrder] = useState<boolean | any>(false);
     const [searchValue, setSearchValue] = useState<string>("");
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -114,13 +114,17 @@ export const OrderData = () => {
 
     }
 
-    const handlerCardClick = (id: number, e: React.MouseEvent): void => {
+    const handlerCardClick = (item: any, e: React.MouseEvent): void => {
         if (e.target instanceof SVGElement) {
             setIsOpen(!isOpen);
         }
-        setSelectOrder(selectOrder === id ? false : id)
+
+
+        setSelectOrder(selectOrder === item.id ? false : item)
+        console.log("id", item.id);
+        console.log("selectOrder", selectOrder);
     }
-    // console.log("isOpen", isOpen);
+
     return (
         <Wrapper className="flex flex-col justify-between">
             <Filters className="flex flex-row justify-between w-full gap-[10px] items-center mb-[30px]">
@@ -154,7 +158,7 @@ export const OrderData = () => {
                         </StatusWrapper>
                         <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
                             {sortOfStatusesValue.delivered.map((item) => {
-                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item, e)} select={selectOrder.id} />
                             })}
                         </ul>
                     </div>
@@ -166,7 +170,7 @@ export const OrderData = () => {
                         </StatusWrapper>
                         <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
                             {sortOfStatusesValue.paid.map((item) => {
-                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item, e)} select={selectOrder.id} />
                             })}
                         </ul>
                     </div>
@@ -178,7 +182,7 @@ export const OrderData = () => {
                         </StatusWrapper>
                         <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
                             {sortOfStatusesValue.draft.map((item) => {
-                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item, e)} select={selectOrder.id} />
                             })}
                         </ul>
                     </div>
@@ -190,7 +194,7 @@ export const OrderData = () => {
                         </StatusWrapper>
                         <ul className="flex flex-col gap-[10px] overflow-y-auto max-h-[480px]">
                             {sortOfStatusesValue.sent.map((item) => {
-                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item.id, e)} select={selectOrder} />
+                                return <OrderCard key={item.id} item={item} onClick={(e) => handlerCardClick(item, e)} select={selectOrder.id} />
                             })}
                         </ul>
                     </div>
@@ -202,7 +206,7 @@ export const OrderData = () => {
                 <button onClick={handleDeleteOrder} className="rounded-full w-[206px] h-[50px] bg-[#transparent] text-[#ffffff] font-[500] text-[15px] rounded-[10px] border border-[#1DCF94] cursor-pointer text-center text-[15px] leading-[15px] fonnt-[600]">{t("AdminDashboard.delete")}</button>
             </BottomSet>
 
-            {isOpen && <ModalCart setIsOpen={setIsOpen} item={orders[selectOrder as number]} />}
+            {isOpen && <ModalCart setIsOpen={setIsOpen} item={selectOrder as any} />}
         </Wrapper >
     )
 }
