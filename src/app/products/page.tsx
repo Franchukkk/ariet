@@ -5,9 +5,9 @@ import { Content } from "../../components/Products/Content/Content"
 
 export default function Page() {
   return (
-  <StyledProducts>
-    <Content />
-    <Categories />
+    <StyledProducts>
+      <Content />
+      <Categories />
     </StyledProducts>
   )
 };

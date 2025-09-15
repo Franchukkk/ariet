@@ -6,37 +6,38 @@ import styled from 'styled-components'
 import { ModelCard } from '@/components/ModelCard/ModelCard'
 
 import productImg from '@/assets/img/module.png'
+import Link from "next/link";
 
 const PRODUCTS = [
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/2'
 	},
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/3'
 	},
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/4'
 	},
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/5'
 	},
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/6'
 	},
 	{
 		titleKey: 'products.online_ups',
 		categoryKey: 'products.single_phase',
-		link: '/'
+		link: '/products/7'
 	}
 ]
 

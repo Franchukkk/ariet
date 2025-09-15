@@ -30,7 +30,9 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
             index={index}
             className={`flex flex-row justify-between py-[20px] px-[35px] border border-dashed p-4 border-[#ffffff42] items-center ${index === 0 ? 'border-t-1' : 'border-t-0'}`}
         >
-            <WrapperImg className="mr-[37px]" width={124} height={80} alt={product.name} src={product.photo.src} />
+            <div className="flex items-center justify-center px-[17px] py-[37px] rounded-[8px] bg-[#0D0C0C] ">
+                <WrapperImg width={124} height={80} alt={product.name} src={product.photo.src} />
+            </div>
             <WrapperDescription className="pr-[20px] relative">
                 <p className="text-[14px] pl-[10px] font-medium text-[#7F7F7F] absolute top-[-20px] left-0">{product.description}</p>
                 <p className="text-[22px] pl-[10px] font-bold w-[250px]">{product.name}</p>
@@ -80,7 +82,7 @@ const WrapperLi = styled.li<{ index: number }>`
   grid-template-columns: 124px 1fr 100px 90px 100px 40px; /* ширини елементів */
   align-items: center;
   gap: 20px; /* відступи між колонками */
-  padding: 20px 35px;
+  padding: 30px 35px;
   border: 1px dashed #ffffff42;
   border-top-width: ${({ index }) => (index === 0 ? "1px" : "0")};
 
@@ -111,6 +113,7 @@ const WrapperLi = styled.li<{ index: number }>`
 
 const WrapperDescription = styled.div`
     @media (max-width: 1000px) {
+        padding: 0px;
         >p:first-child {
            position: relative;
            top: 0;

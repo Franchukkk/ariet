@@ -66,5 +66,4 @@ const Styled = styled.h3`
 	line-height: 58px;
 	letter-spacing: 0%;
 	text-transform: uppercase;
-	margin-bottom: 30px;
 `

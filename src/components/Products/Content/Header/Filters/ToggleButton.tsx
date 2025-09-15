@@ -19,6 +19,7 @@ export const ToggleButton = ({ active, onClick }: Props) => {
 const StyledToggleButton = styled.button`
   font-weight: 300;
   font-size: 14px;
+  font-weight: 400;
   line-height: 24px;
   letter-spacing: 0%;
   text-decoration: underline;

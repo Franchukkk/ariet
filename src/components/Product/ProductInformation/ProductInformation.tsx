@@ -1,6 +1,7 @@
 "use client";
 
 // import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -158,10 +159,9 @@ function formatPrice(num: number) {
 }
 
 export const ProductInformation = () => {
+    const router = useRouter();
     const [version, setVersion] = useState(`version-${product.variants[0].id}`);
     const [showDescription, setShowDescription] = useState(false);
-    // const params = useParams();
-    // const id = params.id;
 
     const separatedName = product.name.split(" ");
     const { t } = useTranslation("common");
@@ -170,6 +170,7 @@ export const ProductInformation = () => {
             <Wrapper style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
                 <WrapperContent className="overflow-hidden flex flex-col gap-[20px] w-[60%] relative">
                     <Title className="text-[70px] font-bold">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
+                    <p className="max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]"><span className="text-[#4BC785]">{t("ProductItem.text1")}</span> {t("ProductItem.text2")}</p>
                     <StyledList $cardBorder={cardBorder} className="overflow-hidden">
                         <Swiper
                             spaceBetween={25}
@@ -218,7 +219,7 @@ export const ProductInformation = () => {
 
                     </div>
                     <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</CenterText>
-                    <BuyButton className="mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
+                    <BuyButton onClick={() => router.push("/thanks-for-order")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
                     <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
                     <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
                     <div className="pb-[30px] border-b border-dashed border-[#313131]!">
@@ -246,7 +247,6 @@ export const ProductInformation = () => {
                     <div className="pb-[30px] pt-[20px] border-b border-dashed border-[#313131]!">
                         <CenterText className="text-[23px] uppercase font-bold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
                         <WrapperVersion
-
                             className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
                         >
                             <input
@@ -284,7 +284,7 @@ export const ProductInformation = () => {
                 <h2 className="text-[30px] !text-left font-bold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
                 <TechInfo className="h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]">
                     {product.technical_info.map((item, index) => (
-                        <div key={index} className="flex flex-row justify-between mb-[30px] w-full max-w-[100%]">
+                        <div key={index} className="flex flex-row justify-between mb-[44px] w-full max-w-[100%]">
                             <StyledPrice className="w-[100%] block mr-[20px] text-[14px] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{item.title}</StyledPrice>
                             <p className="w-[100%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{item.value}
                                 <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
@@ -400,6 +400,7 @@ const SecondInfo = styled.div`
 `;
 
 const WrapperVersion = styled.label`
+    font-weight: 600;
     @media (max-width: 1000px) {
        justify-content: center;
     }

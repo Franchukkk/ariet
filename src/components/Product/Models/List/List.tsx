@@ -42,7 +42,7 @@ export const List = () => {
               photo={photo}
               title={module.title}
               category={module.category}
-              link="/"
+              link="/products/1"
               isNew={module.isNew}
             />
           </SwiperSlide>

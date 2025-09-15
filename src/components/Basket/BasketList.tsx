@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -118,10 +119,13 @@ export const BasketList = () => {
 						<span className='absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent'></span>
 					</p>
 				</div>
-				<div className='flex flex-row justify-between'>
-					<button className='bg-[#4BC785] w-[100%] mb-[30px] rounded-[61px] h-[58px] font-bold text-[15px] text-center text-[#000000] cursor-pointer'>
+				<div className='cursor-pointer flex flex-row justify-between mb-[30px] rounded-[61px] bg-[#4BC785] h-[58px] items-center'>
+					<Link
+						href='/complete-contract'
+						className=' w-[100%] font-bold text-[15px] text-center text-[#000000] cursor-pointer'
+					>
 						{t('Basket.make_order')}
-					</button>
+					</Link>
 				</div>
 				<div className='flex flex-row justify-between'>
 					<div className='flex flex-col relative w-[60%]'>

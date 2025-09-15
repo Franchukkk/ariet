@@ -17,28 +17,28 @@ export const List = () => {
 		{
 			title: t('models.online_ups'),
 			category: t('models.single_phase'),
-			link: '/'
+			link: '/products/1'
 		},
 		{
 			title: t('models.online_ups'),
 			category: t('models.single_phase'),
-			link: '/',
+			link: '/products/2',
 			isNew: true
 		},
 		{
 			title: t('models.online_ups'),
 			category: t('models.single_phase'),
-			link: '/'
+			link: '/products/3',
 		},
 		{
 			title: t('models.online_ups'),
 			category: t('models.single_phase'),
-			link: '/'
+			link: '/products/4',
 		},
 		{
 			title: t('models.online_ups'),
 			category: t('models.single_phase'),
-			link: '/'
+			link: '/products/5',
 		}
 	]
 

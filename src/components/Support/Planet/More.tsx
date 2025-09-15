@@ -5,7 +5,7 @@ import styled from "styled-components"
 export const More = () => {
   const { t } = useTranslation("common");
 
-  return <StyledMore href="/">{t("buttons.more")}</StyledMore>;
+  return <StyledMore href="/more">{t("buttons.more")}</StyledMore>;
 };
 
 const StyledMore = styled(Link)`

@@ -12,7 +12,7 @@ export const CleanButton = ({ onClick }: Props) => {
 };
 
 const StyledCleanButton = styled.button`
-  font-weight: 300;
+  font-weight: 400;
   font-size: 14px;
   line-height: 24px;
   letter-spacing: 0%;

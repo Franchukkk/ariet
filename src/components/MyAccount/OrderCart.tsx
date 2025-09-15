@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import ArrowIcon from "@/assets/img/arrow-up.svg";
 import { useState } from "react";
+import { formatDate } from "@/helpers/formatDate";
 
 interface OrderProps {
     id: number;
@@ -32,33 +33,6 @@ interface Product {
 export const OrderCart = ({ order }: { order: OrderProps }) => {
     const { t, i18n } = useTranslation("common");
     const [isOpen, setIsOpen] = useState(false);
-
-    function formatDate(input: string, locale: string = 'ru') {
-        const [datePart, hourStr, minuteStr] = input.split(/[:]/);
-        const [year, month, day] = datePart.split('-').map(Number);
-        const hour = Number(hourStr);
-        const minute = Number(minuteStr);
-
-        const date = new Date(year, month - 1, day, hour, minute);
-
-        // Розбираємо на частини, щоб прибрати "г."
-        const parts = new Intl.DateTimeFormat(locale, {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-        }).formatToParts(date);
-
-        // Збираємо вручну
-        const formattedDate = parts
-            .filter(p => p.type !== 'literal' || p.value.trim() !== 'г.')
-            .map(p => p.value)
-            .join('');
-
-        // Форматуємо час HH:MM
-        const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-
-        return `${formattedDate} / ${formattedTime}`;
-    }
 
     return (
         <li key={order.id} className={`relative border border-dashed transition-all duration-300 ${isOpen ? "border-[#4BC785] max-h-[2000px]" : "border-[#FFFFFF80] max-h-[95px]"}  overflow-hidden`}>
@@ -121,9 +95,9 @@ export const OrderCart = ({ order }: { order: OrderProps }) => {
                 </ul>
                 <div className="mr-[67px] pl-[20px] pr-[20px] pt-[28px] pb-[20px] bg-[#1B1919] mt-[25px] max-w-[350px] self-start rounded-[8px]">
                     <div>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{t("MyAccount.tel")} <a href={`tel:${order.tel}`}>{order.tel}</a></p>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{order.address}</p>
-                        <p className="mb-[10px] text-[16px] leading-[20px] text-[500] text-[#FFFFFFC9]">{t("MyAccount.declaration_number")} {order.deliveyId}</p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{t("MyAccount.tel")} <a href={`tel:${order.tel}`}>{order.tel}</a></p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{order.address}</p>
+                        <p className="mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]">{t("MyAccount.declaration_number")} {order.deliveyId}</p>
                     </div>
                 </div>
             </MoreInfoBlock>

@@ -35,19 +35,19 @@ export const Content = () => {
 				title: t('products.online_ups'),
 				category: t('products.single_phase'),
 				photo: productImg,
-				link: '/'
+				link: '/products/1'
 			},
 			{
 				title: t('products.online_ups'),
 				category: t('products.single_phase'),
 				photo: productImg,
-				link: '/'
+				link: '/products/2'
 			},
 			{
 				title: t('products.online_ups'),
 				category: t('products.single_phase'),
 				photo: productImg,
-				link: '/'
+				link: '/products/3'
 			}
 		],
 		[t]
