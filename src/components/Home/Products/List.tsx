@@ -1,66 +1,80 @@
 'use client'
 
-import { useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { ModelCard } from '@/components/ModelCard/ModelCard'
 
 import productImg from '@/assets/img/module.png'
-import Link from "next/link";
 
-const PRODUCTS = [
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/2'
-	},
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/3'
-	},
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/4'
-	},
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/5'
-	},
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/6'
-	},
-	{
-		titleKey: 'products.online_ups',
-		categoryKey: 'products.single_phase',
-		link: '/products/7'
-	}
-]
+interface Category {
+	id: number
+	name: string
+}
 
-export const List = () => {
-	const { t } = useTranslation('common')
+interface Product {
+	id: number
+	name: string
+	description: string
+	sku: string
+	category: Category
+	variants: {
+		id: number
+		sku: string
+		images: { image: string; alt_text: string }[]
+		price: string
+	}[]
+}
+
+export const List = ({ activeCategory }: { activeCategory: string }) => {
+	const [products, setProducts] = useState<Product[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		const loadProducts = async () => {
+			setLoading(true)
+			try {
+				const res = await fetch(
+					`https://rpktask.sytes.net/api/catalog/products/?search=${activeCategory}`
+				)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+				const data = await res.json()
+				setProducts(Array.isArray(data) ? data : [])
+			} catch (err) {
+				console.error('Fetch error:', err)
+				setError('Не вдалося завантажити продукти')
+			} finally {
+				setLoading(false)
+			}
+		}
+
+		loadProducts()
+	}, [activeCategory])
 
 	return (
 		<StyledList>
-			{PRODUCTS.map((product, index) => (
-				<div
-					key={index}
-					className={`card ${index % 3 === 2 ? 'no-border' : ''}`}
-				>
-					<ModelCard
-						photo={productImg}
-						title={t(product.titleKey)}
-						category={t(product.categoryKey)}
-						link={product.link}
-					/>
-				</div>
-			))}
-
-			<div className='divider' />
+			{loading && <p>Завантаження...</p>}
+			{error && <p style={{ color: 'red' }}>{error}</p>}
+			{!loading &&
+				products.map((product, index) => {
+					const image =
+						product.variants?.[0]?.images?.[0]?.image || productImg.src
+					return (
+						<div
+							key={product.id}
+							className={`card ${index % 3 === 2 ? 'no-border' : ''}`}
+						>
+							<ModelCard
+								photo={image}
+								title={product.name}
+								category={product.category?.name || ''}
+								link={`/products/${product.id}`}
+							/>
+						</div>
+					)
+				})}
 		</StyledList>
 	)
 }

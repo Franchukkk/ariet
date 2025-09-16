@@ -9,7 +9,7 @@ const FormWrapper = styled.div`
 	color: #fff;
 
 	@media (max-width: 768px) {
-		padding: 16px; /* зменшений паддінг */
+		padding: 16px;
 	}
 `
 
@@ -45,7 +45,7 @@ const InputWrapper = styled.div`
 	padding: 22px 0;
 
 	@media (max-width: 768px) {
-		padding: 12px 0; /* менші відступи */
+		padding: 12px 0;
 	}
 `
 
@@ -105,7 +105,7 @@ const Button = styled.button`
 	}
 
 	@media (max-width: 768px) {
-		padding: 14px 30px; /* компактніше на мобільних */
+		padding: 14px 30px;
 		font-size: 14px;
 	}
 `

@@ -28,7 +28,7 @@ const Value = styled.div`
 	letter-spacing: 1%;
 
 	@media (max-width: 768px) {
-		font-size: 26px; /* менше на мобільних */
+		font-size: 26px;
 	}
 `
 
