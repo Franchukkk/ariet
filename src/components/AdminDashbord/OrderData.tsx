@@ -72,7 +72,7 @@ export const OrderData = () => {
 
     useEffect(() => {
         setOrders(fakeData)
-    })
+    }, [])
 
     const { t } = useTranslation("common");
 
@@ -83,7 +83,7 @@ export const OrderData = () => {
     }
 
     const handleDeleteOrder = () => {
-        const updatedOrders = orders.filter((item) => item.id !== selectOrder);
+        const updatedOrders = orders.filter((item) => item.id !== selectOrder.id);
         setOrders(updatedOrders);
         setCountStatusesValue(countStatuses(updatedOrders));
         setSortOfStatusesValue(sortOfStatuses(updatedOrders));
@@ -91,7 +91,7 @@ export const OrderData = () => {
     }
 
     const handleChangeStatus = () => {
-        const updatedOrders = orders.map((item) => item.id === selectOrder ? { ...item, status: "Доставлено" } : item);
+        const updatedOrders = orders.map((item) => item.id === selectOrder.id ? { ...item, status: "Доставлено" } : item);
         setOrders(updatedOrders);
         setCountStatusesValue(countStatuses(updatedOrders));
         setSortOfStatusesValue(sortOfStatuses(updatedOrders));
@@ -100,9 +100,7 @@ export const OrderData = () => {
     const handerSortByDate = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectValue(e.target.value);
         const search = searchValue.length > 0 ? orders.filter((item) => item.id.toString().includes(searchValue)) : orders;
-
         const sort = e.target.value === "Сортировать по дате" ? search.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) : search;
-
         setCountStatusesValue(countStatuses(sort));
         setSortOfStatusesValue(sortOfStatuses(sort));
     }
@@ -119,10 +117,7 @@ export const OrderData = () => {
             setIsOpen(!isOpen);
         }
 
-
         setSelectOrder(selectOrder === item.id ? false : item)
-        console.log("id", item.id);
-        console.log("selectOrder", selectOrder);
     }
 
     return (
@@ -149,7 +144,7 @@ export const OrderData = () => {
                 <ResultFilter className="text-right text-center text-[#4BC785] font-[500] text-[15px]">{selectValue}</ResultFilter>
             </Filters>
             <div className="overflow-x-auto pt-[7px]">
-                <Lists className="w-[1000px] inline-grid grid-cols-4 gap-[20px] mb-[30px]">
+                <Lists className="w-[988px] inline-grid grid-cols-4 gap-[20px] mb-[30px]">
                     <div className="flex flex-col gap-[20px] w-[235px]">
                         <StatusWrapper className="flex flex-row justify-between items-center" $status="delivered">
                             <img className="absolute top-[-10px] left-[-5px]" src={edit.src} width={30} height={30} alt="edit" />

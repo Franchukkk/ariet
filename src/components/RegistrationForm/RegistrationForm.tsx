@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function RegistrationForm() {
     const [selected, setSelected] = useState("client");
@@ -12,10 +13,9 @@ export default function RegistrationForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const router = useRouter();
 
     const { t } = useTranslation("common");
-
-    console.log(selected);
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,7 +31,13 @@ export default function RegistrationForm() {
             ;
         }
 
-        console.log({ name, secondName, phone, email, rememberMe, password, confirmPassword });
+        fetch("/api/auth/register/", {
+            method: "POST",
+            body: JSON.stringify({ name, secondName, phone, email, password, confirmPassword }),
+        })
+            .then(res => res.json())
+            .then(data => router.push("/my-account"))
+            .catch(err => alert("Виникла помилка при реєстрації"));
     }
 
     return (

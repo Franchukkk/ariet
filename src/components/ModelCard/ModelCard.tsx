@@ -25,7 +25,7 @@ export const ModelCard = ({
   className,
 }: Props) => (
   <StyledModelCard className={className}>
-    <Link href={link}>
+    <Link href={link ?? "/"}>
       {isNew ? <NewTag /> : null}
       <Photo photo={photo} />
       <Info title={title} category={category} />

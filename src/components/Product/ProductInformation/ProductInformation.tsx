@@ -1,7 +1,7 @@
 "use client";
 
 // import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -10,39 +10,12 @@ import { Card } from "../Specifications/List/Card/Card";
 import type { StaticImageData } from "next/image"
 import cardBorder from "@/assets/img/specification-border.png"
 import { Background } from "../Autonomy/Banner/Background";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductImg from "@/assets/img/product.png";
 import ProductBg from "@/assets/img/product-bg.png";
 import ArrowUp from "@/assets/img/arrow-up.svg";
 
 type ImgLike = string | StaticImageData;
-
-const slidesData = [
-    {
-        title: "",
-        subtitle: "",
-        photo: ProductImg,
-        slide: 1,
-    },
-    {
-        title: "",
-        subtitle: "",
-        photo: ProductImg,
-        slide: 2,
-    },
-    {
-        title: "",
-        subtitle: "",
-        photo: ProductImg,
-        slide: 3,
-    },
-    {
-        title: "",
-        subtitle: "",
-        photo: ProductImg,
-        slide: 4,
-    },
-];
 
 const product = {
     "id": 0,
@@ -154,17 +127,106 @@ const product = {
     ]
 };
 
+const realBody = {
+    "id": 1,
+    "name": "Online UPS Ariet 1",
+    "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet.",
+    "sku": "13FK41",
+    "category": {
+        "id": 1,
+        "name": "Online UPS"
+    },
+    "variants": [
+        {
+            "id": 1,
+            "sku": "SK1441",
+            "socket": {
+                "code": "C13",
+                "name": "C13"
+            },
+            "images": [
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/home-bg-1.png",
+                    "alt_text": null
+                },
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/3d-model.png",
+                    "alt_text": null
+                },
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/hero-bg.png",
+                    "alt_text": null
+                }
+            ],
+            "stock": [
+                1
+            ],
+            "price": 1300
+        },
+        {
+            "id": 2,
+            "sku": "SK1321",
+            "socket": {
+                "code": "C13",
+                "name": "C13"
+            },
+            "images": [
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/category-4.png",
+                    "alt_text": null
+                },
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/category-2.png",
+                    "alt_text": null
+                },
+                {
+                    "image": "https://31.131.21.16/api/media/variant_images/category-3.png",
+                    "alt_text": null
+                }
+            ],
+            "stock": [
+                2
+            ],
+            "price": 1550
+        }
+    ]
+}
+
+const slidesData = realBody.variants.map((item) => ({
+    title: "",
+    subtitle: "",
+    photo: ProductImg,
+    slide: item.id,
+}));
+
 function formatPrice(num: number) {
     return Number(num).toLocaleString('en-US').replace(',', ' ');
 }
 
 export const ProductInformation = () => {
     const router = useRouter();
-    const [version, setVersion] = useState(`version-${product.variants[0].id}`);
+    const [productInfo, setProductInfo] = useState(realBody);
+    const [version, setVersion] = useState(`version-${realBody.variants[0].id}`);
     const [showDescription, setShowDescription] = useState(false);
-
-    const separatedName = product.name.split(" ");
+    const separatedName = realBody.name.split(" ");
     const { t } = useTranslation("common");
+    const { id } = useParams();
+
+    useEffect(() => {
+        fetch(`https://31.131.21.16/api/products/${id}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        ).then(res => res.json())
+            .then(data => setProductInfo(data))
+            .catch(err => setProductInfo(realBody));
+
+
+    }, [id]);
+
     return (
         <>
             <Wrapper style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
@@ -211,10 +273,10 @@ export const ProductInformation = () => {
                 <SecondInfo className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
                     <div className="flex flex-row justify-between mb-[7px]">
                         <CenterText className="text-[18px] font-light text-[#FFFFFFA8]">
-                            {t("ProductItem.article")}: {product.id}
+                            {t("ProductItem.article")}: {realBody.id}
                         </CenterText>
                         <p className="text-[14px] font-light text-[#1DCF94]">
-                            {product.variants[0].stock[0].quantity > 0 ? t("ProductItem.availability") : t("ProductItem.not_availability")}
+                            {realBody.variants[0].stock[0] > 0 ? t("ProductItem.availability") : t("ProductItem.not_availability")}
                         </p>
 
                     </div>
@@ -223,7 +285,7 @@ export const ProductInformation = () => {
                     <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
                     <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
                     <div className="pb-[30px] border-b border-dashed border-[#313131]!">
-                        {product.variants.map((item) => (
+                        {realBody.variants.map((item) => (
                             <WrapperVersion
                                 key={`version-${item.id}`}
                                 className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
@@ -256,7 +318,7 @@ export const ProductInformation = () => {
                                 name="socket"
                                 className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
                             />
-                            {product.variants[Number(version.split("-")[1])].socket.code}
+                            {realBody.variants[Number(version.split("-")[1])]?.socket?.code || realBody.variants[0]?.socket?.code}
                         </WrapperVersion>
                     </div>
                     <div className="pb-[42px] relative" onClick={() => setShowDescription(!showDescription)}>
@@ -270,29 +332,29 @@ export const ProductInformation = () => {
                             className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${showDescription ? "max-h-[200px] overflow-y-auto" : "max-h-0"
                                 }`}
                         >
-                            {product.description}
-                            {product.description}
-                            {product.description}
+                            {realBody.description}
+
                         </p>
                     </div>
 
 
                 </SecondInfo>
             </Wrapper>
-
-            <div className="main-wrapper">
-                <h2 className="text-[30px] !text-left font-bold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
-                <TechInfo className="h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]">
-                    {product.technical_info.map((item, index) => (
-                        <div key={index} className="flex flex-row justify-between mb-[44px] w-full max-w-[100%]">
-                            <StyledPrice className="w-[100%] block mr-[20px] text-[14px] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{item.title}</StyledPrice>
-                            <p className="w-[100%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{item.value}
-                                <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
-                            </p>
-                        </div>
-                    ))}
-                </TechInfo>
-            </div>
+            {(realBody as any).technical_info && (realBody as any).technical_info.length > 0 && (
+                <div className="main-wrapper">
+                    <h2 className="text-[30px] !text-left font-bold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
+                    <TechInfo className="h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]">
+                        {(realBody as any).technical_info?.map((item: any, index: number) => (
+                            <div key={index} className="flex flex-row justify-between mb-[44px] w-full max-w-[100%]">
+                                <StyledPrice className="w-[100%] block mr-[20px] text-[14px] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{item.title}</StyledPrice>
+                                <p className="w-[100%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{item.value}
+                                    <span className="absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent"></span>
+                                </p>
+                            </div>
+                        ))}
+                    </TechInfo>
+                </div>
+            )}
         </>
     )
 }

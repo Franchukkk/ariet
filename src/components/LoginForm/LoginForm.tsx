@@ -2,17 +2,26 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function LoginForm() {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const router = useRouter();
 
     const { t } = useTranslation("common");
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log({ login, password, rememberMe });
+
+        fetch("https://31.131.21.16/api/auth/login/", {
+            method: "POST",
+            body: JSON.stringify({ login, password }),
+        })
+            .then(res => res.json())
+            .then(data => router.push("/my-account"))
+            .catch(err => alert("Виникла помилка при вході"));
     }
 
     return (

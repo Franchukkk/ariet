@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const Photo = ({ photo }: Props) => {
-  const src = typeof photo === "string" ? photo : photo.src; 
+  const src = typeof photo === "string" ? photo : photo.src;
   return <StyledPhoto src={src} alt="" />;
 };
 

@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
 	eslint: {
 		ignoreDuringBuilds: true
 	},
-
+	
 	webpack(config) {
 		const assetRule = config.module.rules.find(
 			(rule: RuleSetRule | undefined) =>
@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
 		)
 
 		if (assetRule && typeof assetRule === 'object') {
-			;(assetRule as RuleSetRule).exclude = /\.svg$/i
+			; (assetRule as RuleSetRule).exclude = /\.svg$/i
 		}
 
 		config.module.rules.push({

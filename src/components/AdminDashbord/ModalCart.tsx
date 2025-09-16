@@ -41,7 +41,6 @@ export const ModalCart = ({ item, setIsOpen }: { item: any, setIsOpen: (isOpen: 
                 </WrapperOrder>
                 <div className="mb-[40px] flex flex-row flex-wrap gap-[10px] pl-[20px] pr-[20px]">
                     {item.products.map((element: any, index: number) => {
-                        console.log(element);
                         return (
                             <div key={index} className="flex flex-row gap-[10px] w-[45%] min-w-[300px]">
                                 <div className="flex items-center justify-center rounded-[8px] bg-[#0D0C0C] w-[94px] h-[92px]">
