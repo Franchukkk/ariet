@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +7,6 @@ import styled from 'styled-components'
 import moduleImg from '@/assets/img/module.png'
 
 import { ProductCart } from './ProductCart'
-import Link from 'next/link'
 
 export const products = [
 	{
@@ -48,8 +48,8 @@ export const BasketList = () => {
 		localStorage.getItem('quantities')
 			? JSON.parse(localStorage.getItem('quantities') || '{}')
 			: {
-				...Object.fromEntries(products.map(p => [p.id, 1]))
-			}
+					...Object.fromEntries(products.map(p => [p.id, 1]))
+				}
 	)
 
 	useEffect(() => {
@@ -120,7 +120,10 @@ export const BasketList = () => {
 					</p>
 				</div>
 				<div className='cursor-pointer flex flex-row justify-between mb-[30px] rounded-[61px] bg-[#4BC785] h-[58px] items-center'>
-					<Link href="/thanks-for-order" className=' w-[100%] font-bold text-[15px] text-center text-[#000000] cursor-pointer'>
+					<Link
+						href='/complete-contract'
+						className=' w-[100%] font-bold text-[15px] text-center text-[#000000] cursor-pointer'
+					>
 						{t('Basket.make_order')}
 					</Link>
 				</div>

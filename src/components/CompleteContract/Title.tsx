@@ -14,7 +14,7 @@ const StyledTitle = styled.h2`
 	line-height: 58px;
 	letter-spacing: 0%;
 	text-transform: uppercase;
-	margin-bottom: 20px;
+	margin-bottom: 17px;
 	text-align: left;
 	color: #ffffff;
 

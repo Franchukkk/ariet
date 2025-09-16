@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -19,6 +20,7 @@ type CartSummaryProps = {
 
 export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 	const { t } = useTranslation('common')
+	const router = useRouter()
 	const deliveryPrice = 200
 	const totalPrice = products.reduce(
 		(acc, product) => acc + product.price * (quantities[product.id] || 1),
@@ -86,13 +88,15 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 				</p>
 			</div>
 
-			<Button>{t('complete_contract.cart.confirm')}</Button>
+			<Button onClick={() => router.push('/thanks-for-order')}>
+				{t('complete_contract.cart.confirm')}
+			</Button>
 		</Container>
 	)
 }
 
 const Container = styled.div`
-	background: #1f1f1f;
+	background: #1b1919;
 	color: white;
 	padding: 20px;
 	border-radius: 10px;
@@ -126,14 +130,17 @@ const Details = styled.div`
 `
 
 const Category = styled.span`
+	font-weight: 400;
 	font-size: 13px;
-	color: #b5b5b5;
+	line-height: 100%;
+	color: #7f7f7f;
 `
 
 const Name = styled.h4`
+	font-weight: 600;
 	font-size: 17px;
-	color: #ffffff;
-
+	line-height: 100%;
+	letter-spacing: 1%;
 	margin: 0;
 `
 
@@ -142,20 +149,24 @@ const Info = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	width: 200px;
+
 	span {
-		font-size: 14px;
-		color: #aaa;
+		font-weight: 600;
+		font-size: 17px;
+		line-height: 100%;
+		letter-spacing: 1%;
 	}
 `
 
 const Price = styled.span`
 	font-weight: 600;
-	font-size: 14px;
+	font-size: 17px;
 `
 
 const Divider = styled.hr`
 	border: none;
 	border-top: 1px dashed #444;
+	margin-top: 20px;
 `
 
 const Button = styled.button`

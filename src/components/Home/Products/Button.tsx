@@ -1,27 +1,34 @@
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
-import styled from "styled-components"
+import styled from 'styled-components'
 
 export const Button = () => {
-  const { t } = useTranslation("common")
+	const { t } = useTranslation('common')
+	const router = useRouter()
 
-  return (
-    <StyledButton href="/products">
-      {t("Button.catalog")}
-    </StyledButton>
-  )
+	const handleClick = () => {
+		router.push('/products')
+	}
+
+	return (
+		<StyledButton onClick={handleClick}>{t('Button.catalog')}</StyledButton>
+	)
 }
 
-const StyledButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 58px;
-  border-radius: 61px;
-  border: 1px solid #4bc785;
-  width: 100%;
-  transition: all 0.3s;
-  &:hover {
-    background: #4bc785;
-  }
-`;
+const StyledButton = styled.button`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 58px;
+	border-radius: 61px;
+	border: 1px solid #4bc785;
+	width: 100%;
+	transition: all 0.3s;
+	color: #fff;
+	font-weight: 600;
+
+	&:hover {
+		background: #4bc785;
+		color: #000;
+	}
+`

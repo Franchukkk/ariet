@@ -5,10 +5,12 @@ import { FaFacebookF, FaInstagram } from 'react-icons/fa'
 import styled from 'styled-components'
 
 const FormWrapper = styled.div`
-	background: #0d0d0d;
 	padding: 24px;
-	border-radius: 8px;
 	color: #fff;
+
+	@media (max-width: 768px) {
+		padding: 16px; /* зменшений паддінг */
+	}
 `
 
 const Title = styled.h3`
@@ -18,6 +20,11 @@ const Title = styled.h3`
 	line-height: 58px;
 	letter-spacing: 0%;
 	text-transform: uppercase;
+
+	@media (max-width: 768px) {
+		font-size: 22px;
+		line-height: 32px;
+	}
 `
 
 const Grid = styled.div`
@@ -36,6 +43,10 @@ const InputWrapper = styled.div`
 	gap: 22px;
 	border-bottom: 1px solid #2c2c2c;
 	padding: 22px 0;
+
+	@media (max-width: 768px) {
+		padding: 12px 0; /* менші відступи */
+	}
 `
 
 const IconCircle = styled.div`
@@ -62,14 +73,15 @@ const Input = styled.input`
 	outline: none;
 
 	font-weight: 400;
-	font-style: Regular;
 	font-size: 16px;
-
 	line-height: 100%;
-	letter-spacing: 0%;
 
 	&::placeholder {
 		color: #777;
+	}
+
+	@media (max-width: 768px) {
+		font-size: 14px;
 	}
 `
 
@@ -77,7 +89,7 @@ const Button = styled.button`
 	margin-top: 24px;
 	padding: 20px 45px;
 	background: #4bc785;
-	color: #000;	
+	color: #000;
 	border-radius: 65px;
 	border: none;
 	cursor: pointer;
@@ -86,10 +98,15 @@ const Button = styled.button`
 	font-size: 15px;
 	line-height: 100%;
 	letter-spacing: 1%;
-	text-align: center
+	text-align: center;
 
 	&:hover {
 		background: #3ea46b;
+	}
+
+	@media (max-width: 768px) {
+		padding: 14px 30px; /* компактніше на мобільних */
+		font-size: 14px;
 	}
 `
 
