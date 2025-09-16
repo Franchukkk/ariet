@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
     const [login, setLogin] = useState("");
@@ -17,10 +17,31 @@ export default function LoginForm() {
 
         fetch("https://31.131.21.16/api/auth/login/", {
             method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ login, password }),
         })
             .then(res => res.json())
-            .then(data => router.push("/my-account"))
+            .then(data => {
+                if (data.access) {
+                    localStorage.setItem('authToken', data.access);
+                    if (data.refresh) {
+                        localStorage.setItem('refreshToken', data.refresh);
+                    }
+                    // Перенаправляємо в залежності від ролі
+                    const userRole = data.role?.toLowerCase();
+                    if (userRole === 'admin') {
+                        router.push("/admin-dashboard");
+                    } else if (userRole === 'ambassador') {
+                        router.push("/ambassador");
+                    } else {
+                        router.push("/my-account");
+                    }
+                } else {
+                    alert("Невірний логін або пароль");
+                }
+            })
             .catch(err => alert("Виникла помилка при вході"));
     }
 

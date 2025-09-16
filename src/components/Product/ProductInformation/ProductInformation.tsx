@@ -213,7 +213,7 @@ export const ProductInformation = () => {
     const { id } = useParams();
 
     useEffect(() => {
-        fetch(`https://31.131.21.16/api/products/${id}`,
+        fetch(`https://31.131.21.16/api/catalog/products/${id}`,
             {
                 method: "GET",
                 headers: {

@@ -4,6 +4,7 @@ import { OrderData } from "@/components/AdminDashbord/OrderData";
 import { OrderInfo } from "@/components/AdminDashbord/OrderInfo";
 import { TitleAdminDashboard } from "@/components/AdminDashbord/TitleAdminDashboard";
 import { UserAdminInfo } from "@/components/AdminDashbord/UserAdminInfo";
+import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
 import styled from "styled-components";
 
 
@@ -11,18 +12,18 @@ const ordersInfo = { totalOrders: 1000, newOrders: 10, totalSum: 10000, averageO
 
 export default function Page() {
     return (
-        <MainWrapper className="main-wrapper !mb-[130px]">
-            <TitleAdminDashboard />
-            <Wrapper className="flex flex-row justify-between items-start">
-                <UserAdminInfo />
-                <div className="flex-1 min-w-0 max-w-full overflow-hidden">
-                    <OrderInfo orderInfo={ordersInfo} />
-                    <OrderData />
-                </div>
-            </Wrapper>
-
-
-        </MainWrapper>
+        <ProtectedRoute requiredRole="admin">
+            <MainWrapper className="main-wrapper !mb-[130px]">
+                <TitleAdminDashboard />
+                <Wrapper className="flex flex-row justify-between items-start">
+                    <UserAdminInfo />
+                    <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+                        <OrderInfo orderInfo={ordersInfo} />
+                        <OrderData />
+                    </div>
+                </Wrapper>
+            </MainWrapper>
+        </ProtectedRoute>
     )
 }
 

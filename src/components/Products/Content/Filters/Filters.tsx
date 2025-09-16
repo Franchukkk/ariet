@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Card } from "./Card/Card"
+import { useEffect, useState } from "react";
 
 interface Props {
   activeFilters: string[];
@@ -8,19 +9,43 @@ interface Props {
   showFilters: boolean;
 }
 
+interface ICategory {
+  id: number;
+  name: string;
+}
+
+const realCategories = [
+  {
+    "id": 1,
+    "name": "Online UPS"
+  },
+  {
+    "id": 2,
+    "name": "Tension Stabilizer"
+  }
+]
+
 export const Filters = ({ activeFilters, onChangeFilter, showFilters }: Props) => {
   const { t } = useTranslation("common");
+  const [categories, setCategories] = useState<ICategory[]>([]);
+
+  useEffect(() => {
+    fetch('https://31.131.21.16/api/catalog/categories/',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    ).then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => setCategories(realCategories));
+  }, []);
 
   const FILTERS = [
     {
       title: t("filters.category"),
-      options: [
-        { title: t("filters.category_1"), value: "1" },
-        { title: t("filters.category_2"), value: "2" },
-        { title: t("filters.category_3"), value: "3" },
-        { title: t("filters.category_4"), value: "4" },
-        { title: t("filters.category_5"), value: "5" },
-      ],
+      options: categories.map(category => ({ title: category.name, value: category.id.toString() }))
     },
     {
       title: t("filters.filter_1"),

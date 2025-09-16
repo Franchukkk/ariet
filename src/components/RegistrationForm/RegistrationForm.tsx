@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function RegistrationForm() {
     const [selected, setSelected] = useState("client");

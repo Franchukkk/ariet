@@ -20,19 +20,19 @@ export const List = ({ data }: Props) => {
           <>
             <div className="card card-border">
               <ModelCard
-                photo={first.photo}
-                title={first.title}
-                category={first.category}
-                link={first.link}
+                photo={first.variants[0].images[0].image}
+                title={first.name}
+                category={first.category.name}
+                link={`/products/${first.id}`}
               />
             </div>
             {second && (
               <div className="card">
                 <ModelCard
-                  photo={second.photo}
-                  title={second.title}
-                  category={second.category}
-                  link={second.link}
+                  photo={second.variants[0].images[0].image}
+                  title={second.name}
+                  category={second.category.name}
+                  link={`/products/${second.id}`}
                 />
               </div>
             )}
