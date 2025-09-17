@@ -15,7 +15,7 @@ export default function LoginForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        fetch("https://31.131.21.16/api/auth/login/", {
+        fetch("https://rpktask.sytes.net/api/auth/login/", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',

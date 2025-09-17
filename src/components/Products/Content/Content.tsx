@@ -72,15 +72,15 @@ const realData = [
 				},
 				"images": [
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/home-bg-1.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/home-bg-1.png",
 						"alt_text": null
 					},
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/3d-model.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/3d-model.png",
 						"alt_text": null
 					},
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/hero-bg.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/hero-bg.png",
 						"alt_text": null
 					}
 				],
@@ -98,15 +98,15 @@ const realData = [
 				},
 				"images": [
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/category-4.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/category-4.png",
 						"alt_text": null
 					},
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/category-2.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/category-2.png",
 						"alt_text": null
 					},
 					{
-						"image": "https://31.131.21.16/api/media/variant_images/category-3.png",
+						"image": "https://rpktask.sytes.net/api/media/variant_images/category-3.png",
 						"alt_text": null
 					}
 				],
@@ -125,7 +125,7 @@ export const Content = () => {
 	const [productData, setProductData] = useState<IProduct[]>([])
 
 	useEffect(() => {
-		fetch('https://31.131.21.16/api/catalog/products/',
+		fetch('https://rpktask.sytes.net/api/catalog/products/',
 			{
 				method: 'GET',
 				headers: {

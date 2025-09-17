@@ -17,7 +17,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 		const checkAuth = async () => {
 			const token = localStorage.getItem('authToken')
 			const refreshToken = localStorage.getItem('refreshToken')
-			
+
 			if (!token) {
 				router.push('/login')
 				return
@@ -25,7 +25,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 
 			try {
 				// Перевіряємо токен на сервері
-				const response = await fetch('https://31.131.21.16/api/auth/verify', {
+				const response = await fetch('https://rpktask.sytes.net/api/auth/verify', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 				if (response.ok) {
 					const data = await response.json()
 					const userRole = data.role?.toLowerCase()
-					
+
 					// Перевіряємо роль
 					if (requiredRole && userRole !== requiredRole) {
 						// Перенаправляємо в залежності від ролі користувача
@@ -49,7 +49,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 						}
 						return
 					}
-					
+
 					setIsAuthenticated(true)
 				} else {
 					// Якщо токен невалідний, спробуємо оновити через refresh token
@@ -71,7 +71,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 
 		const refreshAccessToken = async (refreshToken: string) => {
 			try {
-				const response = await fetch('https://31.131.21.16/api/token/refresh/', {
+				const response = await fetch('https://rpktask.sytes.net/api/token/refresh/', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -82,9 +82,9 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 				if (response.ok) {
 					const data = await response.json()
 					localStorage.setItem('authToken', data.access)
-					
+
 					// Перевіряємо новий токен
-					const verifyResponse = await fetch('https://31.131.21.16/api/auth/verify', {
+					const verifyResponse = await fetch('https://rpktask.sytes.net/api/auth/verify', {
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 					if (verifyResponse.ok) {
 						const userData = await verifyResponse.json()
 						const userRole = userData.role?.toLowerCase()
-						
+
 						// Перевіряємо роль
 						if (requiredRole && userRole !== requiredRole) {
 							// Перенаправляємо в залежності від ролі користувача
@@ -108,7 +108,7 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 							}
 							return
 						}
-						
+
 						setIsAuthenticated(true)
 					} else {
 						throw new Error('Token verification failed after refresh')

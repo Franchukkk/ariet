@@ -1,5 +1,5 @@
 // Утиліта для роботи з токенами
-export const getAuthHeaders = () => {
+export const getAuthHeaders = (): Record<string, string> => {
 	const token = localStorage.getItem('authToken')
 	return token ? { 'Authorization': `Bearer ${token}` } : {}
 }
@@ -12,7 +12,7 @@ export const refreshToken = async (): Promise<boolean> => {
 	}
 
 	try {
-		const response = await fetch('https://31.131.21.16/api/token/refresh/', {
+		const response = await fetch('https://rpktask.sytes.net/api/token/refresh/', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -44,8 +44,8 @@ export const makeAuthenticatedRequest = async (url: string, options: RequestInit
 	const response = await fetch(url, {
 		...options,
 		headers: {
-			...authHeaders,
 			'Content-Type': 'application/json',
+			...authHeaders,
 			...options.headers,
 		}
 	})
@@ -60,8 +60,8 @@ export const makeAuthenticatedRequest = async (url: string, options: RequestInit
 			return fetch(url, {
 				...options,
 				headers: {
-					...newAuthHeaders,
 					'Content-Type': 'application/json',
+					...newAuthHeaders,
 					...options.headers,
 				}
 			})
@@ -89,7 +89,7 @@ export const getCurrentUserRole = async (): Promise<string | null> => {
 	}
 
 	try {
-		const response = await fetch('https://31.131.21.16/api/auth/verify', {
+		const response = await fetch('https://rpktask.sytes.net/api/auth/verify', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

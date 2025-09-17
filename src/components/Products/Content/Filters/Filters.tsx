@@ -30,7 +30,7 @@ export const Filters = ({ activeFilters, onChangeFilter, showFilters }: Props) =
   const [categories, setCategories] = useState<ICategory[]>([]);
 
   useEffect(() => {
-    fetch('https://31.131.21.16/api/catalog/categories/',
+    fetch('https://rpktask.sytes.net/api/catalog/categories/',
       {
         method: 'GET',
         headers: {

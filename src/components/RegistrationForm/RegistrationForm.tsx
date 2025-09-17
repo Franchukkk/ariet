@@ -42,7 +42,7 @@ export default function RegistrationForm() {
 
     return (
         <StyledForm onSubmit={handleSubmit}>
-            <LabelWrapper className="flex flex-row justify-between mb-[70px] w-[100%]">
+            <LabelWrapper className="hidden flex-row justify-between mb-[70px] w-[100%]">
                 <MediaLabel
                     style={selected === "client" ? { boxShadow: "0px 9px 20.9px 0px #1DCF9440", } : { color: "#7F7F7F" }}
                     className={`uppercase text-600 w-[245px] h-[84px] pl-[20px] flex items-center gap-2 cursor-pointer ${selected === "client" ? "border border-[#1DCF94] rounded-[8px]" : "border border-transparent "}`}
