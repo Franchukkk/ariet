@@ -2,8 +2,12 @@
 
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+
+import { getCurrentUserRole, makeAuthenticatedRequest } from '@/helpers/auth'
 
 const CardWrapper = styled.div`
 	position: relative;
@@ -15,7 +19,7 @@ const CardWrapper = styled.div`
 	text-align: center;
 
 	@media (max-width: 768px) {
-		padding: 40px 20px; /* менші відступи на мобільних */
+		padding: 40px 20px;
 	}
 `
 
@@ -127,22 +131,21 @@ const Label = styled.p`
 	}
 `
 
-const PromoButton = styled.button`
+const PromoButton = styled.button<{ $active?: boolean }>`
 	margin-top: 8px;
 	width: 100%;
 	padding: 5px 50px;
-	border: 1px solid #4bc785;
+	border: 1px solid ${({ $active }) => ($active ? '#4bc785' : '#ff4444')};
 	border-radius: 8px;
 	font-weight: 600;
 	font-size: 20px;
 	line-height: 58px;
-	letter-spacing: 0%;
-	color: #ffffff;
+	color: ${({ $active }) => ($active ? '#ffffff' : '#ff4444')};
 	transition: all 0.3s ease;
 	background: transparent;
 
 	&:hover {
-		background: #4bc785;
+		background: ${({ $active }) => ($active ? '#4bc785' : '#ff4444')};
 		color: #000;
 	}
 
@@ -169,6 +172,63 @@ const CornerSVG = () => (
 
 export default function ProfileCard() {
 	const { t } = useTranslation('common')
+	const [userData, setUserData] = useState<null | {
+		full_name: string
+		role: string
+		promo_code: string
+	}>(null)
+	const [promoValid, setPromoValid] = useState<boolean | null>(null)
+
+	const router = useRouter()
+
+	useEffect(() => {
+		const fetchUserData = async () => {
+			const role = await getCurrentUserRole()
+
+			if (role !== 'ambassador') {
+				router.push('/')
+				return
+			}
+
+			try {
+				const res = await makeAuthenticatedRequest(
+					'https://rpktask.sytes.net/api/users/me/'
+				)
+				if (res.ok) {
+					const data = await res.json()
+					setUserData({
+						full_name: data.full_name,
+						role: data.role,
+						promo_code: data.promo_code
+					})
+				}
+			} catch (error) {
+				console.error('Error loading profile:', error)
+			}
+		}
+
+		fetchUserData()
+	}, [router])
+
+	useEffect(() => {
+		const checkPromo = async () => {
+			if (!userData?.promo_code) return
+			try {
+				const res = await makeAuthenticatedRequest(
+					`https://rpktask.sytes.net/api/promocodes/check/?code=${userData.promo_code}`
+				)
+				setPromoValid(res.ok)
+			} catch (e) {
+				console.error('Promo check failed:', e)
+				setPromoValid(false)
+			}
+		}
+
+		checkPromo()
+	}, [userData])
+
+	if (!userData) return <p style={{ color: '#fff' }}>Loading...</p>
+
 	return (
 		<CardWrapper>
 			<Corner pos='tl'>
@@ -188,7 +248,7 @@ export default function ProfileCard() {
 				<AvatarWrapper>
 					<AvatarImage
 						src='/avatar.jpg'
-						alt='Овчаренко Ірина'
+						alt={userData.full_name}
 						width={240}
 						height={240}
 					/>
@@ -198,10 +258,15 @@ export default function ProfileCard() {
 				</EditButton>
 			</AvatarContainer>
 
-			<Name>ОВЧАРЕНКО ИРИНА</Name>
+			<Name>{userData.full_name.toUpperCase()}</Name>
 			<Role>{t('ambassador.role')}</Role>
 			<Label>{t('ambassador.promo_code')}</Label>
-			<PromoButton>OVCHARENKO200</PromoButton>
+
+			<PromoButton $active={promoValid ?? undefined}>
+				{userData.promo_code}
+				{promoValid === true && 'Yes'}
+				{promoValid === false && 'No'}
+			</PromoButton>
 		</CardWrapper>
 	)
 }
