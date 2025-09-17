@@ -13,7 +13,6 @@ import styled from 'styled-components'
 
 import { getCurrentUserRole, makeAuthenticatedRequest } from '@/helpers/auth'
 
-// === styled-components ===
 const FormWrapper = styled.div`
 	padding: 24px;
 	color: #fff;
@@ -109,7 +108,6 @@ const Button = styled.button`
 	}
 `
 
-// === COMPONENT ===
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
 	const [loading, setLoading] = useState(true)
