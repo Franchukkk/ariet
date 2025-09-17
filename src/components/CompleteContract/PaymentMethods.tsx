@@ -13,11 +13,11 @@ type PaymentOption = {
 }
 
 const paymentOptions: PaymentOption[] = [
-	{ id: 1, logo: '/visa.svg', key: 'visa' },
-	{ id: 2, logo: '/googlepay.svg', key: 'googlepay' },
-	{ id: 3, logo: '/mastercard.svg', key: 'mastercard' },
-	{ id: 4, logo: '/applepay.svg', key: 'applepay' },
-	{ id: 5, logo: '/payu.svg', key: 'payu' }
+	{ id: 1, logo: '/Payment/visa.svg', key: 'visa' },
+	{ id: 2, logo: '/Payment/googlepay.svg', key: 'googlepay' },
+	{ id: 3, logo: '/Payment/mastercard.svg', key: 'mastercard' },
+	{ id: 4, logo: '/Payment/applepay.svg', key: 'applepay' },
+	{ id: 5, logo: '/Payment/payu.svg', key: 'payu' }
 ]
 
 export const PaymentMethods = () => {
