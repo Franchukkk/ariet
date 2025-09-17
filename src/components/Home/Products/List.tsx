@@ -44,7 +44,7 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 				setProducts(Array.isArray(data) ? data : [])
 			} catch (err) {
 				console.error('Fetch error:', err)
-				setError('Не вдалося завантажити продукти')
+				setError('Failed to load')
 			} finally {
 				setLoading(false)
 			}

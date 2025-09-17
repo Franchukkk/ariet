@@ -23,6 +23,7 @@ export const Dropdown = () => {
 					'https://rpktask.sytes.net/api/catalog/categories/',
 					{
 						method: 'GET',
+						credentials: 'include',
 						headers: { 'Content-Type': 'application/json' }
 					}
 				)
@@ -33,7 +34,7 @@ export const Dropdown = () => {
 				setCategories(Array.isArray(data) ? data : [])
 			} catch (err) {
 				console.error('Fetch error:', err)
-				setError('Failed to load categories')
+				setError('Failed to load')
 			} finally {
 				setLoading(false)
 			}

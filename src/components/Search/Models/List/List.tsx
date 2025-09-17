@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import 'swiper/css/pagination'
@@ -10,66 +11,86 @@ import photo from '@/assets/img/module.png'
 
 import { ModelCard } from '../../../ModelCard/ModelCard'
 
+interface Category {
+	id: number
+	name: string
+}
+
+interface Product {
+	id: number
+	name: string
+	sku: string
+	category: Category
+	variants: {
+		id: number
+		sku: string
+		images: { image: string; alt_text: string }[]
+		price: string
+	}[]
+}
+
 export const List = () => {
 	const { t } = useTranslation('common')
+	const [products, setProducts] = useState<Product[]>([])
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 
-	const MODELS = [
-		{
-			title: t('models.online_ups'),
-			category: t('models.single_phase'),
-			link: '/products/1'
-		},
-		{
-			title: t('models.online_ups'),
-			category: t('models.single_phase'),
-			link: '/products/2',
-			isNew: true
-		},
-		{
-			title: t('models.online_ups'),
-			category: t('models.single_phase'),
-			link: '/products/3',
-		},
-		{
-			title: t('models.online_ups'),
-			category: t('models.single_phase'),
-			link: '/products/4',
-		},
-		{
-			title: t('models.online_ups'),
-			category: t('models.single_phase'),
-			link: '/products/5',
+	useEffect(() => {
+		const fetchProducts = async () => {
+			try {
+				const res = await fetch(
+					'https://rpktask.sytes.net/api/catalog/products/'
+				)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+				const data = await res.json()
+				setProducts(Array.isArray(data) ? data : [])
+			} catch (err) {
+				console.error('Fetch error:', err)
+				setError('Failed to load')
+			} finally {
+				setLoading(false)
+			}
 		}
-	]
+
+		fetchProducts()
+	}, [])
 
 	return (
 		<StyledList>
-			<Swiper
-				spaceBetween={0}
-				modules={[Pagination, Autoplay]}
-				autoplay={{
-					delay: 2000,
-					disableOnInteraction: true
-				}}
-				loop={true}
-				pagination={{ clickable: true }}
-				breakpoints={{
-					1024: { slidesPerView: 2 },
-					0: { slidesPerView: 1 }
-				}}
-			>
-				{MODELS.map((model, i) => (
-					<SwiperSlide key={i}>
-						<ModelCard
-							photo={photo}
-							title={model.title}
-							category={model.category}
-							link={model.link}
-							isNew={model.isNew}
-						/>
-					</SwiperSlide>
-				))}
-			</Swiper>
+			{loading && <p>Завантаження...</p>}
+			{error && <p style={{ color: 'red' }}>{error}</p>}
+
+			{!loading && !error && (
+				<Swiper
+					spaceBetween={0}
+					modules={[Pagination, Autoplay]}
+					autoplay={{ delay: 2000, disableOnInteraction: true }}
+					loop={true}
+					pagination={{ clickable: true }}
+					breakpoints={{
+						1024: { slidesPerView: 2 },
+						0: { slidesPerView: 1 }
+					}}
+				>
+					{products.map((product, i) => {
+						const img = product.variants?.[0]?.images?.[0]?.image || photo.src
+						const category = product.category?.name || t('models.unknown')
+						const isNew = i === 1
+
+						return (
+							<SwiperSlide key={product.id}>
+								<ModelCard
+									photo={img}
+									title={product.name}
+									category={category}
+									link={`/products/${product.id}`}
+									isNew={isNew}
+								/>
+							</SwiperSlide>
+						)
+					})}
+				</Swiper>
+			)}
 		</StyledList>
 	)
 }

@@ -3,16 +3,21 @@
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-const Card = styled.div`
+const Card = styled.div<{ $hidden?: boolean }>`
 	background: #1a1a1a;
 	padding: 16px;
+	margin-left: 20px;
 	border-radius: 8px;
 	color: #fff;
-	display: flex;
+	display: ${({ $hidden }) => ($hidden ? 'none' : 'flex')}; /* 🔧 */
 	justify-content: space-between;
 	align-items: flex-end;
-	min-width: 280px;
-	flex: 1;
+	flex: 1 1 280px;
+	max-width: 282px;
+	transition: all 0.2s ease;
+	@media (max-width: 768px) {
+		margin: 0 auto;
+	}
 `
 
 const Info = styled.div`
@@ -76,11 +81,18 @@ type StatsCardProps = {
 	label: string
 	percent: string
 	chartData: number[]
+	hidden?: boolean
 }
 
-function StatsCard({ value, label, percent, chartData }: StatsCardProps) {
+function StatsCard({
+	value,
+	label,
+	percent,
+	chartData,
+	hidden
+}: StatsCardProps) {
 	return (
-		<Card>
+		<Card $hidden={hidden}>
 			<Info>
 				<Value>{value}</Value>
 				<Label>{label}</Label>
@@ -114,12 +126,14 @@ export default function DashboardStats() {
 				label={t('ambassador.label.amount')}
 				percent='35,87%'
 				chartData={[15, 20, 18, 45]}
+				hidden
 			/>
 			<StatsCard
 				value='567'
 				label={t('ambassador.label.orders')}
 				percent='35,87%'
 				chartData={[10, 15, 20, 35]}
+				hidden
 			/>
 		</div>
 	)

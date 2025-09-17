@@ -1,7 +1,12 @@
 'use client'
 
 import { useTranslation } from 'react-i18next'
-import { FaFacebookF, FaInstagram } from 'react-icons/fa'
+import {
+	FaFacebookF,
+	FaInstagram,
+	FaTelegramPlane,
+	FaTiktok
+} from 'react-icons/fa'
 import styled from 'styled-components'
 
 const FormWrapper = styled.div`
@@ -18,7 +23,6 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
 
 	@media (max-width: 768px) {
@@ -27,21 +31,28 @@ const Title = styled.h3`
 	}
 `
 
-const Grid = styled.div`
-	display: grid;
-	grid-template-columns: 1fr 1fr;
+const FullWidth = styled.div`
+	width: 100%;
+`
+
+const TwoColumnGrid = styled.div`
+	display: flex;
 	gap: 16px;
 
 	@media (max-width: 768px) {
-		grid-template-columns: 1fr;
+		flex-direction: column;
 	}
+`
+
+const Half = styled.div`
+	flex: 1;
 `
 
 const InputWrapper = styled.div`
 	display: flex;
 	align-items: center;
 	gap: 22px;
-	border-bottom: 1px solid #2c2c2c;
+	border-bottom: 1px solid #ffffff8a;
 	padding: 22px 0;
 
 	@media (max-width: 768px) {
@@ -71,10 +82,8 @@ const Input = styled.input`
 	color: #7f7f7f;
 	border: none;
 	outline: none;
-
 	font-weight: 400;
 	font-size: 16px;
-	line-height: 100%;
 
 	&::placeholder {
 		color: #777;
@@ -96,8 +105,6 @@ const Button = styled.button`
 	transition: all 0.3s ease;
 	font-weight: 600;
 	font-size: 15px;
-	line-height: 100%;
-	letter-spacing: 1%;
 	text-align: center;
 
 	&:hover {
@@ -112,39 +119,42 @@ const Button = styled.button`
 
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
+
 	return (
 		<FormWrapper>
 			<Title>{t('ambassador.profileForm.title')}</Title>
-			<Grid>
+
+			<FullWidth>
 				<InputWrapper>
 					<Input
 						type='text'
-						placeholder={t('ambassador.forma.name')}
-						defaultValue='Ирина'
+						placeholder={t('ambassador.forma.fullname') || 'Full Name'}
+						defaultValue='Ірина Овчаренко'
 					/>
 				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='text'
-						placeholder={t('ambassador.forma.Surname')}
-						defaultValue='Овчаренко'
-					/>
-				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='text'
-						placeholder={t('ambassador.forma.Telephone')}
-						defaultValue='+38 (068) 879-03-13'
-					/>
-				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='email'
-						placeholder={t('ambassador.forma.email')}
-						defaultValue='info@gmail.com'
-					/>
-				</InputWrapper>
-			</Grid>
+			</FullWidth>
+
+			<TwoColumnGrid>
+				<Half>
+					<InputWrapper>
+						<Input
+							type='text'
+							placeholder={t('ambassador.forma.Telephone')}
+							defaultValue='+38 (068) 879-03-13'
+						/>
+					</InputWrapper>
+				</Half>
+
+				<Half>
+					<InputWrapper>
+						<Input
+							type='email'
+							placeholder={t('ambassador.forma.email')}
+							defaultValue='info@gmail.com'
+						/>
+					</InputWrapper>
+				</Half>
+			</TwoColumnGrid>
 
 			<InputWrapper>
 				<IconCircle>
@@ -164,7 +174,29 @@ export default function ProfileForm() {
 				<Input
 					type='text'
 					placeholder='Facebook'
-					defaultValue='https://www.instagram.com/ovcharenko_ira/'
+					defaultValue='https://www.facebook.com/ovcharenko_ira/'
+				/>
+			</InputWrapper>
+
+			<InputWrapper>
+				<IconCircle>
+					<FaTelegramPlane />
+				</IconCircle>
+				<Input
+					type='text'
+					placeholder='Telegram'
+					defaultValue='https://t.me/ovcharenko_ira'
+				/>
+			</InputWrapper>
+
+			<InputWrapper>
+				<IconCircle>
+					<FaTiktok />
+				</IconCircle>
+				<Input
+					type='text'
+					placeholder='TikTok'
+					defaultValue='https://www.tiktok.com/@ovcharenko_ira'
 				/>
 			</InputWrapper>
 
