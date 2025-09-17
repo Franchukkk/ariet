@@ -36,12 +36,13 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 			setLoading(true)
 			try {
 				const res = await fetch(
-					`https://rpktask.sytes.net/api/catalog/products/?search=${activeCategory}`
+					'https://rpktask.sytes.net/api/catalog/products/'
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-				const data = await res.json()
-				setProducts(Array.isArray(data) ? data : [])
+				const data: Product[] = await res.json()
+				const filtered = filterProductsByCategory(data, activeCategory)
+				setProducts(filtered)
 			} catch (err) {
 				console.error('Fetch error:', err)
 				setError('Failed to load')
@@ -52,6 +53,30 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 
 		loadProducts()
 	}, [activeCategory])
+
+	const filterProductsByCategory = (
+		data: Product[],
+		category: string
+	): Product[] => {
+		switch (category) {
+			case 'новинки':
+				return [...data].sort((a, b) => b.id - a.id).slice(0, 6)
+			case 'лідери продажів':
+				return [...data]
+					.sort(
+						(a, b) =>
+							parseFloat(b.variants?.[0]?.price || '0') -
+							parseFloat(a.variants?.[0]?.price || '0')
+					)
+					.slice(0, 6)
+			case 'проектні рішення':
+				return data.filter(p =>
+					p.category?.name?.toLowerCase().includes('проект')
+				)
+			default:
+				return data
+		}
+	}
 
 	return (
 		<StyledList>
