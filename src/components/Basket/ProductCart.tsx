@@ -35,9 +35,9 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
             </div>
             <WrapperDescription className="pr-[20px] relative">
                 <p className="text-[14px] pl-[10px] font-medium text-[#7F7F7F] absolute top-[-20px] left-0">{product.description}</p>
-                <p className="text-[22px] pl-[10px] font-bold w-[250px]">{product.name}</p>
+                <p className="text-[22px] pl-[10px] font-semibold w-[250px]">{product.name}</p>
             </WrapperDescription>
-            <p className="text-[20px] font-bold w-[100px] text-center"> {formatPrice(product.price)} {t("Basket.currency")}</p>
+            <p className="text-[20px] font-semibold w-[100px] text-center"> {formatPrice(product.price)} {t("Basket.currency")}</p>
 
             <label className="relative">
                 <ArrowUp
@@ -56,7 +56,7 @@ export const ProductCart = ({ product, index, quantity, onQuantityChange }: Prod
             </label>
 
 
-            <p className="text-[20px] font-bold  text-center">
+            <p className="text-[20px] font-semibold  text-center">
                 {formatPrice(product.price * quantity)} {t("Basket.currency")}
             </p>
             <button>

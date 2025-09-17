@@ -12,7 +12,7 @@ const ordersInfo = { totalOrders: 1000, newOrders: 10, totalSum: 10000, averageO
 
 export default function Page() {
     return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute >
             <MainWrapper className="main-wrapper !mb-[130px]">
                 <TitleAdminDashboard />
                 <Wrapper className="flex flex-row justify-between items-start">

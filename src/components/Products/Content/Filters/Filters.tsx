@@ -85,7 +85,7 @@ export const Filters = ({ activeFilters, onChangeFilter, showFilters }: Props) =
 };
 
 const StyledFilters = styled.div`
-  @media (max-width: 1100px) {
+  @media (max-width: 1200px) {
     display: none;
     &.showFilters {
       display: flex;

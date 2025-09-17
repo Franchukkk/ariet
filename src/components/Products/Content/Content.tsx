@@ -262,8 +262,7 @@ const StyledContent = styled.div`
 	margin-bottom: 173px;
 
 	@media (max-width: 1200px) {
-		grid-template-columns: minmax(220px, 300px) 1fr;
-		gap: 30px;
+		display: block;
 	}
 
 	@media (max-width: 1000px) {

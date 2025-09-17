@@ -2,19 +2,22 @@
 
 import { Background } from "@/components/About/Hero/Background";
 import LoginForm from "@/components/LoginForm/LoginForm";
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
 export default function Page() {
     const { t } = useTranslation("common");
     return (
-        <LoginWrapper >
-            <StyledTitle>{t("title.login")}</StyledTitle>
-            <LoginForm />
-            <CanvasBlock>
-                <Background />
-            </CanvasBlock>
-        </LoginWrapper>
+        <PublicRoute>
+            <LoginWrapper >
+                <StyledTitle>{t("title.login")}</StyledTitle>
+                <LoginForm />
+                <CanvasBlock>
+                    <Background />
+                </CanvasBlock>
+            </LoginWrapper>
+        </PublicRoute>
     )
 }
 

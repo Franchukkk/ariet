@@ -10,8 +10,6 @@ import { fakeData } from "./fakeData";
 import { OrderCard } from "./OrderCard";
 import { ModalCart } from "./ModalCart";
 
-let fakeDataList = fakeData;
-
 type StatusCounts = {
     delivered: number;
     paid: number;
@@ -69,9 +67,20 @@ export const OrderData = () => {
     const [selectOrder, setSelectOrder] = useState<boolean | any>(false);
     const [searchValue, setSearchValue] = useState<string>("");
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        setOrders(fakeData)
+        setIsLoading(true);
+        fetch("https://rpktask.sytes.net/api/orders/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(response => response.json())
+            .catch(err => setOrders(fakeData))
+            .finally(() => setIsLoading(false));
+
     }, [])
 
     const { t } = useTranslation("common");

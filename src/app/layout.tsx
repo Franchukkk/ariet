@@ -6,6 +6,8 @@ import './globals.css'
 import { Footer } from '@/components/Footer/Footer'
 import { Header } from '@/components/Header/Header'
 import I18nProvider from "@/providers/I18nProvider"
+import { getRefreshToken, refreshToken } from '@/helpers/auth'
+import { useEffect } from 'react'
 
 export const metadata: Metadata = {
   title: 'Ariet',
@@ -13,17 +15,22 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+
+  useEffect(() => {
+    refreshToken();
+  }, []);
+
   return (
     <html lang={'ru'}>
       <body>
-       <I18nProvider>
-         <div className="app-wrapper">
+        <I18nProvider>
+          <div className="app-wrapper">
             <Header />
-              <main>
-                {children}
-              </main>
+            <main>
+              {children}
+            </main>
             <Footer />
-         </div>
+          </div>
         </I18nProvider>
       </body>
     </html>
