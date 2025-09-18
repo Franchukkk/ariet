@@ -1,4 +1,5 @@
 import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
+
 import { Banner } from '../components/Home/Banner/Banner'
 import { Info } from '../components/Home/Info/Info'
 import { Products } from '../components/Home/Products/Products'
