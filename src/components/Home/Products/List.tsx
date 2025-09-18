@@ -40,7 +40,9 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-				const data: Product[] = await res.json()
+				const json = await res.json()
+				const data: Product[] = json.results || []
+
 				const filtered = filterProductsByCategory(data, activeCategory)
 				setProducts(filtered)
 			} catch (err) {

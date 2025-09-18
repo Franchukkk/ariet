@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa'
 import styled from 'styled-components'
 
-import { getCurrentUserRole, makeAuthenticatedRequest } from '@/helpers/auth'
+import { makeAuthenticatedRequest } from '@/helpers/auth'
 
 const FormWrapper = styled.div`
 	padding: 24px;
@@ -190,7 +190,11 @@ export default function ProfileForm() {
 					<Input
 						name='full_name'
 						type='text'
-						placeholder={t('ambassador.forma.fullname') || 'Full Name'}
+						placeholder={
+							formData.full_name
+								? t('ambassador.forma.fullname') || 'Full Name'
+								: 'не вказано'
+						}
 						value={formData.full_name}
 						onChange={handleChange}
 					/>
@@ -203,7 +207,9 @@ export default function ProfileForm() {
 						<Input
 							name='phone'
 							type='text'
-							placeholder={t('ambassador.forma.Telephone')}
+							placeholder={
+								formData.phone ? t('ambassador.forma.Telephone') : 'не вказано'
+							}
 							value={formData.phone}
 							onChange={handleChange}
 						/>
@@ -215,7 +221,9 @@ export default function ProfileForm() {
 						<Input
 							name='email'
 							type='email'
-							placeholder={t('ambassador.forma.email')}
+							placeholder={
+								formData.email ? t('ambassador.forma.email') : 'не вказано'
+							}
 							value={formData.email}
 							disabled
 						/>
@@ -230,7 +238,7 @@ export default function ProfileForm() {
 				<Input
 					name='instagram'
 					type='text'
-					placeholder='Instagram'
+					placeholder={formData.instagram || 'не вказано'}
 					value={formData.instagram}
 					onChange={handleChange}
 				/>
@@ -243,7 +251,7 @@ export default function ProfileForm() {
 				<Input
 					name='youtube'
 					type='text'
-					placeholder='YouTube'
+					placeholder={formData.youtube || 'не вказано'}
 					value={formData.youtube}
 					onChange={handleChange}
 				/>
@@ -256,7 +264,7 @@ export default function ProfileForm() {
 				<Input
 					name='telegram'
 					type='text'
-					placeholder='Telegram'
+					placeholder={formData.telegram || 'не вказано'}
 					value={formData.telegram}
 					onChange={handleChange}
 				/>
@@ -269,7 +277,7 @@ export default function ProfileForm() {
 				<Input
 					name='tiktok'
 					type='text'
-					placeholder='TikTok'
+					placeholder={formData.tiktok || 'не вказано'}
 					value={formData.tiktok}
 					onChange={handleChange}
 				/>

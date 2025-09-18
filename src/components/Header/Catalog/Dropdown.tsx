@@ -30,8 +30,9 @@ export const Dropdown = () => {
 
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-				const data = await res.json()
-				setCategories(Array.isArray(data) ? data : [])
+				const responseData = await res.json()
+				const data = responseData.results || []
+				setCategories(data)
 			} catch (err) {
 				console.error('Fetch error:', err)
 				setError('Failed to load')
