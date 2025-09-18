@@ -13,11 +13,11 @@ type PaymentOption = {
 }
 
 const paymentOptions: PaymentOption[] = [
-	{ id: 1, logo: '/visa.svg', key: 'visa' },
-	{ id: 2, logo: '/googlepay.svg', key: 'googlepay' },
-	{ id: 3, logo: '/mastercard.svg', key: 'mastercard' },
-	{ id: 4, logo: '/applepay.svg', key: 'applepay' },
-	{ id: 5, logo: '/payu.svg', key: 'payu' }
+	{ id: 1, logo: '/Payment/visa.svg', key: 'visa' },
+	{ id: 2, logo: '/Payment/googlepay.svg', key: 'googlepay' },
+	{ id: 3, logo: '/Payment/mastercard.svg', key: 'mastercard' },
+	{ id: 4, logo: '/Payment/applepay.svg', key: 'applepay' },
+	{ id: 5, logo: '/Payment/payu.svg', key: 'payu' }
 ]
 
 export const PaymentMethods = () => {
@@ -59,6 +59,11 @@ const Wrapper = styled.div`
 	width: 100%;
 	max-width: 800px;
 	margin-top: 80px;
+	padding: 0 16px;
+
+	@media (max-width: 600px) {
+		margin-top: 40px;
+	}
 `
 
 const Title = styled.h3`
@@ -67,14 +72,24 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
+
+	@media (max-width: 600px) {
+		font-size: 22px;
+		line-height: 32px;
+		text-align: center;
+	}
 `
 
 const Options = styled.div`
 	display: flex;
+	flex-wrap: wrap;
 	gap: 30px;
 	align-items: center;
-	flex-wrap: wrap;
+
+	@media (max-width: 600px) {
+		justify-content: center;
+		gap: 20px;
+	}
 `
 
 const Option = styled.div<{ selected: boolean }>`
@@ -82,6 +97,14 @@ const Option = styled.div<{ selected: boolean }>`
 	align-items: center;
 	gap: 10px;
 	cursor: pointer;
+	padding: 8px 12px;
+	border-radius: 8px;
+	transition: background 0.2s ease;
+	background: ${({ selected }) => (selected ? '#24242470' : 'transparent')};
+
+	@media (max-width: 600px) {
+		padding: 6px 10px;
+	}
 `
 
 const Radio = styled.div`
@@ -106,10 +129,15 @@ const Logo = styled.img`
 	width: 60px;
 	height: auto;
 	object-fit: contain;
+
+	@media (max-width: 600px) {
+		width: 50px;
+	}
 `
 
 const StyledForm = styled.div`
 	padding-top: 95px;
+
 	.fields {
 		display: grid;
 		grid-template-columns: 1fr;
@@ -117,16 +145,13 @@ const StyledForm = styled.div`
 		gap: 44px;
 		margin-bottom: 44px;
 	}
+
 	.fields-group {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 38px;
-	}
-	@media (max-width: 1000px) {
-		width: 90%;
-	}
-	@media (max-width: 800px) {
-		.fields-group {
+
+		@media (max-width: 800px) {
 			grid-template-columns: 1fr;
 			gap: 20px;
 		}

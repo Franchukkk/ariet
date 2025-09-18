@@ -51,7 +51,7 @@ const Wrapper = styled.div`
 	justify-content: center;
 	padding: 20px;
 
-	@media (max-width: 1000px) {
+	@media (max-width: 1200px) {
 		flex-direction: column;
 		align-items: center;
 		gap: 20px;
@@ -59,10 +59,17 @@ const Wrapper = styled.div`
 `
 const TitleD = styled.div`
 	width: 100%;
-	max-width: 1500px;
+	max-width: 1350px;
 	margin: 100px auto 0 auto;
 	padding: 0 20px;
+
+	@media (max-width: 1000px) {
+		display: flex;
+		justify-content: center;
+		text-align: center;
+	}
 `
+
 const DeliveryWrapper = styled.div`
 	width: 100%;
 	max-width: 1500px;

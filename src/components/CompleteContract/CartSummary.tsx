@@ -31,7 +31,7 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 		<Container>
 			{products.map(product => (
 				<div key={product.id}>
-					<Product>
+					<ProductItem>
 						<ImageWrapper>
 							<Image
 								src={product.photo}
@@ -53,44 +53,31 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 								</Price>
 							</Info>
 						</Details>
-					</Product>
+					</ProductItem>
 					<Divider />
 				</div>
 			))}
 
-			<div className='flex flex-row justify-between mb-[30px]'>
-				<p className='w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
-					{t('complete_contract.cart.products_price')}
-				</p>
-				<p className='w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold'>
-					{totalPrice.toLocaleString()} грн
-					<span className='absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent'></span>
-				</p>
-			</div>
+			<Row>
+				<Label>{t('complete_contract.cart.products_price')}</Label>
+				<Value>{totalPrice.toLocaleString()} грн</Value>
+			</Row>
 
-			<div className='flex flex-row justify-between mb-[30px]'>
-				<p className='w-[45%] pb-[14px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
-					{t('complete_contract.cart.delivery')}
-				</p>
-				<p className='w-[45%] pb-[14px] text-[#FFFFFFA8] relative inline-block text-[16px] font-bold'>
-					{deliveryPrice.toLocaleString()} грн
-					<span className='absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent'></span>
-				</p>
-			</div>
+			<Row>
+				<Label>{t('complete_contract.cart.delivery')}</Label>
+				<Value>{deliveryPrice.toLocaleString()} грн</Value>
+			</Row>
 
-			<div className='flex flex-row justify-between mb-[30px]'>
-				<p className='w-[45%] pb-[14px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
-					{t('complete_contract.cart.total')}
-				</p>
-				<p className='w-[45%] pb-[15px] text-[#FFFFFFA8] relative inline-block text-[18px] text-[#FFFFFF] font-bold'>
+			<Row>
+				<Label>{t('complete_contract.cart.total')}</Label>
+				<TotalValue>
 					{(totalPrice + deliveryPrice).toLocaleString()} грн
-					<span className='absolute left-0 bottom-0 w-full h-[2px] bg-gradient-to-r from-gray-300 to-transparent'></span>
-				</p>
-			</div>
+				</TotalValue>
+			</Row>
 
-			<Button onClick={() => router.push('/thanks-for-order')}>
+			<ConfirmButton onClick={() => router.push('/thanks-for-order')}>
 				{t('complete_contract.cart.confirm')}
-			</Button>
+			</ConfirmButton>
 		</Container>
 	)
 }
@@ -101,7 +88,7 @@ const Container = styled.div`
 	padding: 20px;
 	border-radius: 10px;
 	width: 100%;
-	max-width: 600px;
+	max-width: 440px;
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
@@ -111,9 +98,9 @@ const Container = styled.div`
 	}
 `
 
-const Product = styled.div`
+const ProductItem = styled.div`
 	display: flex;
-	gap: 15px;
+	gap: 20px;
 `
 
 const ImageWrapper = styled.div`
@@ -131,36 +118,54 @@ const Details = styled.div`
 
 const Category = styled.span`
 	font-weight: 400;
+	font-style: Regular;
 	font-size: 13px;
+	leading-trim: NONE;
 	line-height: 100%;
+	letter-spacing: 0%;
+
 	color: #7f7f7f;
 `
 
 const Name = styled.h4`
 	font-weight: 600;
+	font-style: DemiBold;
 	font-size: 17px;
+	leading-trim: NONE;
 	line-height: 100%;
 	letter-spacing: 1%;
+
+	color: #fff;
 	margin: 0;
 `
 
 const Info = styled.div`
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
+	gap: 90px;
 	width: 200px;
 
 	span {
-		font-weight: 600;
+		font-weight: 400;
+		font-style: Regular;
 		font-size: 17px;
+		leading-trim: NONE;
 		line-height: 100%;
 		letter-spacing: 1%;
+
+		color: #ffffff;
 	}
 `
 
 const Price = styled.span`
+	color: #fff;
+
 	font-weight: 600;
+	font-style: DemiBold;
 	font-size: 17px;
+	leading-trim: NONE;
+	line-height: 100%;
+	letter-spacing: 1%;
 `
 
 const Divider = styled.hr`
@@ -169,16 +174,79 @@ const Divider = styled.hr`
 	margin-top: 20px;
 `
 
-const Button = styled.button`
+const Row = styled.div`
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 30px;
+`
+
+const Label = styled.p`
+	width: 45%;
+	font-weight: 300;
+	font-style: Light;
+	font-size: 14px;
+	leading-trim: NONE;
+	line-height: 18px;
+	letter-spacing: 1%;
+	color: #ffffffa8;
+
+	border-bottom: 1px dashed #ffffff42;
+`
+
+const Value = styled.p`
+	width: 45%;
+	padding-bottom: 14px;
+	position: relative;
+
+	font-weight: 500;
+	font-style: Medium;
+	font-size: 15px;
+	leading-trim: NONE;
+	line-height: 18px;
+	letter-spacing: 1%;
+	color: #ffffffc9;
+
+	&::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 2px;
+		background: linear-gradient(to right, #d1d5db, transparent);
+	}
+`
+
+const TotalValue = styled(Value)`
+	color: #ffffffc9;
+	font-weight: 700;
+	font-style: Bold;
+	font-size: 18px;
+	leading-trim: NONE;
+	line-height: 18px;
+	letter-spacing: 1%;
+
+	padding-bottom: 15px;
+`
+
+const ConfirmButton = styled.button`
 	width: 100%;
 	background: #4bc785;
 	color: black;
-	padding: 15px;
-	font-weight: 600;
+	padding: 20px;
+
 	border-radius: 9999px;
-	font-size: 16px;
+
 	cursor: pointer;
 	transition: background 0.2s ease;
+
+	font-weight: 600;
+	font-style: DemiBold;
+	font-size: 15px;
+	leading-trim: NONE;
+	line-height: 100%;
+	letter-spacing: 1%;
+	text-align: center;
 
 	&:hover {
 		background: #4ade80;

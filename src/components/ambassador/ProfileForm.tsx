@@ -1,8 +1,17 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FaFacebookF, FaInstagram } from 'react-icons/fa'
+import {
+	FaFacebookF,
+	FaInstagram,
+	FaTelegramPlane,
+	FaTiktok
+} from 'react-icons/fa'
 import styled from 'styled-components'
+
+import { getCurrentUserRole, makeAuthenticatedRequest } from '@/helpers/auth'
 
 const FormWrapper = styled.div`
 	padding: 24px;
@@ -18,7 +27,6 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
 
 	@media (max-width: 768px) {
@@ -27,28 +35,29 @@ const Title = styled.h3`
 	}
 `
 
-const Grid = styled.div`
-	display: grid;
-	grid-template-columns: 1fr 1fr;
+const FullWidth = styled.div`
+	width: 100%;
+`
+const TwoColumnGrid = styled.div`
+	display: flex;
 	gap: 16px;
-
 	@media (max-width: 768px) {
-		grid-template-columns: 1fr;
+		flex-direction: column;
 	}
 `
-
+const Half = styled.div`
+	flex: 1;
+`
 const InputWrapper = styled.div`
 	display: flex;
 	align-items: center;
 	gap: 22px;
-	border-bottom: 1px solid #2c2c2c;
+	border-bottom: 1px solid #ffffff8a;
 	padding: 22px 0;
-
 	@media (max-width: 768px) {
 		padding: 12px 0;
 	}
 `
-
 const IconCircle = styled.div`
 	width: 40px;
 	height: 40px;
@@ -58,33 +67,26 @@ const IconCircle = styled.div`
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-
 	svg {
 		color: #fff;
 		font-size: 20px;
 	}
 `
-
 const Input = styled.input`
 	flex: 1;
 	background: transparent;
 	color: #7f7f7f;
 	border: none;
 	outline: none;
-
 	font-weight: 400;
 	font-size: 16px;
-	line-height: 100%;
-
 	&::placeholder {
 		color: #777;
 	}
-
 	@media (max-width: 768px) {
 		font-size: 14px;
 	}
 `
-
 const Button = styled.button`
 	margin-top: 24px;
 	padding: 20px 45px;
@@ -96,14 +98,10 @@ const Button = styled.button`
 	transition: all 0.3s ease;
 	font-weight: 600;
 	font-size: 15px;
-	line-height: 100%;
-	letter-spacing: 1%;
 	text-align: center;
-
 	&:hover {
 		background: #3ea46b;
 	}
-
 	@media (max-width: 768px) {
 		padding: 14px 30px;
 		font-size: 14px;
@@ -112,48 +110,129 @@ const Button = styled.button`
 
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
+	const [loading, setLoading] = useState(true)
+	const [formData, setFormData] = useState({
+		full_name: '',
+		phone: '',
+		instagram: '',
+		tiktok: '',
+		telegram: '',
+		youtube: '',
+		email: ''
+	})
+
+	const router = useRouter()
+
+	useEffect(() => {
+		const init = async () => {
+			const role = await getCurrentUserRole()
+
+			if (role !== 'ambassador') {
+				router.push('/')
+				return
+			}
+
+			try {
+				const res = await makeAuthenticatedRequest(
+					'https://rpktask.sytes.net/api/users/me/'
+				)
+				if (res.ok) {
+					const data = await res.json()
+					setFormData(data)
+				}
+			} catch (e) {
+				console.error('Load profile failed:', e)
+			}
+			setLoading(false)
+		}
+		init()
+	}, [router])
+
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+	}
+
+	const handleSubmit = async () => {
+		try {
+			const res = await makeAuthenticatedRequest(
+				'https://rpktask.sytes.net/api/users/me/',
+				{
+					method: 'PUT',
+					body: JSON.stringify({
+						full_name: formData.full_name,
+						phone: formData.phone,
+						instagram: formData.instagram,
+						tiktok: formData.tiktok,
+						telegram: formData.telegram,
+						youtube: formData.youtube
+					})
+				}
+			)
+			if (res.ok) {
+				alert('Update')
+			} else {
+				alert('Failed')
+			}
+		} catch (e) {
+			console.error('Update failed:', e)
+			alert('Failed server')
+		}
+	}
+
+	if (loading) return <p style={{ color: '#fff' }}>Loading...</p>
+
 	return (
 		<FormWrapper>
 			<Title>{t('ambassador.profileForm.title')}</Title>
-			<Grid>
+
+			<FullWidth>
 				<InputWrapper>
 					<Input
+						name='full_name'
 						type='text'
-						placeholder={t('ambassador.forma.name')}
-						defaultValue='Ирина'
+						placeholder={t('ambassador.forma.fullname') || 'Full Name'}
+						value={formData.full_name}
+						onChange={handleChange}
 					/>
 				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='text'
-						placeholder={t('ambassador.forma.Surname')}
-						defaultValue='Овчаренко'
-					/>
-				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='text'
-						placeholder={t('ambassador.forma.Telephone')}
-						defaultValue='+38 (068) 879-03-13'
-					/>
-				</InputWrapper>
-				<InputWrapper>
-					<Input
-						type='email'
-						placeholder={t('ambassador.forma.email')}
-						defaultValue='info@gmail.com'
-					/>
-				</InputWrapper>
-			</Grid>
+			</FullWidth>
+
+			<TwoColumnGrid>
+				<Half>
+					<InputWrapper>
+						<Input
+							name='phone'
+							type='text'
+							placeholder={t('ambassador.forma.Telephone')}
+							value={formData.phone}
+							onChange={handleChange}
+						/>
+					</InputWrapper>
+				</Half>
+
+				<Half>
+					<InputWrapper>
+						<Input
+							name='email'
+							type='email'
+							placeholder={t('ambassador.forma.email')}
+							value={formData.email}
+							disabled
+						/>
+					</InputWrapper>
+				</Half>
+			</TwoColumnGrid>
 
 			<InputWrapper>
 				<IconCircle>
 					<FaInstagram />
 				</IconCircle>
 				<Input
+					name='instagram'
 					type='text'
 					placeholder='Instagram'
-					defaultValue='https://www.instagram.com/ovcharenko_ira/'
+					value={formData.instagram}
+					onChange={handleChange}
 				/>
 			</InputWrapper>
 
@@ -162,13 +241,43 @@ export default function ProfileForm() {
 					<FaFacebookF />
 				</IconCircle>
 				<Input
+					name='youtube'
 					type='text'
-					placeholder='Facebook'
-					defaultValue='https://www.instagram.com/ovcharenko_ira/'
+					placeholder='YouTube'
+					value={formData.youtube}
+					onChange={handleChange}
 				/>
 			</InputWrapper>
 
-			<Button>{t('ambassador.profileForm.button')}</Button>
+			<InputWrapper>
+				<IconCircle>
+					<FaTelegramPlane />
+				</IconCircle>
+				<Input
+					name='telegram'
+					type='text'
+					placeholder='Telegram'
+					value={formData.telegram}
+					onChange={handleChange}
+				/>
+			</InputWrapper>
+
+			<InputWrapper>
+				<IconCircle>
+					<FaTiktok />
+				</IconCircle>
+				<Input
+					name='tiktok'
+					type='text'
+					placeholder='TikTok'
+					value={formData.tiktok}
+					onChange={handleChange}
+				/>
+			</InputWrapper>
+
+			<Button onClick={handleSubmit}>
+				{t('ambassador.profileForm.button')}
+			</Button>
 		</FormWrapper>
 	)
 }

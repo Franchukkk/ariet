@@ -11,9 +11,9 @@ type DeliveryOption = {
 }
 
 const deliveryOptions: DeliveryOption[] = [
-	{ id: 1, logo: '/nova-poshta.svg', key: 'nova_poshta' },
-	{ id: 2, logo: '/ukrposhta.svg', key: 'ukrposhta' },
-	{ id: 3, logo: '/pickup.svg', key: 'pickup' }
+	{ id: 1, logo: '/Delivery/nova-poshta.svg', key: 'nova_poshta' },
+	{ id: 2, logo: '/Delivery/ukrposhta.svg', key: 'ukrposhta' },
+	{ id: 3, logo: '/Delivery/pickup.svg', key: 'pickup' }
 ]
 
 export const DeliveryMethods = () => {
@@ -54,6 +54,7 @@ export const DeliveryMethods = () => {
 const Wrapper = styled.div`
 	width: 100%;
 	max-width: 800px;
+	padding: 0 10px;
 `
 
 const Title = styled.h3`
@@ -62,8 +63,13 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
+
+	@media (max-width: 600px) {
+		font-size: 22px;
+		line-height: 32px;
+		text-align: center;
+	}
 `
 
 const Option = styled.div<{ selected: boolean }>`
@@ -75,7 +81,14 @@ const Option = styled.div<{ selected: boolean }>`
 	margin-bottom: 10px;
 	border-radius: 6px;
 	cursor: pointer;
+	background: ${({ selected }) => (selected ? '#24242470' : 'transparent')};
 	transition: background 0.2s;
+
+	@media (max-width: 600px) {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
 `
 
 const Radio = styled.div`
@@ -100,32 +113,42 @@ const Logo = styled.img`
 	object-fit: contain;
 	width: 49px;
 	height: 31px;
+
+	@media (max-width: 600px) {
+		width: 40px;
+		height: 25px;
+	}
 `
 
 const Label = styled.span`
 	color: #fff;
-	font-weight: 400;
 	font-size: 17px;
 	line-height: 25px;
-	letter-spacing: 0%;
+
+	@media (max-width: 600px) {
+		font-size: 16px;
+	}
 `
 
 const Duration = styled.span`
 	color: #aaa;
 	margin-left: auto;
-	text-align: left;
-	font-weight: 400;
 	font-size: 17px;
 	line-height: 25px;
-	letter-spacing: 0%;
+
+	@media (max-width: 600px) {
+		margin-left: 0;
+	}
 `
 
 const Price = styled.span`
 	color: #fff;
 	margin-left: 20px;
-	text-align: left;
 	font-weight: 700;
 	font-size: 17px;
 	line-height: 25px;
-	letter-spacing: 0%;
+
+	@media (max-width: 600px) {
+		margin-left: 0;
+	}
 `

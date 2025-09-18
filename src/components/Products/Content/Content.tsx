@@ -1,14 +1,11 @@
 'use client'
 
-import type { StaticImageData } from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiSearch } from 'react-icons/fi'
 import styled from 'styled-components'
 
 import { Pagination } from '@/components/Pagination/Pagination'
-
-import productImg from '@/assets/img/module.png'
 
 import { Models } from '../../Search/Models/Models'
 
@@ -18,120 +15,119 @@ import { List } from './List'
 import { ShowMore } from './ShowMore'
 
 export interface IProduct {
-	id: number;
-	name: string;
-	description: string;
-	sku: string;
-	category: ICategory;
-	variants: IVariant[];
+	id: number
+	name: string
+	description: string
+	sku: string
+	category: ICategory
+	variants: IVariant[]
 }
 
 export interface ICategory {
-	id: number;
-	name: string;
+	id: number
+	name: string
 }
 
 export interface IVariant {
-	id: number;
-	sku: string;
-	socket: ISocket;
-	images: IVariantImage[];
-	stock: number[]; // якщо може бути більше чисел
-	price: number;
+	id: number
+	sku: string
+	socket: ISocket
+	images: IVariantImage[]
+	stock: number[] // якщо може бути більше чисел
+	price: number
 }
 
 export interface ISocket {
-	code: string;
-	name: string;
+	code: string
+	name: string
 }
 
 export interface IVariantImage {
-	image: string;
-	alt_text: string | null;
+	image: string
+	alt_text: string | null
 }
 
-export type ProductArray = IProduct[];
+export type ProductArray = IProduct[]
 
 const realData = [
 	{
-		"id": 1,
-		"name": "Online UPS Ariet 1",
-		"description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet.",
-		"sku": "13FK41",
-		"category": {
-			"id": 1,
-			"name": "Online UPS"
+		id: 1,
+		name: 'Online UPS Ariet 1',
+		description:
+			'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet.',
+		sku: '13FK41',
+		category: {
+			id: 1,
+			name: 'Online UPS'
 		},
-		"variants": [
+		variants: [
 			{
-				"id": 1,
-				"sku": "SK1441",
-				"socket": {
-					"code": "C13",
-					"name": "C13"
+				id: 1,
+				sku: 'SK1441',
+				socket: {
+					code: 'C13',
+					name: 'C13'
 				},
-				"images": [
+				images: [
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/home-bg-1.png",
-						"alt_text": null
+						image:
+							'https://31.131.21.16/api/media/variant_images/home-bg-1.png',
+						alt_text: null
 					},
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/3d-model.png",
-						"alt_text": null
+						image: 'https://31.131.21.16/api/media/variant_images/3d-model.png',
+						alt_text: null
 					},
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/hero-bg.png",
-						"alt_text": null
+						image: 'https://31.131.21.16/api/media/variant_images/hero-bg.png',
+						alt_text: null
 					}
 				],
-				"stock": [
-					1
-				],
-				"price": 1300
+				stock: [1],
+				price: 1300
 			},
 			{
-				"id": 2,
-				"sku": "SK1321",
-				"socket": {
-					"code": "C13",
-					"name": "C13"
+				id: 2,
+				sku: 'SK1321',
+				socket: {
+					code: 'C13',
+					name: 'C13'
 				},
-				"images": [
+				images: [
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/category-4.png",
-						"alt_text": null
+						image:
+							'https://31.131.21.16/api/media/variant_images/category-4.png',
+						alt_text: null
 					},
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/category-2.png",
-						"alt_text": null
+						image:
+							'https://31.131.21.16/api/media/variant_images/category-2.png',
+						alt_text: null
 					},
 					{
-						"image": "https://rpktask.sytes.net/api/media/variant_images/category-3.png",
-						"alt_text": null
+						image:
+							'https://31.131.21.16/api/media/variant_images/category-3.png',
+						alt_text: null
 					}
 				],
-				"stock": [
-					2
-				],
-				"price": 1550
+				stock: [2],
+				price: 1550
 			}
 		]
 	}
 ]
-
 
 export const Content = () => {
 	const { t } = useTranslation('common')
 	const [productData, setProductData] = useState<IProduct[]>([])
 
 	useEffect(() => {
-		fetch('https://rpktask.sytes.net/api/catalog/products/',
-			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			})
+		fetch('https://31.131.21.16/api/catalog/products/', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
 			.then(res => res.json())
 			.then(data => setProductData(data))
 			.catch(err => setProductData(realData))
@@ -174,7 +170,6 @@ export const Content = () => {
 
 	return (
 		<StyledContent className='main-wrapper'>
-
 			<Filters
 				activeFilters={activeFilters}
 				onChangeFilter={handleFilterChange}

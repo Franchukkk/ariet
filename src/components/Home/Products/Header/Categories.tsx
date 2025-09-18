@@ -1,22 +1,25 @@
 'use client'
 
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 const CATEGORIES = ['categories.new', 'categories.project', 'categories.best']
 
-export const Categories = () => {
-	const [active, setActive] = useState(0)
+interface Props {
+	active: number
+	setActive: (index: number) => void
+}
+
+export const Categories = ({ active, setActive }: Props) => {
 	const { t } = useTranslation('common')
 
 	return (
 		<StyledCategories className='flex items-center gap-4 flex-wrap'>
 			{CATEGORIES.map((key, i) => (
 				<button
-					key={i}
+					key={key}
 					onClick={() => setActive(i)}
-					className={`${active === i ? 'active' : ''}`}
+					className={active === i ? 'active' : ''}
 				>
 					{t(key)}
 				</button>
