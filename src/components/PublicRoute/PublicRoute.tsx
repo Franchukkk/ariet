@@ -25,6 +25,11 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     useEffect(() => {
+        if (pathname !== "/login" && pathname !== "/registration") {
+            setIsLoading(false);
+            return;
+        }
+
         const checkAuth = async () => {
             const refreshTokenValue = getRefreshToken();
 
