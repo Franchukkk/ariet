@@ -1,6 +1,7 @@
 "use client";
 
 import { Background } from "@/components/About/Hero/Background";
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute";
 import RegistrationForm from "@/components/RegistrationForm/RegistrationForm";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -8,13 +9,15 @@ import styled from "styled-components";
 export default function Page() {
     const { t } = useTranslation("common");
     return (
-        <RegistrationWrapper >
-            <StyledTitle>{t("title.registration")}</StyledTitle>
-            <RegistrationForm />
-            <CanvasBlock>
-                <Background />
-            </CanvasBlock>
-        </RegistrationWrapper>
+        <PublicRoute>
+            <RegistrationWrapper >
+                <StyledTitle>{t("title.registration")}</StyledTitle>
+                <RegistrationForm />
+                <CanvasBlock>
+                    <Background />
+                </CanvasBlock>
+            </RegistrationWrapper>
+        </PublicRoute>
     )
 }
 

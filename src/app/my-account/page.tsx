@@ -4,9 +4,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
 
 export default function Page() {
     return (
-        <ProtectedRoute requiredRole="user">
-            <TitleMyAccount />
+        <ProtectedRoute>
+            < TitleMyAccount />
             <Orders />
-        </ProtectedRoute>
+        </ProtectedRoute >
     );
 }

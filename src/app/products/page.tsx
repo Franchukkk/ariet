@@ -2,16 +2,20 @@
 import styled from "styled-components"
 import { Categories } from "../../components/Categories/Categories"
 import { Content } from "../../components/Products/Content/Content"
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute"
+
 
 export default function Page() {
   return (
-    <StyledProducts>
-      <Content />
-      <Categories />
-    </StyledProducts>
+    <PublicRoute>
+      <StyledProducts>
+        <Content />
+        <Categories />
+      </StyledProducts>
+    </PublicRoute>
   )
 };
 
 const StyledProducts = styled.div`
-  padding-top: 81px;
-`;
+      padding-top: 81px;
+      `;

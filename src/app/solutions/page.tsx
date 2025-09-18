@@ -7,18 +7,21 @@ import { Autonomy } from "../../components/Solutions/Autonomy/Autonomy"
 import { Hero } from "../../components/Solutions/Hero/Hero"
 import { MaterialTitle } from "../../components/Solutions/MaterialTitle"
 import { Parameters } from "../../components/Solutions/Parameters/Parameters"
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute"
 
 export default function Page() {
   return (
-  <StyledSolutions className="main-wrapper">
-    <Hero />
-    <Parameters />
-    <Advantages />
-    <MaterialTitle />
-    <Autonomy />
-    <LightPlanet />
-    <Form title={`Расскажите нам о своей задаче`} />
-    </StyledSolutions>
+    <PublicRoute>
+      <StyledSolutions className="main-wrapper">
+        <Hero />
+        <Parameters />
+        <Advantages />
+        <MaterialTitle />
+        <Autonomy />
+        <LightPlanet />
+        <Form title={`Расскажите нам о своей задаче`} />
+      </StyledSolutions>
+    </PublicRoute>
   )
 };
 

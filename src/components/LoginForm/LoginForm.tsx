@@ -5,50 +5,42 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-    const [login, setLogin] = useState("");
+    const [email, setemail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const router = useRouter();
 
     const { t } = useTranslation("common");
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        fetch("https://rpktask.sytes.net/api/auth/login/", {
+        const res = await fetch("https://rpktask.sytes.net/api/token/", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ login, password }),
+            body: JSON.stringify({ email, password }),
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.access) {
-                    localStorage.setItem('authToken', data.access);
-                    if (data.refresh) {
-                        localStorage.setItem('refreshToken', data.refresh);
-                    }
-                    // Перенаправляємо в залежності від ролі
-                    const userRole = data.role?.toLowerCase();
-                    if (userRole === 'admin') {
-                        router.push("/admin-dashboard");
-                    } else if (userRole === 'ambassador') {
-                        router.push("/ambassador");
-                    } else {
-                        router.push("/my-account");
-                    }
-                } else {
-                    alert("Невірний логін або пароль");
-                }
-            })
-            .catch(err => alert("Виникла помилка при вході"));
+        const data = await res.json();
+
+        if (data.access) {
+            // Зберігаємо токени в localStorage
+            localStorage.setItem('accessToken', data.access);
+            localStorage.setItem('refreshToken', data.refresh);
+
+            router.push("/my-account");
+        }
+        else {
+            alert("Невірний логін або пароль");
+        }
+
+        return;
     }
 
     return (
         <StyledForm onSubmit={handleSubmit}>
             <div className="w-full flex flex-col relative">
-                <StyledInput value={login} placeholder=" " required name="login" type="mail" onChange={(e) => { setLogin(e.target.value) }} />
+                <StyledInput value={email} placeholder=" " required name="email" type="mail" onChange={(e) => { setemail(e.target.value) }} />
                 <StyledLabel>{t("LoginForm.login")}</StyledLabel>
             </div>
             <div className="w-full flex flex-col relative">

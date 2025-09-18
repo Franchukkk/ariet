@@ -1,143 +1,88 @@
-'use client'
+"use client"
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { getRefreshToken, refreshToken } from "@/helpers/auth"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
-interface ProtectedRouteProps {
-	children: React.ReactNode
-	requiredRole?: 'user' | 'admin' | 'ambassador'
-}
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
-export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-	const router = useRouter()
-	const [isLoading, setIsLoading] = useState(true)
-	const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-	useEffect(() => {
-		const checkAuth = async () => {
-			const token = localStorage.getItem('authToken')
-			const refreshToken = localStorage.getItem('refreshToken')
+    const router = useRouter()
+    const [isLoading, setIsLoading] = useState(true)
+    const pathname = usePathname()
 
-			if (!token) {
-				router.push('/login')
-				return
-			}
+    let idInterval: NodeJS.Timeout
 
-			try {
-				// Перевіряємо токен на сервері
-				const response = await fetch('https://rpktask.sytes.net/api/auth/verify', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					}
-				})
+    useEffect(() => {
+        idInterval = setInterval(refreshToken, 2 * 60 * 1000);
 
-				if (response.ok) {
-					const data = await response.json()
-					const userRole = data.role?.toLowerCase()
+        return () => clearInterval(idInterval)
+    }, [])
 
-					// Перевіряємо роль
-					if (requiredRole && userRole !== requiredRole) {
-						// Перенаправляємо в залежності від ролі користувача
-						if (userRole === 'admin') {
-							router.push('/admin-dashboard')
-						} else if (userRole === 'ambassador') {
-							router.push('/ambassador')
-						} else {
-							router.push('/my-account')
-						}
-						return
-					}
 
-					setIsAuthenticated(true)
-				} else {
-					// Якщо токен невалідний, спробуємо оновити через refresh token
-					if (refreshToken) {
-						await refreshAccessToken(refreshToken)
-					} else {
-						throw new Error('No refresh token')
-					}
-				}
-			} catch (error) {
-				console.error('Auth error:', error)
-				localStorage.removeItem('authToken')
-				localStorage.removeItem('refreshToken')
-				router.push('/login')
-			} finally {
-				setIsLoading(false)
-			}
-		}
+    useEffect(() => {
+        const refreshTokenValue = getRefreshToken()
 
-		const refreshAccessToken = async (refreshToken: string) => {
-			try {
-				const response = await fetch('https://rpktask.sytes.net/api/token/refresh/', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({ refresh: refreshToken })
-				})
+        if (!refreshTokenValue) {
+            if (pathname === '/login' || pathname === '/registration') {
+                router.push('/login')
+                return
+            } else {
+                router.push('/login')
+                return
+            }
+        }
 
-				if (response.ok) {
-					const data = await response.json()
-					localStorage.setItem('authToken', data.access)
+        fetch('https://rpktask.sytes.net/api/token/refresh/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ refresh: refreshTokenValue })
+        }).then(res => res.json()).then(data => {
+            if (data.code === 'token_not_valid') {
+                router.push('/login')
+                return
+            }
+            if (data.access) {
+                localStorage.setItem('accessToken', data.access)
 
-					// Перевіряємо новий токен
-					const verifyResponse = await fetch('https://rpktask.sytes.net/api/auth/verify', {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${data.access}`
-						}
-					})
+                fetch('https://rpktask.sytes.net/api/users/me/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${data.access}`
+                    },
+                }).then(res => res.json())
+                    .then(userData => {
+                        const userRole = userData.role
 
-					if (verifyResponse.ok) {
-						const userData = await verifyResponse.json()
-						const userRole = userData.role?.toLowerCase()
+                        // Визначаємо куди має йти користувач
+                        let targetPath = '/login'
+                        if (userRole === 'CLIENT') {
+                            targetPath = '/my-account'
+                        } else if (userRole === 'AMBASSADOR') {
+                            targetPath = '/ambassador'
+                        } else if (userRole === 'ADMIN') {
+                            targetPath = '/admin-dashboard'
+                        }
 
-						// Перевіряємо роль
-						if (requiredRole && userRole !== requiredRole) {
-							// Перенаправляємо в залежності від ролі користувача
-							if (userRole === 'admin') {
-								router.push('/admin-dashboard')
-							} else if (userRole === 'ambassador') {
-								router.push('/ambassador')
-							} else {
-								router.push('/my-account')
-							}
-							return
-						}
+                        // Редіректимо ТІЛЬКИ якщо користувач НЕ на своїй сторінці
+                        if (pathname !== targetPath) {
+                            console.log('Redirecting to:', targetPath)
+                            router.push(targetPath)
+                            return
+                        }
+                        setIsLoading(false)
+                    })
+            }
+        }).catch(err => {
+            console.error('Auth error:', err)
+            router.push('/login')
+        })
 
-						setIsAuthenticated(true)
-					} else {
-						throw new Error('Token verification failed after refresh')
-					}
-				} else {
-					throw new Error('Token refresh failed')
-				}
-			} catch (error) {
-				console.error('Refresh token error:', error)
-				localStorage.removeItem('authToken')
-				localStorage.removeItem('refreshToken')
-				router.push('/login')
-			}
-		}
+        return () => clearInterval(idInterval as NodeJS.Timeout)
+    }, [pathname, router])
 
-		checkAuth()
-	}, [router, requiredRole])
-
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<div className="text-white">Loading...</div>
-			</div>
-		)
-	}
-
-	if (!isAuthenticated) {
-		return null
-	}
-
-	return <>{children}</>
+    return <div className="mb-[50px]">{isLoading ? <div className="flex justify-center items-center h-[500px]">Loading...</div> : children}</div>
 }

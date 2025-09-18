@@ -11,7 +11,7 @@ import {
 } from 'react-icons/fa'
 import styled from 'styled-components'
 
-import { makeAuthenticatedRequest } from '@/helpers/auth'
+import { getAccessToken, logout, refreshToken } from '@/helpers/auth'
 
 const FormWrapper = styled.div`
 	padding: 24px;
@@ -108,6 +108,11 @@ const Button = styled.button`
 	}
 `
 
+;('use client')
+// імпорт тільки токен-функцій
+
+// ... styled-components (без змін)
+
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
 	const [loading, setLoading] = useState(true)
@@ -123,17 +128,76 @@ export default function ProfileForm() {
 
 	const router = useRouter()
 
+	// 🔄 функція-запит з токеном
+	const requestWithToken = async (
+		input: RequestInfo,
+		init?: RequestInit
+	): Promise<Response> => {
+		let token = getAccessToken()
+
+		if (!token) {
+			const refreshed = await refreshToken()
+			if (!refreshed) {
+				logout()
+				throw new Error('Unauthorized')
+			}
+			token = getAccessToken()
+		}
+
+		let res = await fetch(input, {
+			...init,
+			headers: {
+				...init?.headers,
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			}
+		})
+
+		if (res.status === 401 || res.status === 403) {
+			const refreshed = await refreshToken()
+			if (refreshed) {
+				const newToken = getAccessToken()
+				res = await fetch(input, {
+					...init,
+					headers: {
+						...init?.headers,
+						Authorization: `Bearer ${newToken}`,
+						'Content-Type': 'application/json'
+					}
+				})
+			} else {
+				logout()
+				throw new Error('Session expired')
+			}
+		}
+
+		return res
+	}
+
+	// 🔍 отримати роль
+	const getCurrentUserRole = async (): Promise<string | null> => {
+		try {
+			const res = await requestWithToken(
+				'https://rpktask.sytes.net/api/users/me/'
+			)
+			if (!res.ok) return null
+			const data = await res.json()
+			return data.role || null
+		} catch {
+			return null
+		}
+	}
+
 	useEffect(() => {
 		const init = async () => {
 			const role = await getCurrentUserRole()
-
 			if (role !== 'ambassador') {
 				router.push('/')
 				return
 			}
 
 			try {
-				const res = await makeAuthenticatedRequest(
+				const res = await requestWithToken(
 					'https://rpktask.sytes.net/api/users/me/'
 				)
 				if (res.ok) {
@@ -143,8 +207,10 @@ export default function ProfileForm() {
 			} catch (e) {
 				console.error('Load profile failed:', e)
 			}
+
 			setLoading(false)
 		}
+
 		init()
 	}, [router])
 
@@ -154,7 +220,7 @@ export default function ProfileForm() {
 
 	const handleSubmit = async () => {
 		try {
-			const res = await makeAuthenticatedRequest(
+			const res = await requestWithToken(
 				'https://rpktask.sytes.net/api/users/me/',
 				{
 					method: 'PUT',
@@ -190,11 +256,7 @@ export default function ProfileForm() {
 					<Input
 						name='full_name'
 						type='text'
-						placeholder={
-							formData.full_name
-								? t('ambassador.forma.fullname') || 'Full Name'
-								: 'не вказано'
-						}
+						placeholder={t('ambassador.forma.fullname') || 'Full Name'}
 						value={formData.full_name}
 						onChange={handleChange}
 					/>
@@ -207,9 +269,7 @@ export default function ProfileForm() {
 						<Input
 							name='phone'
 							type='text'
-							placeholder={
-								formData.phone ? t('ambassador.forma.Telephone') : 'не вказано'
-							}
+							placeholder={t('ambassador.forma.Telephone')}
 							value={formData.phone}
 							onChange={handleChange}
 						/>
@@ -221,9 +281,7 @@ export default function ProfileForm() {
 						<Input
 							name='email'
 							type='email'
-							placeholder={
-								formData.email ? t('ambassador.forma.email') : 'не вказано'
-							}
+							placeholder={t('ambassador.forma.email')}
 							value={formData.email}
 							disabled
 						/>
@@ -238,7 +296,7 @@ export default function ProfileForm() {
 				<Input
 					name='instagram'
 					type='text'
-					placeholder={formData.instagram || 'не вказано'}
+					placeholder='Instagram'
 					value={formData.instagram}
 					onChange={handleChange}
 				/>
@@ -251,7 +309,7 @@ export default function ProfileForm() {
 				<Input
 					name='youtube'
 					type='text'
-					placeholder={formData.youtube || 'не вказано'}
+					placeholder='YouTube'
 					value={formData.youtube}
 					onChange={handleChange}
 				/>
@@ -264,7 +322,7 @@ export default function ProfileForm() {
 				<Input
 					name='telegram'
 					type='text'
-					placeholder={formData.telegram || 'не вказано'}
+					placeholder='Telegram'
 					value={formData.telegram}
 					onChange={handleChange}
 				/>
@@ -277,7 +335,7 @@ export default function ProfileForm() {
 				<Input
 					name='tiktok'
 					type='text'
-					placeholder={formData.tiktok || 'не вказано'}
+					placeholder='TikTok'
 					value={formData.tiktok}
 					onChange={handleChange}
 				/>

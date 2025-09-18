@@ -91,15 +91,10 @@ export default function RegistrationForm() {
                 </MediaLabel>
             </LabelWrapper>
 
-            <InputWrapper className="w-full grid grid-cols-2 gap-4">
+            <InputWrapper className="w-full">
                 <div className="w-full flex flex-col relative">
                     <StyledInput value={name} placeholder=" " required name="name" type="text" onChange={(e) => { setName(e.target.value) }} />
                     <StyledLabel>{t("RegistrationForm.name")}</StyledLabel>
-                </div>
-
-                <div className="w-full flex flex-col relative">
-                    <StyledInput value={secondName} placeholder=" " required name="secondName" type="text" onChange={(e) => { setSecondName(e.target.value) }} />
-                    <StyledLabel>{t("RegistrationForm.second_name")}</StyledLabel>
                 </div>
 
                 <div className="w-full flex flex-col relative">
@@ -250,6 +245,15 @@ const SubmitButton = styled.button`
 `;
 
 const InputWrapper = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 колонки */
+    gap: 40px;
+
+   & > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+
     @media (max-width: 500px) {
         grid-template-columns: 1fr;
         gap: 20px;

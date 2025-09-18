@@ -231,7 +231,7 @@ export const ProductInformation = () => {
         <>
             <Wrapper style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
                 <WrapperContent className="overflow-hidden flex flex-col gap-[20px] w-[60%] relative">
-                    <Title className="text-[70px] font-bold">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
+                    <Title className="text-[70px] font-[600]">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
                     <p className="max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]"><span className="text-[#4BC785]">{t("ProductItem.text1")}</span> {t("ProductItem.text2")}</p>
                     <StyledList $cardBorder={cardBorder} className="overflow-hidden">
                         <Swiper
@@ -281,7 +281,7 @@ export const ProductInformation = () => {
 
                     </div>
                     <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</CenterText>
-                    <BuyButton onClick={() => router.push("/thanks-for-order")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-bold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
+                    <BuyButton onClick={() => router.push("/thanks-for-order")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-semibold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
                     <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
                     <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
                     <div className="pb-[30px] border-b border-dashed border-[#313131]!">
@@ -307,7 +307,7 @@ export const ProductInformation = () => {
                     </div>
 
                     <div className="pb-[30px] pt-[20px] border-b border-dashed border-[#313131]!">
-                        <CenterText className="text-[23px] uppercase font-bold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
+                        <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
                         <WrapperVersion
                             className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
                         >
@@ -323,7 +323,7 @@ export const ProductInformation = () => {
                     </div>
                     <div className="pb-[42px] relative" onClick={() => setShowDescription(!showDescription)}>
 
-                        <DescriptionText className="flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-bold text-[#FFFFFF] mb-[18px] mt-[22px]">
+                        <DescriptionText className="flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-semibold text-[#FFFFFF] mb-[18px] mt-[22px]">
                             {t("ProductItem.description")}
                             <ArrowUp className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${showDescription ? "rotate-0" : "rotate-180"}`}
                                 aria-label="arrow-down" />
@@ -342,7 +342,7 @@ export const ProductInformation = () => {
             </Wrapper>
             {(realBody as any).technical_info && (realBody as any).technical_info.length > 0 && (
                 <div className="main-wrapper">
-                    <h2 className="text-[30px] !text-left font-bold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
+                    <h2 className="text-[30px] !text-left font-semibold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
                     <TechInfo className="h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]">
                         {(realBody as any).technical_info?.map((item: any, index: number) => (
                             <div key={index} className="flex flex-row justify-between mb-[44px] w-full max-w-[100%]">
@@ -398,7 +398,7 @@ const BuyButton = styled.button`
     }
 `;
 
-const Title = styled.div`
+const Title = styled.h1`
     @media (max-width: 1000px) {
         span {
             text-align: center;

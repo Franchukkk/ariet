@@ -49,88 +49,21 @@ export interface IVariantImage {
 
 export type ProductArray = IProduct[]
 
-const realData = [
-	{
-		id: 1,
-		name: 'Online UPS Ariet 1',
-		description:
-			'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet.',
-		sku: '13FK41',
-		category: {
-			id: 1,
-			name: 'Online UPS'
-		},
-		variants: [
-			{
-				id: 1,
-				sku: 'SK1441',
-				socket: {
-					code: 'C13',
-					name: 'C13'
-				},
-				images: [
-					{
-						image:
-							'https://31.131.21.16/api/media/variant_images/home-bg-1.png',
-						alt_text: null
-					},
-					{
-						image: 'https://31.131.21.16/api/media/variant_images/3d-model.png',
-						alt_text: null
-					},
-					{
-						image: 'https://31.131.21.16/api/media/variant_images/hero-bg.png',
-						alt_text: null
-					}
-				],
-				stock: [1],
-				price: 1300
-			},
-			{
-				id: 2,
-				sku: 'SK1321',
-				socket: {
-					code: 'C13',
-					name: 'C13'
-				},
-				images: [
-					{
-						image:
-							'https://31.131.21.16/api/media/variant_images/category-4.png',
-						alt_text: null
-					},
-					{
-						image:
-							'https://31.131.21.16/api/media/variant_images/category-2.png',
-						alt_text: null
-					},
-					{
-						image:
-							'https://31.131.21.16/api/media/variant_images/category-3.png',
-						alt_text: null
-					}
-				],
-				stock: [2],
-				price: 1550
-			}
-		]
-	}
-]
-
 export const Content = () => {
 	const { t } = useTranslation('common')
 	const [productData, setProductData] = useState<IProduct[]>([])
 
+	console.log(productData)
+
 	useEffect(() => {
-		fetch('https://31.131.21.16/api/catalog/products/', {
+		fetch('https://rpktask.sytes.net/api/catalog/products/', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		})
 			.then(res => res.json())
-			.then(data => setProductData(data))
-			.catch(err => setProductData(realData))
+			.then(data => setProductData(data.results))
 	}, [])
 
 	const [activeFilters, setActiveFilters] = useState<string[]>([])
@@ -257,8 +190,7 @@ const StyledContent = styled.div`
 	margin-bottom: 173px;
 
 	@media (max-width: 1200px) {
-		grid-template-columns: minmax(220px, 300px) 1fr;
-		gap: 30px;
+		display: block;
 	}
 
 	@media (max-width: 1000px) {

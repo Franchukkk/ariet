@@ -5,24 +5,27 @@ import { Breadcrumbs } from "../../components/Breadcrumbs"
 import { Location } from "../../components/Contacts/Location"
 import { Title } from "../../components/Contacts/Title"
 import { Form } from "../../components/Form/Form"
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute"
 
 export default function Page() {
   const { t } = useTranslation("common")
 
   return (
-    <StyledContacts className="main-wrapper">
-      
-      <Breadcrumbs
-        path={[
-          t("breadcrumbs.home"),
-          t("breadcrumbs.products"),
-          t("breadcrumbs.online_ups")
-        ]}
-      />
-      <Title />
-      <Location />
-      <Form />
-    </StyledContacts>
+    <PublicRoute>
+      <StyledContacts className="main-wrapper">
+
+        <Breadcrumbs
+          path={[
+            t("breadcrumbs.home"),
+            t("breadcrumbs.products"),
+            t("breadcrumbs.online_ups")
+          ]}
+        />
+        <Title />
+        <Location />
+        <Form />
+      </StyledContacts>
+    </PublicRoute>
   )
 }
 
