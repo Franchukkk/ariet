@@ -142,7 +142,7 @@ const StyledForm = styled.form`
 
 const LabelWrapper = styled.div`
    @media (max-width: 780px) {
-    display: flex;
+    display: none;
     align-items: center;
     flex-direction: column;
     gap: 20px;

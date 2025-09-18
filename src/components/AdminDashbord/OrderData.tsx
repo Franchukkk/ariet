@@ -60,7 +60,7 @@ const sortOfStatuses = (data: any[]) => {
 }
 
 export const OrderData = () => {
-    const [orders, setOrders] = useState([])
+    const [orders, setOrders] = useState<any[]>([])
     const [selectValue, setSelectValue] = useState<string>("Дефолт");
     const [countStatusesValue, setCountStatusesValue] = useState<StatusCounts>(countStatuses(orders));
     const [sortOfStatusesValue, setSortOfStatusesValue] = useState<Record<string, any[]>>(sortOfStatuses(orders));
@@ -68,9 +68,16 @@ export const OrderData = () => {
     const [searchValue, setSearchValue] = useState<string>("");
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [refreshOrders, setRefreshOrders] = useState<boolean>(false);
+
+    const { t } = useTranslation("common");
+
+    const selectRef = useRef<HTMLSelectElement>(null);
 
     useEffect(() => {
         setIsLoading(true);
+        setRefreshOrders(false)
+
         fetch("https://rpktask.sytes.net/api/orders/", {
             method: "GET",
             headers: {
@@ -84,26 +91,27 @@ export const OrderData = () => {
             .finally(() => setIsLoading(false));
 
 
-    }, [])
+    }, [refreshOrders])
 
-    const { t } = useTranslation("common");
-
-    const selectRef = useRef<HTMLSelectElement>(null);
 
     const handleClick = () => {
         selectRef.current?.click();
     }
 
-    const handleDeleteOrder = () => {
-        const updatedOrders = orders.filter((item) => item.id !== selectOrder.id);
-        setOrders(updatedOrders);
-        setCountStatusesValue(countStatuses(updatedOrders));
-        setSortOfStatusesValue(sortOfStatuses(updatedOrders));
-        setSelectOrder(false);
+    const handleDeleteOrder = async () => {
+        const cancelOrder = await fetch(`https://rpktask.sytes.net/api/orders/${selectOrder.id}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+        })
+
+        setRefreshOrders(true)
     }
 
     const handleChangeStatus = () => {
-        const updatedOrders = orders.map((item) => item.id === selectOrder.id ? { ...item, status: "Доставлено" } : item);
+        const updatedOrders = orders.map((item: any) => item.id === selectOrder.id ? { ...item, status: "Доставлено" } : item);
         setOrders(updatedOrders);
         setCountStatusesValue(countStatuses(updatedOrders));
         setSortOfStatusesValue(sortOfStatuses(updatedOrders));
@@ -133,7 +141,7 @@ export const OrderData = () => {
     }
 
     return (
-        <Wrapper className="flex flex-col justify-between">
+        <div className="flex flex-col justify-between">
             <Filters className="flex flex-row justify-between w-full gap-[10px] items-center mb-[30px]">
                 <div>
                     <button className="cursor-pointer flex items-center gap-[10px] mb-[-25px]" onClick={handleClick}>
@@ -214,13 +222,10 @@ export const OrderData = () => {
             </BottomSet>
 
             {isOpen && <ModalCart setIsOpen={setIsOpen} item={selectOrder as any} />}
-        </Wrapper >
+        </div >
     )
 }
 
-const Wrapper = styled.div`
-
-`;
 
 const Filters = styled.div`
 
@@ -270,5 +275,4 @@ const CountStatus = styled.p`
     border-radius: 100%;
     background-color: #00000040;
     box-shadow: 0px 4px 4px 0px #00000040 inset;
-
 `;
