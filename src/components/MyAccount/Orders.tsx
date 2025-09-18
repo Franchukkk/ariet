@@ -1,9 +1,31 @@
 "use client";
 
-import { useTranslation } from "react-i18next";
 import { OrderCart } from "./OrderCart";
 import moduleImg from "@/assets/img/module.png";
-import { parseJsonFile } from "next/dist/build/load-jsconfig";
+import { useEffect, useState } from "react";
+
+interface OrderProps {
+    id: number;
+    status: string;
+    date: string;
+    total: number;
+    price: number;
+    delivery: number;
+    declaration_number: string;
+    tel: string;
+    deliveyId: string;
+    address: string;
+    products: Product[];
+}
+
+interface Product {
+    id: number;
+    name: string;
+    price: number;
+    quantity: number;
+    photo: any;
+    description: string;
+}
 
 const orders = [
     {
@@ -154,6 +176,34 @@ const orders = [
 ];
 
 export const Orders = () => {
+    const [orders, setOrders] = useState<OrderProps[]>([])
+    const [loading, setLoading] = useState(true)
+
+
+    useEffect(() => {
+        fetch("https://rpktask.sytes.net/api/orders/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+        })
+            .then(res => res.json())
+            .then(data => setOrders(data.results))
+            .catch(err => console.log(err))
+            .finally(() => setLoading(false))
+    }, [])
+
+    console.log(orders)
+
+    if (loading) {
+        return <p className="text-[22px] leading-[22px] !font-[600] font-medium text-[#ffffff] text-center my-[200px]">Loading ...</p>
+    }
+
+    if (orders.length === 0) {
+        return <p className="text-[22px] leading-[22px] !font-[600] font-medium text-[#ffffff] text-center my-[200px]">Заказы не найдены</p>
+    }
+
 
     return (
         <ul className="main-wrapper flex flex-col gap-[20px] mb-[200px]">

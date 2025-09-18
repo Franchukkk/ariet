@@ -5,12 +5,41 @@ import { OrderInfo } from "@/components/AdminDashbord/OrderInfo";
 import { TitleAdminDashboard } from "@/components/AdminDashbord/TitleAdminDashboard";
 import { UserAdminInfo } from "@/components/AdminDashbord/UserAdminInfo";
 import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
+import { refreshToken } from "@/helpers/auth";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 
 const ordersInfo = { totalOrders: 1000, newOrders: 10, totalSum: 10000, averageOrderPrice: 1000, date: "2025-01-01" };
 
 export default function Page() {
+    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem("accessToken"))
+    const [refreshToken, setRefreshToken] = useState<string | null>(localStorage.getItem("refreshToken"))
+
+    useEffect(() => {
+        console.log("useEffect")
+
+        fetch("https://rpktask.sytes.net/api/token/refresh/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ refresh: refreshToken }),
+        })
+
+        fetch("https://rpktask.sytes.net/api/orders/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        })
+            .then(res => res.json())
+            .then(data => console.log(data))
+            .catch(err => console.log(err))
+    }, [accessToken])
+
+
     return (
         <ProtectedRoute >
             <MainWrapper className="main-wrapper !mb-[130px]">

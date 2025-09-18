@@ -4,7 +4,6 @@ import { formatPrice } from "@/helpers/formatPrice";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import Сross from "@/assets/img/cross.svg";
-import Image from "next/image";
 
 interface OrderInfoProps {
     orderInfo: {

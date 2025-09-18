@@ -8,12 +8,13 @@ import { ProductInformation } from "@/components/Product/ProductInformation/Prod
 import { ProductVariant } from "@/components/Product/ProductVariant/ProductVariant";
 import { Specifications } from "@/components/Product/Specifications/Specifications";
 import { Steps } from "@/components/Product/Steps/Steps";
+import { PublicRoute } from "@/components/PublicRoute/PublicRoute";
 import { Support } from "@/components/Support/Support";
 
 export default function ProductPage() {
 
     return (
-        <>
+        <PublicRoute>
             <ProductVariant />
             <div className="mb-[45px]!">
                 <Breadcrumbs path={["Главная", "Продукция", "Онлайн ИБП Ariet T3K"]} alias={["/", "products", "current"]} />
@@ -25,7 +26,7 @@ export default function ProductPage() {
             <Possibilities />
             <Models />
             <Support />
-        </>
+        </PublicRoute>
 
     );
 }

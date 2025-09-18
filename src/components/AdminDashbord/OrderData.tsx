@@ -6,7 +6,7 @@ import styled from "styled-components";
 import ArrowDown from "@/assets/img/arrow-up.svg";
 import Glass from "@/assets/img/glass.svg";
 import edit from "@/assets/img/edit.png";
-import { fakeData } from "./fakeData";
+// import { fakeData } from "./fakeData";
 import { OrderCard } from "./OrderCard";
 import { ModalCart } from "./ModalCart";
 
@@ -60,7 +60,7 @@ const sortOfStatuses = (data: any[]) => {
 }
 
 export const OrderData = () => {
-    const [orders, setOrders] = useState(fakeData)
+    const [orders, setOrders] = useState([])
     const [selectValue, setSelectValue] = useState<string>("Дефолт");
     const [countStatusesValue, setCountStatusesValue] = useState<StatusCounts>(countStatuses(orders));
     const [sortOfStatusesValue, setSortOfStatusesValue] = useState<Record<string, any[]>>(sortOfStatuses(orders));
@@ -75,11 +75,14 @@ export const OrderData = () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
             },
         })
             .then(response => response.json())
-            .catch(err => setOrders(fakeData))
+            .then(data => setOrders(data.results))
+            .catch(err => console.log(err))
             .finally(() => setIsLoading(false));
+
 
     }, [])
 

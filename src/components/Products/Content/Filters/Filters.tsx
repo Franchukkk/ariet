@@ -14,17 +14,6 @@ interface ICategory {
   name: string;
 }
 
-const realCategories = [
-  {
-    "id": 1,
-    "name": "Online UPS"
-  },
-  {
-    "id": 2,
-    "name": "Tension Stabilizer"
-  }
-]
-
 export const Filters = ({ activeFilters, onChangeFilter, showFilters }: Props) => {
   const { t } = useTranslation("common");
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -38,9 +27,10 @@ export const Filters = ({ activeFilters, onChangeFilter, showFilters }: Props) =
         },
       }
     ).then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => setCategories(realCategories));
+      .then(data => setCategories(data.results))
   }, []);
+
+  console.log(categories)
 
   const FILTERS = [
     {

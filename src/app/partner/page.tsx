@@ -8,17 +8,20 @@ import { Advantages } from '../../components/Partner/Advantages/Advantages'
 import { Hero } from '../../components/Partner/Hero/Hero'
 import { Providing } from '../../components/Partner/Providing/Providing'
 import { What } from '../../components/Partner/What/What'
+import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
 
 export default function Page() {
 	return (
-		<StyledPartner className='main-wrapper'>
-			<Hero />
-			<What />
-			<Providing />
-			<Advantages />
-			<LightPlanet />
-			<Form />
-		</StyledPartner>
+		<PublicRoute>
+			<StyledPartner className='main-wrapper'>
+				<Hero />
+				<What />
+				<Providing />
+				<Advantages />
+				<LightPlanet />
+				<Form />
+			</StyledPartner>
+		</PublicRoute>
 	)
 }
 

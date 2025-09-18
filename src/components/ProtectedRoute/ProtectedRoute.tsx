@@ -6,16 +6,23 @@ import { useEffect, useState } from "react"
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
-    const refreshTokenValue = getRefreshToken()
+
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
     const pathname = usePathname()
 
     let idInterval: NodeJS.Timeout
 
+    useEffect(() => {
+        idInterval = setInterval(refreshToken, 2 * 60 * 1000);
+
+        return () => clearInterval(idInterval)
+    }, [])
+
 
     useEffect(() => {
-        idInterval = setInterval(refreshToken, 5 * 60 * 1000)
+        const refreshTokenValue = getRefreshToken()
+
         if (!refreshTokenValue) {
             if (pathname === '/login' || pathname === '/registration') {
                 router.push('/login')
@@ -66,9 +73,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
                             router.push(targetPath)
                             return
                         }
-
-                        // Якщо користувач вже на правильній сторінці
-                        console.log('User is on correct page, showing content')
                         setIsLoading(false)
                     })
             }

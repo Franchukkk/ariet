@@ -21,6 +21,8 @@ export const getRefreshToken = (): string | null => {
 export const refreshToken = async (): Promise<boolean> => {
 	const refreshTokenValue = getRefreshToken()
 
+	console.log("token refreshed" + new Date().toISOString())
+
 	if (!refreshTokenValue) {
 		return false
 	}

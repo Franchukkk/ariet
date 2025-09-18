@@ -1,71 +1,95 @@
 "use client";
 
-import { getRefreshToken } from "@/helpers/auth";
+import { getRefreshToken, refreshToken } from "@/helpers/auth";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
     const pathname = usePathname();
+    const [isLoading, setIsLoading] = useState(true);
 
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Інтервал для періодичного оновлення токена
     useEffect(() => {
-        const refreshToken = getRefreshToken();
-
-        if (!refreshToken) {
-            setIsLoading(false);
-            return
+        if (!intervalRef.current) {
+            intervalRef.current = setInterval(() => {
+                refreshToken();
+            }, 2 * 60 * 1000); // раз на 2 хвилини
         }
 
-        fetch('https://rpktask.sytes.net/api/token/refresh/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refresh: refreshToken }),
-        }).then(res => res.json()).then(data => {
-            if (data.access) {
-                // Отримуємо роль користувача щоб перенаправити на правильну сторінку
-                localStorage.setItem('accessToken', data.access)
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, []);
 
-                fetch('https://rpktask.sytes.net/api/users/me/', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${data.access}`
-                    },
-                }).then(res => res.json()).then(userData => {
-                    console.log('PublicRoute: User authenticated with role:', userData.role)
+    useEffect(() => {
+        const checkAuth = async () => {
+            const refreshTokenValue = getRefreshToken();
 
-                    // Перенаправляємо на відповідну сторінку залежно від ролі
-                    if (userData.role === 'CLIENT') {
-                        router.replace("/my-account");
-                    } else if (userData.role === 'AMBASSADOR') {
-                        router.replace("/ambassador");
-                    } else if (userData.role === 'ADMIN') {
-                        router.replace("/admin-dashboard");
-                    } else {
-                        router.replace("/my-account"); // За замовчуванням
-                    }
-                }).catch(err => {
-                    console.error('Error getting user data:', err)
-                    setIsLoading(false)
-                })
-            } else {
-                // Токен невалідний, залишаємося на поточній сторінці
-                setIsLoading(false);
+            if (!refreshTokenValue) {
+                setIsLoading(false); // немає токена — показуємо публічний контент
+                return;
             }
-        }).catch(err => {
-            console.error('PublicRoute error:', err)
-            setIsLoading(false)
-        })
 
-    }, [pathname, router])
+            try {
+                // Оновлюємо токен
+                const refreshRes = await fetch(
+                    "https://rpktask.sytes.net/api/token/refresh/",
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ refresh: refreshTokenValue }),
+                    }
+                );
 
-    return (
-        <>
-            {isLoading ? <div className="flex justify-center items-center h-[500px] mb-[50px]">Loading...</div> : children}
-        </>
-    );
+                const refreshData = await refreshRes.json();
 
+                if (!refreshData.access) {
+                    setIsLoading(false); // токен не отримано
+                    return;
+                }
+
+                localStorage.setItem("accessToken", refreshData.access);
+
+                // Отримуємо дані користувача
+                const userRes = await fetch("https://rpktask.sytes.net/api/users/me/", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${refreshData.access}`,
+                    },
+                });
+
+                const userData = await userRes.json();
+
+                // Якщо користувач на сторінках логіну/реєстрації — редіректимо
+                if (pathname === "/login" || pathname === "/registration") {
+                    const target =
+                        userData.role === "CLIENT"
+                            ? "/my-account"
+                            : userData.role === "AMBASSADOR"
+                                ? "/ambassador"
+                                : userData.role === "ADMIN"
+                                    ? "/admin-dashboard"
+                                    : "/my-account"; // За замовчуванням
+
+                    router.replace(target);
+                    return; // не ставимо isLoading = false, бо редірект
+                }
+
+                // Якщо користувач не на сторінках логіну — просто показуємо контент
+            } catch (err) {
+                console.error("PublicRoute error:", err);
+            }
+        };
+
+        checkAuth();
+    }, [pathname, router]);
+
+    // Поки йде перевірка токена — нічого не показуємо
+    if (isLoading) return <div className="flex justify-center items-center h-[500px] my-[100px]">Loading...</div>;
+
+    return <>{children}</>;
 };

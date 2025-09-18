@@ -5,18 +5,21 @@ import styled from 'styled-components'
 import { Button } from '@/components/Not found/Button'
 import Img from '@/components/Not found/Img'
 import { Title } from '@/components/Not found/Title'
+import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
 
 export default function NotFound() {
 	return (
-		<Container>
-			<ImgWrapper>
-				<Img />
-			</ImgWrapper>
-			<TextBlock>
-				<Title />
-				<Button />
-			</TextBlock>
-		</Container>
+		<PublicRoute>
+			<Container>
+				<ImgWrapper>
+					<Img />
+				</ImgWrapper>
+				<TextBlock>
+					<Title />
+					<Button />
+				</TextBlock>
+			</Container>
+		</PublicRoute>
 	)
 }
 
