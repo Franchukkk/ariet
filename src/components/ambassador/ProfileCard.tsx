@@ -225,31 +225,8 @@ export default function ProfileCard() {
 		return res
 	}
 
-	const getCurrentUserRole = async (): Promise<string | null> => {
-		try {
-			const res = await requestWithToken(
-				'https://rpktask.sytes.net/api/users/me/'
-			)
-			if (!res.ok) return null
-			const data = await res.json()
-			return data.role || null
-		} catch {
-			return null
-		}
-	}
-
 	useEffect(() => {
 		const fetchUserData = async () => {
-			const role = await getCurrentUserRole()
-
-			if (
-				typeof window !== 'undefined' &&
-				role !== 'ambassador' &&
-				window.location.pathname !== '/login'
-			) {
-				router.push('/login')
-			}
-
 			try {
 				const res = await requestWithToken(
 					'https://rpktask.sytes.net/api/users/me/'
