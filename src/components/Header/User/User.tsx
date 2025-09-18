@@ -12,64 +12,59 @@ import { getRefreshToken, logout } from '@/helpers/auth'
 export const User = () => {
 	const router = useRouter()
 	const pathname = usePathname()
-	const [isAuthenticated, setIsAuthenticated] = useState(false)
+	const [showLogout, setShowLogout] = useState(false)
 
 	useEffect(() => {
 		const checkToken = async () => {
-			const refreshToken = getRefreshToken()
-			if (!refreshToken) return
+			const refreshTokenValue = getRefreshToken()
+			if (!refreshTokenValue) return
 
 			try {
-				const refreshRes = await fetch(
+				const res = await fetch(
 					'https://rpktask.sytes.net/api/token/refresh/',
 					{
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ refresh: refreshToken })
+						body: JSON.stringify({ refresh: refreshTokenValue })
 					}
 				)
 
-				const refreshData = await refreshRes.json()
+				const data = await res.json()
+				if (!data.access) return
 
-				if (refreshData.access) {
-					localStorage.setItem('accessToken', refreshData.access)
+				localStorage.setItem('accessToken', data.access)
 
-					const userRes = await fetch(
-						'https://rpktask.sytes.net/api/users/me/',
-						{
-							method: 'GET',
-							headers: {
-								'Content-Type': 'application/json',
-								Authorization: `Bearer ${refreshData.access}`
-							}
-						}
-					)
-
-					const userData = await userRes.json()
-
-					const rolePath =
-						userData.role === 'CLIENT'
-							? '/my-account'
-							: userData.role === 'AMBASSADOR'
-								? '/ambassador'
-								: userData.role === 'ADMIN'
-									? '/admin-dashboard'
-									: '/my-account'
-
-					if (pathname === rolePath) {
-						setIsAuthenticated(true)
+				const userRes = await fetch('https://rpktask.sytes.net/api/users/me/', {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${data.access}`
 					}
-				}
+				})
+
+				const userData = await userRes.json()
+
+				const rolePath =
+					userData.role === 'CLIENT'
+						? '/my-account'
+						: userData.role === 'AMBASSADOR'
+							? '/ambassador'
+							: userData.role === 'ADMIN'
+								? '/admin-dashboard'
+								: '/my-account'
+
+				// Показуємо Logout тільки якщо зараз на особистій сторінці
+				setShowLogout(pathname === rolePath)
 			} catch (err) {
-				console.error('Check token error:', err)
+				console.error('Auth check error:', err)
 			}
 		}
 
 		checkToken()
 	}, [pathname])
 
-	const handleClick = async () => {
-		if (isAuthenticated) {
+	const handleClick = () => {
+		if (showLogout) {
 			logout()
 		} else {
 			router.push('/login')
@@ -78,7 +73,7 @@ export const User = () => {
 
 	return (
 		<StyledUser onClick={handleClick}>
-			{isAuthenticated ? (
+			{showLogout ? (
 				<LogoutSvg aria-label='logout' />
 			) : (
 				<UserSvg aria-label='user' />
