@@ -180,7 +180,6 @@ export default function ProfileCard() {
 	const [promoValid, setPromoValid] = useState<boolean | null>(null)
 	const router = useRouter()
 
-	// 🔄 запит з токеном
 	const requestWithToken = async (
 		input: RequestInfo,
 		init?: RequestInit
@@ -226,7 +225,6 @@ export default function ProfileCard() {
 		return res
 	}
 
-	// 🔍 отримання ролі
 	const getCurrentUserRole = async (): Promise<string | null> => {
 		try {
 			const res = await requestWithToken(
@@ -244,9 +242,12 @@ export default function ProfileCard() {
 		const fetchUserData = async () => {
 			const role = await getCurrentUserRole()
 
-			if (role !== 'ambassador') {
-				router.push('/')
-				return
+			if (
+				typeof window !== 'undefined' &&
+				role !== 'ambassador' &&
+				window.location.pathname !== '/login'
+			) {
+				router.push('/login')
 			}
 
 			try {

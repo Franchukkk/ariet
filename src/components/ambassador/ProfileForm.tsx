@@ -123,7 +123,6 @@ export default function ProfileForm() {
 
 	const router = useRouter()
 
-	// 🔄 функція-запит з токеном
 	const requestWithToken = async (
 		input: RequestInfo,
 		init?: RequestInit
@@ -169,7 +168,6 @@ export default function ProfileForm() {
 		return res
 	}
 
-	// 🔍 отримати роль
 	const getCurrentUserRole = async (): Promise<string | null> => {
 		try {
 			const res = await requestWithToken(
@@ -186,9 +184,12 @@ export default function ProfileForm() {
 	useEffect(() => {
 		const init = async () => {
 			const role = await getCurrentUserRole()
-			if (role !== 'ambassador') {
-				router.push('/')
-				return
+			if (
+				typeof window !== 'undefined' &&
+				role !== 'ambassador' &&
+				window.location.pathname !== '/login'
+			) {
+				router.push('/login')
 			}
 
 			try {
