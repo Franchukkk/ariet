@@ -108,11 +108,6 @@ const Button = styled.button`
 	}
 `
 
-;('use client')
-// імпорт тільки токен-функцій
-
-// ... styled-components (без змін)
-
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
 	const [loading, setLoading] = useState(true)

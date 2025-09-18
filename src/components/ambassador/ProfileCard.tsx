@@ -156,9 +156,6 @@ const PromoButton = styled.button<{ $active?: boolean }>`
 	}
 `
 
-;('use client')
-// використовуємо тільки утиліти з tokens.ts
-
 const CornerSVG = () => (
 	<svg
 		xmlns='http://www.w3.org/2000/svg'
