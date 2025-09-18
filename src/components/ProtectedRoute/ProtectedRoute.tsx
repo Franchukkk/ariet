@@ -1,18 +1,22 @@
 "use client"
 
-import { getRefreshToken } from "@/helpers/auth"
+import { getRefreshToken, refreshToken } from "@/helpers/auth"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
-    const refreshToken = getRefreshToken()
+    const refreshTokenValue = getRefreshToken()
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
     const pathname = usePathname()
 
+    let idInterval: NodeJS.Timeout
+
+
     useEffect(() => {
-        if (!refreshToken) {
+        idInterval = setInterval(refreshToken, 5 * 60 * 1000)
+        if (!refreshTokenValue) {
             if (pathname === '/login' || pathname === '/registration') {
                 router.push('/login')
                 return
@@ -27,7 +31,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ refresh: refreshToken })
+            body: JSON.stringify({ refresh: refreshTokenValue })
         }).then(res => res.json()).then(data => {
             if (data.code === 'token_not_valid') {
                 router.push('/login')
@@ -72,6 +76,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             console.error('Auth error:', err)
             router.push('/login')
         })
+
+        return () => clearInterval(idInterval as NodeJS.Timeout)
     }, [pathname, router])
 
     return <div className="mb-[50px]">{isLoading ? <div className="flex justify-center items-center h-[500px]">Loading...</div> : children}</div>

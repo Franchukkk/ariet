@@ -16,10 +16,6 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
-  useEffect(() => {
-    refreshToken();
-  }, []);
-
   return (
     <html lang={'ru'}>
       <body>
