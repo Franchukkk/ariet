@@ -17,200 +17,43 @@ import ArrowUp from "@/assets/img/arrow-up.svg";
 
 type ImgLike = string | StaticImageData;
 
-const product = {
-    "id": 0,
-    "name": "Онлайн ИБП Ariet T3K",
-    "description": `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. 
-    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. 
-    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. `,
-    "sku": "sku",
-    "category": {
-        "id": 0,
-        "name": "category"
-    },
-    "technical_info": [
-        { "value": "Онлайн с двойной конвертацией", "title": "Тип" },
-        { "value": "600 В⋅А / 5400 вт", "title": "Мощность" },
-        { "value": "Чистая синусоида", "title": "Форма напряжения" },
-        { "value": "7.5 Ач по 12 шт.", "title": "Батареи" },
-        { "value": "> 99%", "title": "КПД" },
-        { "value": "110-300 В", "title": "Входное напряжение" },
-        { "value": "220/230/240 В", "title": "Выходное напряжение" },
-        { "value": "Клеммная колодка (terminal block)", "title": "Подключение" }
-    ],
-    "variants": [
-        {
-            "id": 0,
-            "sku": "categoti 1",
-            "socket": {
-                "code": "C13",
-                "name": "EU"
-            },
-            "images": [
-                {
-                    "image": "/img/product.jpg",
-                    "alt_text": "product"
-                }
-            ],
-            "stock": [
-                {
-                    "warehouse": {
-                        "id": 0,
-                        "name": "name",
-                        "location": "location"
-                    },
-                    "quantity": 2147483647
-                }
-            ],
-            "price": "12323",
-            "dealer_price": "471677",
-            "min_retail_price": "-196",
-            "recommended_price": "-.62",
-            "project_price": "4"
-        }, {
-            "id": 1,
-            "sku": "categoti 1",
-            "socket": {
-                "code": "C13",
-                "name": "EU"
-            },
-            "images": [
-                {
-                    "image": "/img/product.jpg",
-                    "alt_text": "product"
-                }
-            ],
-            "stock": [
-                {
-                    "warehouse": {
-                        "id": 1,
-                        "name": "name",
-                        "location": "location"
-                    },
-                    "quantity": 2147483647
-                }
-            ],
-            "price": "12323",
-            "dealer_price": "471677",
-            "min_retail_price": "-196",
-            "recommended_price": "-.62",
-            "project_price": "4"
-        }, {
-            "id": 2,
-            "sku": "categoti 1",
-            "socket": {
-                "code": "C13",
-                "name": "EU"
-            },
-            "images": [
-                {
-                    "image": "/img/product.jpg",
-                    "alt_text": "product"
-                }
-            ],
-            "stock": [
-                {
-                    "warehouse": {
-                        "id": 2,
-                        "name": "name",
-                        "location": "location"
-                    },
-                    "quantity": 2147483647
-                }
-            ],
-            "price": "12323",
-            "dealer_price": "471677",
-            "min_retail_price": "-196",
-            "recommended_price": "-.62",
-            "project_price": "4"
-        }
-    ]
-};
-
-const realBody = {
-    "id": 1,
-    "name": "Online UPS Ariet 1",
-    "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. \r\n    In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. \r\n    Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet.",
-    "sku": "13FK41",
-    "category": {
-        "id": 1,
-        "name": "Online UPS"
-    },
-    "variants": [
-        {
-            "id": 1,
-            "sku": "SK1441",
-            "socket": {
-                "code": "C13",
-                "name": "C13"
-            },
-            "images": [
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/home-bg-1.png",
-                    "alt_text": null
-                },
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/3d-model.png",
-                    "alt_text": null
-                },
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/hero-bg.png",
-                    "alt_text": null
-                }
-            ],
-            "stock": [
-                1
-            ],
-            "price": 1300
-        },
-        {
-            "id": 2,
-            "sku": "SK1321",
-            "socket": {
-                "code": "C13",
-                "name": "C13"
-            },
-            "images": [
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/category-4.png",
-                    "alt_text": null
-                },
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/category-2.png",
-                    "alt_text": null
-                },
-                {
-                    "image": "https://rpktask.sytes.net/api/media/variant_images/category-3.png",
-                    "alt_text": null
-                }
-            ],
-            "stock": [
-                2
-            ],
-            "price": 1550
-        }
-    ]
+interface ProductInfo {
+    id: number;
+    name: string;
+    variants: Variant[];
+    description: string;
+    technical_info: any[];
 }
 
-const slidesData = realBody.variants.map((item) => ({
-    title: "",
-    subtitle: "",
-    photo: ProductImg,
-    slide: item.id,
-}));
+interface Variant {
+    id: number;
+    sku: string;
+    stock: any[];
+    price: number;
+    socket: {
+        code: string;
+        name: string;
+    };
+}
 
 function formatPrice(num: number) {
     return Number(num).toLocaleString('en-US').replace(',', ' ');
 }
 
-export const ProductInformation = () => {
-    const router = useRouter();
-    const [productInfo, setProductInfo] = useState(realBody);
-    const [version, setVersion] = useState(`version-${realBody.variants[0].id}`);
+export const ProductInformation = ({ setProductName }: { setProductName: (name: string) => void }) => {
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
+    const [version, setVersion] = useState<string>("");
     const [showDescription, setShowDescription] = useState(false);
-    const separatedName = realBody.name.split(" ");
+    const [slidesData, setSlidesData] = useState<any>([]);
+    const [price, setPrice] = useState<number>(productInfo ? productInfo.variants[0].price : 0);
+
+    const separatedName = productInfo ? productInfo.name.split(" ") : [];
+
     const { t } = useTranslation("common");
     const { id } = useParams();
+
+    const router = useRouter();
 
     useEffect(() => {
         fetch(`https://rpktask.sytes.net/api/catalog/products/${id}`,
@@ -221,17 +64,35 @@ export const ProductInformation = () => {
                 },
             }
         ).then(res => res.json())
-            .then(data => setProductInfo(data))
-            .catch(err => setProductInfo(realBody));
+            .then(data => {
+                setIsLoading(true);
+                setProductInfo(data);
+                setProductName(data.name);
+                setVersion(`version-${data.variants[0].id}`);
+                setSlidesData(data.variants.map((item: any) => ({
+                    title: "",
+                    subtitle: "",
+                    photo: ProductImg,
+                    slide: item.id,
+                })));
+                setPrice(data.variants[0].price);
+                setIsLoading(false);
+            })
+            .catch(err => setProductInfo(null))
+            .finally(() => setIsLoading(false));
 
 
     }, [id]);
+
+    if (isLoading) return <div className="mb-[100px] mt-[100px]"><h1 className="text-center text-[30px] font-semibold text-[#FFFFFF]">Loading...</h1></div>;
+
+    if (productInfo === null) return <div className="mb-[100px] mt-[100px]"><h1 className="text-center text-[30px] font-semibold text-[#FFFFFF]">Товара нет</h1></div>;
 
     return (
         <>
             <Wrapper style={{ borderTopStyle: "solid", borderBottomStyle: "dashed" }} className="pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]!  customScreen:flex-col customScreen:gap-[0px]">
                 <WrapperContent className="overflow-hidden flex flex-col gap-[20px] w-[60%] relative">
-                    <Title className="text-[70px] font-[600]">{separatedName.map((item, index) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
+                    <Title className="text-[70px] font-[600]">{separatedName.map((item: string, index: number) => index === separatedName.length - 1 ? null : <span key={item}>{item + " "}</span>)} <OutlineText className="text-[70px] font-bold">{separatedName[separatedName.length - 1]}</OutlineText></Title>
                     <p className="max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]"><span className="text-[#4BC785]">{t("ProductItem.text1")}</span> {t("ProductItem.text2")}</p>
                     <StyledList $cardBorder={cardBorder} className="overflow-hidden">
                         <Swiper
@@ -252,7 +113,7 @@ export const ProductInformation = () => {
                             <img src={ProductBg.src} alt="product-bg" className="w-full h-full absolute top-0 left-0 z-[0]" />
 
                             <SwiperWrapper className="w-full h-full relative">
-                                {slidesData.map((slide, index) => (
+                                {slidesData.map((slide: any, index: number) => (
                                     <SwiperSlide key={index}>
                                         <CardWrapper className="w-[50%] h-full relative left-[25%] z-[3] relative">
                                             <Card
@@ -273,54 +134,59 @@ export const ProductInformation = () => {
                 <SecondInfo className="border-l border-dashed border-[#313131]! w-[40%] pl-[20px]">
                     <div className="flex flex-row justify-between mb-[7px]">
                         <CenterText className="text-[18px] font-light text-[#FFFFFFA8]">
-                            {t("ProductItem.article")}: {realBody.id}
+                            {t("ProductItem.article")}: {productInfo.id}
                         </CenterText>
                         <p className="text-[14px] font-light text-[#1DCF94]">
-                            {realBody.variants[0].stock[0] > 0 ? t("ProductItem.availability") : t("ProductItem.not_availability")}
+                            {productInfo.variants[0].stock.length > 0 ? t("ProductItem.availability") : t("ProductItem.not_availability")}
                         </p>
 
                     </div>
-                    <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(product.variants[0].price))} $</CenterText>
-                    <BuyButton onClick={() => router.push("/thanks-for-order")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-semibold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
+                    <CenterText className="text-[30px] font-semibold leading-[50px] mb-[20px]">{formatPrice(Number(price))} $</CenterText>
+                    <BuyButton onClick={() => router.push("/complete-contract")} className="cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] border border-[#4BC785] text-[#ffffff] text-[15px] font-semibold rounded-[61px]">{t("ProductItem.buy")}</BuyButton>
                     <div className="border-b border-dashed border-[#313131]! mb-[22px]"></div>
-                    <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
-                    <div className="pb-[30px] border-b border-dashed border-[#313131]!">
-                        {realBody.variants.map((item) => (
-                            <WrapperVersion
-                                key={`version-${item.id}`}
-                                className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
-                                style={{ color: version === `version-${item.id}` ? "#4BC785" : "#FFFFFF" }}
-                            >
-                                <input
-                                    type="radio"
-                                    id={`version-${item.id}`}
-                                    value={`version-${item.id}`}
-                                    name="version"
-                                    className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
-                                    checked={version === `version-${item.id}`}
-                                    onChange={(e) => setVersion(e.target.value)}
-                                />
-                                {item.socket.name}
-                            </WrapperVersion>
-                        ))}
+                    {productInfo.variants[0].socket !== null ? (
+                        <>
+                            <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.version")}</CenterText>
 
-                    </div>
+                            <div className="pb-[30px] border-b border-dashed border-[#313131]!">
+                                {productInfo !== null && productInfo.variants.map((item: any) => (
+                                    <WrapperVersion
+                                        key={`version-${item.id}`}
+                                        className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
+                                        style={{ color: version === `version-${item.id}` ? "#4BC785" : "#FFFFFF" }}
+                                    >
+                                        <input
+                                            type="radio"
+                                            id={`version-${item.id}`}
+                                            value={`version-${item.id}`}
+                                            name="version"
+                                            className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
+                                            checked={version === `version-${item.id}`}
+                                            onChange={(e) => { setVersion(e.target.value); setPrice(item.price); }}
+                                        />
+                                        {item.socket.name}
+                                    </WrapperVersion>
+                                ))}
 
-                    <div className="pb-[30px] pt-[20px] border-b border-dashed border-[#313131]!">
-                        <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
-                        <WrapperVersion
-                            className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
-                        >
-                            <input
-                                type="radio"
-                                checked
-                                readOnly
-                                name="socket"
-                                className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
-                            />
-                            {realBody.variants[Number(version.split("-")[1])]?.socket?.code || realBody.variants[0]?.socket?.code}
-                        </WrapperVersion>
-                    </div>
+                            </div>
+
+                            <div className="pb-[30px] pt-[20px] border-b border-dashed border-[#313131]!">
+
+                                <CenterText className="text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]">{t("ProductItem.socket")}</CenterText>
+                                <WrapperVersion
+                                    className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
+                                >
+                                    <input
+                                        type="radio"
+                                        checked
+                                        readOnly
+                                        name="socket"
+                                        className="accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]"
+                                    />
+                                    {productInfo.variants[Number(version.split("-")[1])]?.socket?.code || productInfo.variants[0]?.socket?.code}
+                                </WrapperVersion>
+                            </div>
+                        </>) : null}
                     <div className="pb-[42px] relative" onClick={() => setShowDescription(!showDescription)}>
 
                         <DescriptionText className="flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-semibold text-[#FFFFFF] mb-[18px] mt-[22px]">
@@ -332,7 +198,7 @@ export const ProductInformation = () => {
                             className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${showDescription ? "max-h-[200px] overflow-y-auto" : "max-h-0"
                                 }`}
                         >
-                            {realBody.description}
+                            {productInfo.description}
 
                         </p>
                     </div>
@@ -340,11 +206,11 @@ export const ProductInformation = () => {
 
                 </SecondInfo>
             </Wrapper>
-            {(realBody as any).technical_info && (realBody as any).technical_info.length > 0 && (
+            {(productInfo as any).technical_info && (productInfo as any).technical_info.length > 0 && (
                 <div className="main-wrapper">
                     <h2 className="text-[30px] !text-left font-semibold text-[#FFFFFF] mb-[40px]">{t("ProductItem.technical_info.title")} </h2>
                     <TechInfo className="h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]">
-                        {(realBody as any).technical_info?.map((item: any, index: number) => (
+                        {(productInfo as any).technical_info?.map((item: any, index: number) => (
                             <div key={index} className="flex flex-row justify-between mb-[44px] w-full max-w-[100%]">
                                 <StyledPrice className="w-[100%] block mr-[20px] text-[14px] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]">{item.title}</StyledPrice>
                                 <p className="w-[100%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold">{item.value}
