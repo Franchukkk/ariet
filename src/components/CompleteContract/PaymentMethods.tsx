@@ -47,7 +47,11 @@ export const PaymentMethods = () => {
 			<StyledForm>
 				<div className='fields'>
 					<div className='fields-group'>
-						<Input label={t('complete_contract.payment.comment')} />
+						<Input
+							name='comment'
+							label={t('complete_contract.payment.comment')}
+							textarea
+						/>
 					</div>
 				</div>
 			</StyledForm>
@@ -60,10 +64,6 @@ const Wrapper = styled.div`
 	max-width: 800px;
 	margin-top: 80px;
 	padding: 0 16px;
-
-	@media (max-width: 600px) {
-		margin-top: 40px;
-	}
 `
 
 const Title = styled.h3`
@@ -72,12 +72,6 @@ const Title = styled.h3`
 	font-weight: 600;
 	font-size: 30px;
 	line-height: 58px;
-
-	@media (max-width: 600px) {
-		font-size: 22px;
-		line-height: 32px;
-		text-align: center;
-	}
 `
 
 const Options = styled.div`
@@ -85,11 +79,6 @@ const Options = styled.div`
 	flex-wrap: wrap;
 	gap: 30px;
 	align-items: center;
-
-	@media (max-width: 600px) {
-		justify-content: center;
-		gap: 20px;
-	}
 `
 
 const Option = styled.div<{ selected: boolean }>`
@@ -101,10 +90,6 @@ const Option = styled.div<{ selected: boolean }>`
 	border-radius: 8px;
 	transition: background 0.2s ease;
 	background: ${({ selected }) => (selected ? '#24242470' : 'transparent')};
-
-	@media (max-width: 600px) {
-		padding: 6px 10px;
-	}
 `
 
 const Radio = styled.div`
@@ -129,10 +114,6 @@ const Logo = styled.img`
 	width: 60px;
 	height: auto;
 	object-fit: contain;
-
-	@media (max-width: 600px) {
-		width: 50px;
-	}
 `
 
 const StyledForm = styled.div`
@@ -150,10 +131,5 @@ const StyledForm = styled.div`
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 38px;
-
-		@media (max-width: 800px) {
-			grid-template-columns: 1fr;
-			gap: 20px;
-		}
 	}
 `

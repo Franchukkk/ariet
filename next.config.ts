@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
 
 	typescript: { ignoreBuildErrors: true },
 	eslint: { ignoreDuringBuilds: true },
+	images: {
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'rpktask.sytes.net'
+			}
+		]
+	},
 
 	webpack(config) {
 		const assetRule = config.module.rules.find(

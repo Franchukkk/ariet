@@ -8,6 +8,7 @@ import { Header } from '@/components/Header/Header'
 import I18nProvider from '@/providers/I18nProvider'
 
 import './globals.css'
+import { BasketProvider } from '@/context/BasketContext'
 
 export const metadata: Metadata = {
 	title: 'Ariet',
@@ -23,11 +24,13 @@ export default function RootLayout({
 		<html lang={'ru'}>
 			<body>
 				<I18nProvider>
-					<div className='app-wrapper'>
-						<Header />
-						<main>{children}</main>
-						<Footer />
-					</div>
+					<BasketProvider>
+						<div className='app-wrapper'>
+							<Header />
+							<main>{children}</main>
+							<Footer />
+						</div>
+					</BasketProvider>
 				</I18nProvider>
 			</body>
 		</html>

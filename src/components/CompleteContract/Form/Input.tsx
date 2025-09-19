@@ -3,10 +3,19 @@ import styled from 'styled-components'
 
 interface Props {
 	label: string
+	name: string
+	type?: string
+	required?: boolean
 	textarea?: boolean
 }
 
-export const Input = ({ label, textarea }: Props) => {
+export const Input = ({
+	label,
+	name,
+	type = 'text',
+	required,
+	textarea
+}: Props) => {
 	const [focused, setFocused] = useState(false)
 
 	return (
@@ -14,12 +23,16 @@ export const Input = ({ label, textarea }: Props) => {
 			<div className='label'>{label}</div>
 			{textarea ? (
 				<textarea
+					name={name}
+					required={required}
 					onFocus={() => setFocused(true)}
 					onBlur={() => setFocused(false)}
 				></textarea>
 			) : (
 				<input
-					type='text'
+					type={type}
+					name={name}
+					required={required}
 					onFocus={() => setFocused(true)}
 					onBlur={() => setFocused(false)}
 				/>
@@ -41,7 +54,6 @@ const StyledInput = styled.div`
 		font-weight: 400;
 		font-size: 16px;
 		line-height: 100%;
-		letter-spacing: 0%;
 		border-bottom: 1px solid #ffffff8a;
 		width: 100%;
 		background: none;

@@ -1,15 +1,19 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { products as allProducts } from '@/components/Basket/BasketList'
 import { CartSummary } from '@/components/CompleteContract/Form/CartSummary'
 import { Form } from '@/components/CompleteContract/Form/Form'
 import { Title } from '@/components/CompleteContract/Title'
 
 import { DeliveryMethods } from './DeliveryMethods'
 import { PaymentMethods } from './PaymentMethods'
+import { useBasket } from '@/context/BasketContext'
+import { OrderProvider } from '@/context/OrderContext'
 
 export default function CompleteContract() {
+	const { basket } = useBasket()
 	const [quantities, setQuantities] = useState<Record<number, number>>({})
 
 	useEffect(() => {
@@ -17,28 +21,28 @@ export default function CompleteContract() {
 		if (saved) {
 			setQuantities(JSON.parse(saved))
 		} else {
-			setQuantities(Object.fromEntries(allProducts.map(p => [p.id, 1])))
+			setQuantities(
+				Object.fromEntries(basket.map(p => [p.id, p.quantity || 1]))
+			)
 		}
-	}, [])
+	}, [basket])
 
 	return (
-		<>
+		<OrderProvider>
 			<TitleD>
 				<Title />
 			</TitleD>
 
 			<Wrapper>
 				<Form />
-				<CartSummary
-					products={allProducts}
-					quantities={quantities}
-				/>
+				<CartSummary />
 			</Wrapper>
+
 			<DeliveryWrapper>
 				<DeliveryMethods />
 				<PaymentMethods />
 			</DeliveryWrapper>
-		</>
+		</OrderProvider>
 	)
 }
 

@@ -5,36 +5,38 @@ import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-type Product = {
-	id: number
-	name: string
-	price: number
-	photo: string
-	description: string
-}
+import { Button } from './Button'
+import { useBasket } from '@/context/BasketContext'
 
-type CartSummaryProps = {
-	products: Product[]
-	quantities: Record<number, number>
-}
-
-export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
+export const CartSummary = () => {
 	const { t } = useTranslation('common')
 	const router = useRouter()
+	const { basket, discount } = useBasket()
+
 	const deliveryPrice = 200
-	const totalPrice = products.reduce(
-		(acc, product) => acc + product.price * (quantities[product.id] || 1),
+
+	const subtotal = basket.reduce(
+		(acc, product) => acc + product.price * (product.quantity || 1),
 		0
 	)
 
+	const discountedTotal =
+		discount > 0 ? subtotal - (subtotal * discount) / 100 : subtotal
+
+	const finalTotal = discountedTotal + deliveryPrice
+
 	return (
 		<Container>
-			{products.map(product => (
+			{basket.map(product => (
 				<div key={product.id}>
 					<ProductItem>
 						<ImageWrapper>
 							<Image
-								src={product.photo}
+								src={
+									typeof product.photo === 'string'
+										? product.photo
+										: product.photo?.src
+								}
 								alt={product.name}
 								width={70}
 								height={70}
@@ -44,12 +46,9 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 							<Category>{product.description}</Category>
 							<Name>{product.name}</Name>
 							<Info>
-								<span>{quantities[product.id] || 1}x</span>
+								<span>{product.quantity}x</span>
 								<Price>
-									{(
-										product.price * (quantities[product.id] || 1)
-									).toLocaleString()}{' '}
-									грн
+									{(product.price * product.quantity).toLocaleString()} грн
 								</Price>
 							</Info>
 						</Details>
@@ -60,8 +59,15 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 
 			<Row>
 				<Label>{t('complete_contract.cart.products_price')}</Label>
-				<Value>{totalPrice.toLocaleString()} грн</Value>
+				<Value>{subtotal.toLocaleString()} грн</Value>
 			</Row>
+
+			{discount > 0 && (
+				<Row>
+					<Label>Знижка ({discount}%)</Label>
+					<Value>-{((subtotal * discount) / 100).toLocaleString()} грн</Value>
+				</Row>
+			)}
 
 			<Row>
 				<Label>{t('complete_contract.cart.delivery')}</Label>
@@ -70,14 +76,10 @@ export const CartSummary = ({ products, quantities }: CartSummaryProps) => {
 
 			<Row>
 				<Label>{t('complete_contract.cart.total')}</Label>
-				<TotalValue>
-					{(totalPrice + deliveryPrice).toLocaleString()} грн
-				</TotalValue>
+				<TotalValue>{finalTotal.toLocaleString()} грн</TotalValue>
 			</Row>
 
-			<ConfirmButton onClick={() => router.push('/thanks-for-order')}>
-				{t('complete_contract.cart.confirm')}
-			</ConfirmButton>
+			<Button />
 		</Container>
 	)
 }
@@ -117,24 +119,13 @@ const Details = styled.div`
 `
 
 const Category = styled.span`
-	font-weight: 400;
-	font-style: Regular;
 	font-size: 13px;
-	leading-trim: NONE;
-	line-height: 100%;
-	letter-spacing: 0%;
-
 	color: #7f7f7f;
 `
 
 const Name = styled.h4`
 	font-weight: 600;
-	font-style: DemiBold;
 	font-size: 17px;
-	leading-trim: NONE;
-	line-height: 100%;
-	letter-spacing: 1%;
-
 	color: #fff;
 	margin: 0;
 `
@@ -146,26 +137,15 @@ const Info = styled.div`
 	width: 200px;
 
 	span {
-		font-weight: 400;
-		font-style: Regular;
 		font-size: 17px;
-		leading-trim: NONE;
-		line-height: 100%;
-		letter-spacing: 1%;
-
 		color: #ffffff;
 	}
 `
 
 const Price = styled.span`
 	color: #fff;
-
 	font-weight: 600;
-	font-style: DemiBold;
 	font-size: 17px;
-	leading-trim: NONE;
-	line-height: 100%;
-	letter-spacing: 1%;
 `
 
 const Divider = styled.hr`
@@ -182,14 +162,8 @@ const Row = styled.div`
 
 const Label = styled.p`
 	width: 45%;
-	font-weight: 300;
-	font-style: Light;
 	font-size: 14px;
-	leading-trim: NONE;
-	line-height: 18px;
-	letter-spacing: 1%;
 	color: #ffffffa8;
-
 	border-bottom: 1px dashed #ffffff42;
 `
 
@@ -197,13 +171,7 @@ const Value = styled.p`
 	width: 45%;
 	padding-bottom: 14px;
 	position: relative;
-
-	font-weight: 500;
-	font-style: Medium;
 	font-size: 15px;
-	leading-trim: NONE;
-	line-height: 18px;
-	letter-spacing: 1%;
 	color: #ffffffc9;
 
 	&::after {
@@ -218,37 +186,6 @@ const Value = styled.p`
 `
 
 const TotalValue = styled(Value)`
-	color: #ffffffc9;
 	font-weight: 700;
-	font-style: Bold;
 	font-size: 18px;
-	leading-trim: NONE;
-	line-height: 18px;
-	letter-spacing: 1%;
-
-	padding-bottom: 15px;
-`
-
-const ConfirmButton = styled.button`
-	width: 100%;
-	background: #4bc785;
-	color: black;
-	padding: 20px;
-
-	border-radius: 9999px;
-
-	cursor: pointer;
-	transition: background 0.2s ease;
-
-	font-weight: 600;
-	font-style: DemiBold;
-	font-size: 15px;
-	leading-trim: NONE;
-	line-height: 100%;
-	letter-spacing: 1%;
-	text-align: center;
-
-	&:hover {
-		background: #4ade80;
-	}
 `

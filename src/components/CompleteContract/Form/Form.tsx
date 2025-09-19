@@ -1,46 +1,89 @@
+'use client'
+
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { Input } from './Input'
+import { useOrder } from '@/context/OrderContext'
 
 export const Form = () => {
 	const { t } = useTranslation('common')
+	const { error } = useOrder()
 
 	return (
-		<StyledForm>
+		<StyledForm id='order-form'>
 			<Styled>{t('complete_contract.name_form')}</Styled>
 
 			<div className='fields'>
 				<div className='fields-group'>
-					<Input label={t('complete_contract.form.Name')} />
-					<Input label={t('complete_contract.form.Surname')} />
+					<Input
+						name='Name'
+						label={t('complete_contract.form.Name')}
+						required
+					/>
+					<Input
+						name='Surname'
+						label={t('complete_contract.form.Surname')}
+						required
+					/>
 				</div>
 				<div className='fields-group'>
-					<Input label={t('complete_contract.form.Phone')} />
-					<Input label={t('complete_contract.form.Email')} />
+					<Input
+						name='Phone'
+						label={t('complete_contract.form.Phone')}
+						type='tel'
+						required
+					/>
+					<Input
+						name='Email'
+						label={t('complete_contract.form.Email')}
+						type='email'
+						required
+					/>
 				</div>
 				<div className='fields-group'>
-					<Input label={t('complete_contract.form.City')} />
-					<Input label={t('complete_contract.form.Zip_code')} />
+					<Input
+						name='City'
+						label={t('complete_contract.form.City')}
+					/>
+					<Input
+						name='Zip_code'
+						label={t('complete_contract.form.Zip_code')}
+					/>
 				</div>
-				<Input label={t('complete_contract.form.Address')} />
-				<Input label={t('complete_contract.form.Transport_company_address')} />
+				<Input
+					name='Address'
+					label={t('complete_contract.form.Address')}
+					required
+				/>
+				<Input
+					name='Transport_company_address'
+					label={t('complete_contract.form.Transport_company_address')}
+					required
+				/>
 				<div className='fields-group'>
-					<Input label={t('complete_contract.form.TC_number')} />
-					<Input label={t('complete_contract.form.Field_3')} />
+					<Input
+						name='TC_number'
+						label={t('complete_contract.form.TC_number')}
+					/>
+					<Input
+						name='Field_3'
+						label={t('complete_contract.form.Field_3')}
+					/>
 				</div>
 			</div>
+
+			{error && <p className='text-red-500 mt-4'>{error}</p>}
 		</StyledForm>
 	)
 }
 
-const StyledForm = styled.div`
+const StyledForm = styled.form`
 	width: 100%;
 	max-width: 800px;
 	.fields {
 		display: grid;
 		grid-template-columns: 1fr;
-		grid-auto-rows: max-content;
 		gap: 44px;
 		margin-bottom: 44px;
 	}
@@ -61,9 +104,7 @@ const StyledForm = styled.div`
 `
 const Styled = styled.h3`
 	font-weight: 600;
-	font-style: DemiBold;
 	font-size: 30px;
 	line-height: 58px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
 `

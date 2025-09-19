@@ -1,10 +1,17 @@
+'use client'
+
 import { useRouter } from 'next/navigation'
 import styled from 'styled-components'
 
 import CartSvg from '../../../../public/Vector.svg'
 
+import { useBasket } from '@/context/BasketContext'
+
 export const Basket = () => {
 	const router = useRouter()
+	const { basket } = useBasket()
+
+	const totalItems = basket.reduce((sum, item) => sum + item.quantity, 0)
 
 	const handleClick = () => {
 		router.push('/basket')
@@ -15,7 +22,7 @@ export const Basket = () => {
 			<StyledSvg>
 				<CartSvg aria-label='cart' />
 			</StyledSvg>
-			<Badge>3</Badge>
+			{totalItems > 0 && <Badge>{totalItems}</Badge>}
 		</StyledCart>
 	)
 }
@@ -39,8 +46,7 @@ const StyledCart = styled.button`
 	align-items: center;
 	justify-content: center;
 
-	border-radius: 15px;
-	background:;
+	background: none;
 	height: 62px;
 	width: 64px;
 	flex-shrink: 0;
