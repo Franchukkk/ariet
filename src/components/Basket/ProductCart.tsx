@@ -10,6 +10,7 @@ import { formatPrice } from '@/helpers/formatPrice'
 
 interface Product {
 	id: number
+	variantId: number // ✅ додав
 	name: string
 	price: number
 	photo: any
@@ -20,7 +21,7 @@ interface ProductCartProps {
 	product: Product
 	index: number
 	quantity: number
-	onQuantityChange: (id: number, value: number) => void
+	onQuantityChange: (variantId: number, value: number) => void // ✅ зміна
 }
 
 export const ProductCart = ({
@@ -34,7 +35,7 @@ export const ProductCart = ({
 	const { removeFromBasket } = useBasket()
 
 	const handleRemove = () => {
-		removeFromBasket(product.id)
+		removeFromBasket(product.variantId) // ✅ тепер по variantId
 	}
 
 	return (
@@ -73,7 +74,9 @@ export const ProductCart = ({
 				/>
 				<CustomSelect
 					value={quantity}
-					onChange={e => onQuantityChange(product.id, Number(e.target.value))}
+					onChange={e =>
+						onQuantityChange(product.variantId, Number(e.target.value))
+					} // ✅ тепер variantId
 				>
 					{Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
 						<option
@@ -100,6 +103,8 @@ export const ProductCart = ({
 		</WrapperLi>
 	)
 }
+
+/* --- styles --- */
 const StyledDeleteButton = styled.button`
 	background: transparent;
 	border: none;

@@ -14,8 +14,8 @@ type BasketItem = {
 type BasketContextType = {
 	basket: BasketItem[]
 	addToBasket: (item: BasketItem) => void
-	removeFromBasket: (id: number) => void
-	updateQuantity: (id: number, quantity: number) => void
+	removeFromBasket: (variantId: number) => void
+	updateQuantity: (variantId: number, quantity: number) => void
 	clearBasket: () => void
 	discount: number
 	setDiscount: (percent: number) => void
@@ -70,12 +70,14 @@ export const BasketProvider = ({ children }: { children: React.ReactNode }) => {
 		})
 	}
 
-	const removeFromBasket = (id: number) => {
-		setBasket(prev => prev.filter(p => p.id !== id))
+	const removeFromBasket = (variantId: number) => {
+		setBasket(prev => prev.filter(p => p.variantId !== variantId))
 	}
 
-	const updateQuantity = (id: number, quantity: number) => {
-		setBasket(prev => prev.map(p => (p.id === id ? { ...p, quantity } : p)))
+	const updateQuantity = (variantId: number, quantity: number) => {
+		setBasket(prev =>
+			prev.map(p => (p.variantId === variantId ? { ...p, quantity } : p))
+		)
 	}
 
 	const clearBasket = () => {
