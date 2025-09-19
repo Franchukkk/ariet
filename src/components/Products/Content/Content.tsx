@@ -1,5 +1,6 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiSearch } from 'react-icons/fi'
@@ -33,7 +34,7 @@ export interface IVariant {
 	sku: string
 	socket: ISocket
 	images: IVariantImage[]
-	stock: number[] // якщо може бути більше чисел
+	stock: number[]
 	price: number
 }
 
@@ -52,42 +53,53 @@ export type ProductArray = IProduct[]
 export const Content = () => {
 	const { t } = useTranslation('common')
 	const [productData, setProductData] = useState<IProduct[]>([])
+	const [categories, setCategories] = useState<ICategory[]>([])
 
-	console.log(productData)
+	const searchParams = useSearchParams()
+	const categoryQuery = searchParams.get('category')
 
 	useEffect(() => {
-		fetch('https://rpktask.sytes.net/api/catalog/products/', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
+		fetch('https://rpktask.sytes.net/api/catalog/products/')
 			.then(res => res.json())
 			.then(data => setProductData(data.results))
 	}, [])
+
+	useEffect(() => {
+		fetch('https://rpktask.sytes.net/api/catalog/categories/')
+			.then(res => res.json())
+			.then(data => setCategories(data.results))
+	}, [])
+
+	useEffect(() => {
+		if (categoryQuery) {
+			setActiveFilters([categoryQuery])
+		}
+	}, [categoryQuery])
 
 	const [activeFilters, setActiveFilters] = useState<string[]>([])
 	const [pagination, setPagination] = useState({
 		currentPage: 1,
 		totalPages: 10
 	})
-
 	const [showFilters, setShowFilters] = useState(false)
 	const [query, setQuery] = useState('')
 
 	const filteredData = useMemo(() => {
-		return productData.filter(
-			p =>
+		return productData.filter(p => {
+			const matchesQuery =
 				p.name.toLowerCase().includes(query.toLowerCase()) ||
 				p.category.name.toLowerCase().includes(query.toLowerCase())
-		)
-	}, [query, productData])
+
+			const matchesFilters =
+				activeFilters.length === 0 ||
+				activeFilters.includes(p.category.id.toString())
+
+			return matchesQuery && matchesFilters
+		})
+	}, [query, productData, activeFilters])
 
 	const handlePaginationChange = (page: number) =>
-		setPagination(prev => ({
-			...prev,
-			currentPage: page
-		}))
+		setPagination(prev => ({ ...prev, currentPage: page }))
 
 	const handleFilterChange = (filter: string, isReset?: boolean) =>
 		setActiveFilters(prev =>
@@ -107,6 +119,7 @@ export const Content = () => {
 				activeFilters={activeFilters}
 				onChangeFilter={handleFilterChange}
 				showFilters={showFilters}
+				categories={categories}
 			/>
 
 			<div>
@@ -115,6 +128,7 @@ export const Content = () => {
 					onChangeFilter={handleFilterChange}
 					showFilters={showFilters}
 					onToggleShowFilters={handleToggleFilters}
+					categories={categories}
 				/>
 
 				<SearchWrapper>
@@ -158,6 +172,7 @@ const SearchIcon = styled(FiSearch)`
 	transform: translateY(-50%);
 	color: #666;
 `
+
 const NoResults = styled.div`
 	color: #fff;
 	text-align: center;

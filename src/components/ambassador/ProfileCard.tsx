@@ -299,11 +299,20 @@ export default function ProfileCard() {
 			<Role>{t('ambassador.role')}</Role>
 			<Label>{t('ambassador.promo_code')}</Label>
 
-			<PromoButton $active={promoValid ?? undefined}>
-				{userData.promo_code}
-				{promoValid === true && 'Yes'}
-				{promoValid === false && 'No'}
-			</PromoButton>
+			{userData.promo_code ? (
+				<>
+					<Label>{t('ambassador.promo_code')}</Label>
+					<PromoButton $active={promoValid ?? undefined}>
+						{userData.promo_code}
+						{promoValid === true && ''}
+						{promoValid === false && ''}
+					</PromoButton>
+				</>
+			) : (
+				<p style={{ color: '#ff4444', marginTop: '20px' }}>
+					{t('ambassador.no_promo_code')}
+				</p>
+			)}
 		</CardWrapper>
 	)
 }

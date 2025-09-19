@@ -613,6 +613,7 @@
 		"title": "AMBASSADOR ACCOUNT",
 		"role": "AMBASSADOR",
 		"promo_code": "My promo code",
+		"no_promo_code": "You do not have an active promo code",
 		"forma": {
 			"name": "First name",
 			"Surname": "Last name",

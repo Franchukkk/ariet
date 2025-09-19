@@ -29,6 +29,13 @@ interface Product {
 	}[]
 }
 
+interface ProductResponse {
+	count: number
+	next: string | null
+	previous: string | null
+	results: Product[]
+}
+
 export const List = () => {
 	const { t } = useTranslation('common')
 	const [products, setProducts] = useState<Product[]>([])
@@ -42,11 +49,12 @@ export const List = () => {
 					'https://rpktask.sytes.net/api/catalog/products/'
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const data = await res.json()
-				setProducts(Array.isArray(data) ? data : [])
+
+				const data: ProductResponse = await res.json()
+				setProducts(Array.isArray(data.results) ? data.results : [])
 			} catch (err) {
 				console.error('Fetch error:', err)
-				setError('Failed to load')
+				setError('Fetch error')
 			} finally {
 				setLoading(false)
 			}
@@ -57,7 +65,7 @@ export const List = () => {
 
 	return (
 		<StyledList>
-			{loading && <p>Завантаження...</p>}
+			{loading && <p>L=loading...</p>}
 			{error && <p style={{ color: 'red' }}>{error}</p>}
 
 			{!loading && !error && (

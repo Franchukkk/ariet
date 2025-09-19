@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -37,11 +36,6 @@ function formatPrice(num: number) {
 }
 
 export const BasketList = () => {
-	const router = useRouter()
-	const handleCheckout = () => {
-		router.push('/complete-contract')
-	}
-
 	const { t } = useTranslation('common')
 	const [promocode, setPromocode] = useState('')
 	const [quantities, setQuantities] = useState<Record<number, number>>(

@@ -55,7 +55,7 @@ export const Dropdown = () => {
 						categories.map(cat => (
 							<Link
 								key={cat.id}
-								href={`/catalog/${cat.id}`}
+								href={{ pathname: '/products', query: { category: cat.id } }}
 							>
 								{cat.name}
 							</Link>

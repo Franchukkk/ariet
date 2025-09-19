@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { products as allProducts } from '@/components/Basket/BasketList'
-import { CartSummary } from '@/components/CompleteContract/CartSummary'
+import { CartSummary } from '@/components/CompleteContract/Form/CartSummary'
 import { Form } from '@/components/CompleteContract/Form/Form'
 import { Title } from '@/components/CompleteContract/Title'
 
