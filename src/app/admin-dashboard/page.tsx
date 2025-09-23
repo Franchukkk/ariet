@@ -1,3 +1,5 @@
+'use client'
+
 import { Suspense } from 'react'
 
 import { ClientComponent } from '@/components/AdminDashbord/admin-dashboard'
