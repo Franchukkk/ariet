@@ -29,6 +29,7 @@ export const ClientComponent = () => {
 
 		if (!refresh || !access) return
 
+		// Оновлення access токена
 		fetch('https://rpktask.sytes.net/api/token/refresh/', {
 			method: 'POST',
 			headers: {
@@ -44,6 +45,7 @@ export const ClientComponent = () => {
 				}
 			})
 
+		// Отримання замовлень
 		fetch('https://rpktask.sytes.net/api/orders/', {
 			method: 'GET',
 			headers: {
@@ -52,8 +54,8 @@ export const ClientComponent = () => {
 			}
 		})
 			.then(res => res.json())
-			.then(data => console.log(data))
-			.catch(err => console.log(err))
+			.then(data => console.log('Orders:', data))
+			.catch(err => console.log('Fetch error:', err))
 	}, [])
 
 	return (
