@@ -1,9 +1,11 @@
+'use client'
+
+import { ProtectedRoute } from '@/components/ProtectedRoute/ProtectedRoute'
 import ProfileCard from '@/components/ambassador/ProfileCard'
 import ProfileForm from '@/components/ambassador/ProfileForm'
 import StatsGrid from '@/components/ambassador/StatsGrid'
 import Title from '@/components/ambassador/Title'
 import TrainingsCard from '@/components/ambassador/TrainingsList'
-import { ProtectedRoute } from '@/components/ProtectedRoute/ProtectedRoute'
 
 export default function DashboardPage() {
 	return (
