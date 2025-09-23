@@ -1,44 +1,12 @@
-'use client'
+import { Suspense } from 'react'
 
-import styled from 'styled-components'
+import { ClientComponent } from '@/components/About/ClientComponent'
 
-import { Providing } from '@/components/About/Providing/Providing'
-import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
-
-import { Global } from '../../components/About/Global/Global'
-import { Goal } from '../../components/About/Goal/Goal'
-import { Hero } from '../../components/About/Hero/Hero'
-import { Standarts } from '../../components/About/Standarts/Standarts'
-import { Title } from '../../components/About/Title/Title'
-import { Support } from '../../components/Support/Support'
-
+export const dynamic = 'force-dynamic'
 export default function Page() {
 	return (
-		<PublicRoute>
-			<StyledAbout>
-				<Hero />
-				<Goal />
-				<Providing />
-				<Support />
-				<Standarts />
-				<Global />
-				<Title />
-			</StyledAbout>
-		</PublicRoute>
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientComponent />
+		</Suspense>
 	)
 }
-
-const StyledAbout = styled.div`
-	.support-wrapper {
-		padding-bottom: 0;
-	}
-	.support-title {
-		text-align: left;
-		br {
-			display: block;
-		}
-	}
-	.planet-wrapper {
-		top: 230px;
-	}
-`

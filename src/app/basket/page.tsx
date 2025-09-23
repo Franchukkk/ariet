@@ -1,8 +1,12 @@
-"use client";
+import { Suspense } from 'react'
 
-import { Basket } from "@/components/Basket/Basket";
-import { PublicRoute } from "@/components/PublicRoute/PublicRoute";
+import { ClientComponent } from '@/components/Basket/ClientComponent'
 
+export const dynamic = 'force-dynamic'
 export default function Page() {
-    return <PublicRoute><Basket /></PublicRoute>
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientComponent />
+		</Suspense>
+	)
 }

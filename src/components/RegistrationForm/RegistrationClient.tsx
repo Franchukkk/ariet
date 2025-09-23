@@ -4,29 +4,29 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { Background } from '@/components/About/Hero/Background'
-import LoginForm from '@/components/LoginForm/LoginForm'
 import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
+import RegistrationForm from '@/components/RegistrationForm/RegistrationForm'
 
 export const dynamic = 'force-dynamic'
-export default function Page() {
+export const ClientComponent = () => {
 	const { t } = useTranslation('common')
 	return (
 		<PublicRoute>
-			<LoginWrapper>
-				<StyledTitle>{t('title.login')}</StyledTitle>
-				<LoginForm />
+			<RegistrationWrapper>
+				<StyledTitle>{t('title.registration')}</StyledTitle>
+				<RegistrationForm />
 				<CanvasBlock>
 					<Background />
 				</CanvasBlock>
-			</LoginWrapper>
+			</RegistrationWrapper>
 		</PublicRoute>
 	)
 }
 
-const LoginWrapper = styled.div`
+const RegistrationWrapper = styled.div`
 	position: relative;
-	display: flex;
 	max-width: 1440px;
+	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
@@ -48,9 +48,11 @@ const StyledTitle = styled.h1`
 	text-transform: uppercase;
 	color: #ffffff;
 	margin-bottom: 80px;
+	margin-top: 20px;
 
 	@media (max-width: 800px) {
 		text-align: center;
+		margin-bottom: 20px;
 	}
 `
 

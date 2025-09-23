@@ -6,6 +6,8 @@ import { Products } from '../components/Home/Products/Products'
 import { WhyUs } from '../components/Home/WhyUs/WhyUs'
 import { Support } from '../components/Support/Support'
 
+export const dynamic = 'force-dynamic'
+
 export default function Page() {
 	return (
 		<PublicRoute>

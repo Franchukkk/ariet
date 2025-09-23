@@ -1,32 +1,13 @@
-"use client"
-import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Breadcrumbs } from "../../components/Breadcrumbs"
-import { Location } from "../../components/Contacts/Location"
-import { Title } from "../../components/Contacts/Title"
-import { Form } from "../../components/Form/Form"
-import { PublicRoute } from "@/components/PublicRoute/PublicRoute"
+import { Suspense } from 'react'
+
+import { ClientContacts } from '@/components/Contacts/ClientContacts'
+
+export const dynamic = 'force-dynamic'
 
 export default function Page() {
-  const { t } = useTranslation("common")
-
-  return (
-    <PublicRoute>
-      <StyledContacts className="main-wrapper">
-
-        <Breadcrumbs
-          path={[
-            t("breadcrumbs.home"),
-            t("breadcrumbs.products"),
-            t("breadcrumbs.online_ups")
-          ]}
-        />
-        <Title />
-        <Location />
-        <Form />
-      </StyledContacts>
-    </PublicRoute>
-  )
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientContacts />
+		</Suspense>
+	)
 }
-
-const StyledContacts = styled.div``

@@ -1,22 +1,32 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { I18nextProvider } from 'react-i18next'
 
 import i18n, { defaultNS, ensureNSLoaded, fallbackLng } from '../i18n/client'
 
+// Обгортка без хуків
 export default function I18nProvider({
 	children
 }: {
 	children: React.ReactNode
 }) {
+	return (
+		<Suspense fallback={null}>
+			<I18nProviderInner>{children}</I18nProviderInner>
+		</Suspense>
+	)
+}
+
+// Власне провайдер під Suspense, де використовується useSearchParams
+function I18nProviderInner({ children }: { children: React.ReactNode }) {
 	const [ready, setReady] = useState(false)
 	const searchParams = useSearchParams()
 
 	useEffect(() => {
 		;(async () => {
-			// 1) Пріоритет: ?lng=... у URL → 2) localStorage → 3) fallback
+			// 1) ?lng=... у URL → 2) localStorage → 3) fallback
 			const urlLng = searchParams?.get('lng')
 			const saved = localStorage.getItem('lng') || fallbackLng
 			const want = (urlLng || saved).split('-')[0]

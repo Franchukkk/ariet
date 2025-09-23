@@ -1,11 +1,8 @@
-// components/thanks-for-order/thanks-for-order.tsx
 'use client'
 
 import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
-
-// components/thanks-for-order/thanks-for-order.tsx
 
 export const ThanksForOrder = ({
 	orderNumber

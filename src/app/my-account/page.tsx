@@ -1,12 +1,13 @@
-import { Orders } from "@/components/MyAccount/Orders";
-import { TitleMyAccount } from "@/components/MyAccount/TitleMyAccount";
-import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
+import { Suspense } from 'react'
+
+import { ClientMyAccount } from '@/components/MyAccount/ClientMyAccount'
+
+export const dynamic = 'force-dynamic'
 
 export default function Page() {
-    return (
-        <ProtectedRoute>
-            < TitleMyAccount />
-            <Orders />
-        </ProtectedRoute >
-    );
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientMyAccount />
+		</Suspense>
+	)
 }

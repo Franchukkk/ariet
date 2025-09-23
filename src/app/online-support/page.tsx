@@ -1,17 +1,12 @@
-'use client'
-import styled from "styled-components"
-import { Form } from "../../components/Form/Form"
-import { DownloadButton } from "../../components/OnlineSupport/DownloadButton"
-import { Hero } from "../../components/OnlineSupport/Hero/Hero"
+import { Suspense } from 'react'
 
+import { ClientComponent } from '@/components/OnlineSupport/ClientComponent'
+
+export const dynamic = 'force-dynamic'
 export default function Page() {
-  return (
-  <StyledOnlineSupport className="main-wrapper">
-    <Hero />
-    <DownloadButton />
-    <Form title={`Заполните форму\nрегистрации`} />
-    </StyledOnlineSupport>
-  )
-};
-
-const StyledOnlineSupport = styled.div``;
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientComponent />
+		</Suspense>
+	)
+}

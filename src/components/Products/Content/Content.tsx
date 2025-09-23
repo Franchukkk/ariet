@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FiSearch } from 'react-icons/fi'
 import styled from 'styled-components'
@@ -50,7 +50,17 @@ export interface IVariantImage {
 
 export type ProductArray = IProduct[]
 
+// Обгортка без хуків
 export const Content = () => {
+	return (
+		<Suspense fallback={null}>
+			<ContentInner />
+		</Suspense>
+	)
+}
+
+// Сам компонент із useSearchParams усередині під Suspense
+function ContentInner() {
 	const { t } = useTranslation('common')
 	const [productData, setProductData] = useState<IProduct[]>([])
 	const [categories, setCategories] = useState<ICategory[]>([])
@@ -70,12 +80,6 @@ export const Content = () => {
 			.then(data => setCategories(data.results))
 	}, [])
 
-	useEffect(() => {
-		if (categoryQuery) {
-			setActiveFilters([categoryQuery])
-		}
-	}, [categoryQuery])
-
 	const [activeFilters, setActiveFilters] = useState<string[]>([])
 	const [pagination, setPagination] = useState({
 		currentPage: 1,
@@ -83,6 +87,10 @@ export const Content = () => {
 	})
 	const [showFilters, setShowFilters] = useState(false)
 	const [query, setQuery] = useState('')
+
+	useEffect(() => {
+		if (categoryQuery) setActiveFilters([categoryQuery])
+	}, [categoryQuery])
 
 	const filteredData = useMemo(() => {
 		return productData.filter(p => {

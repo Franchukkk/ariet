@@ -1,8 +1,13 @@
-'use client'
+import { Suspense } from 'react'
 
-import CompleteContract from '@/components/CompleteContract/CompleteContract'
-import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
+import { ClientCompleteContract } from '@/components/CompleteContract/ClientCompleteContract'
+
+export const dynamic = 'force-dynamic'
 
 export default function Page() {
-	return <PublicRoute><CompleteContract /></PublicRoute>
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ClientCompleteContract />
+		</Suspense>
+	)
 }
