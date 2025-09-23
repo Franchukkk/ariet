@@ -17,16 +17,17 @@ const ordersInfo = {
 	date: '2025-01-01'
 }
 
-export default function Page() {
-	const [accessToken, setAccessToken] = useState<string | null>(
-		localStorage.getItem('accessToken')
-	)
-	const [refreshToken, setRefreshToken] = useState<string | null>(
-		localStorage.getItem('refreshToken')
-	)
+export function ClientComponent() {
+	const [accessToken, setAccessToken] = useState<string | null>(null)
+	const [refreshToken, setRefreshToken] = useState<string | null>(null)
 
 	useEffect(() => {
-		console.log('useEffect')
+		setAccessToken(localStorage.getItem('accessToken'))
+		setRefreshToken(localStorage.getItem('refreshToken'))
+	}, [])
+
+	useEffect(() => {
+		if (!accessToken || !refreshToken) return
 
 		fetch('https://rpktask.sytes.net/api/token/refresh/', {
 			method: 'POST',
@@ -46,7 +47,7 @@ export default function Page() {
 			.then(res => res.json())
 			.then(data => console.log(data))
 			.catch(err => console.log(err))
-	}, [accessToken])
+	}, [accessToken, refreshToken])
 
 	return (
 		<ProtectedRoute>
