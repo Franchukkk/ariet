@@ -87,6 +87,8 @@ const Input = styled.input`
 		font-size: 14px;
 	}
 `
+
+/* 🔧 Центрування кнопки на мобільних */
 const Button = styled.button`
 	margin-top: 24px;
 	padding: 20px 45px;
@@ -99,26 +101,44 @@ const Button = styled.button`
 	font-weight: 600;
 	font-size: 15px;
 	text-align: center;
+
 	&:hover {
 		background: #3ea46b;
 	}
+
 	@media (max-width: 768px) {
+		display: block; /* щоб margin auto спрацював */
+		margin: 24px auto 0; /* по центру горизонтально */
 		padding: 14px 30px;
 		font-size: 14px;
 	}
 `
 
+type Me = {
+	full_name: string
+	phone: string
+	instagram: string
+	tiktok: string
+	telegram: string
+	youtube: string
+	email: string
+	promo_code: string
+}
+
 export default function ProfileForm() {
 	const { t } = useTranslation('common')
 	const [loading, setLoading] = useState(true)
-	const [formData, setFormData] = useState({
+
+	// додано promo_code в initial state, щоб не було TS-попереджень
+	const [formData, setFormData] = useState<Me>({
 		full_name: '',
 		phone: '',
 		instagram: '',
 		tiktok: '',
 		telegram: '',
 		youtube: '',
-		email: ''
+		email: '',
+		promo_code: ''
 	})
 
 	const router = useRouter()
@@ -168,6 +188,18 @@ export default function ProfileForm() {
 		return res
 	}
 
+	// нормалізація до рядків (без null), додано promo_code
+	const normalize = (d: any): Me => ({
+		full_name: d?.full_name || '',
+		phone: d?.phone || '',
+		instagram: d?.instagram || '',
+		tiktok: d?.tiktok || '',
+		telegram: d?.telegram || '',
+		youtube: d?.youtube || '',
+		email: d?.email || '',
+		promo_code: d?.promo_code || ''
+	})
+
 	useEffect(() => {
 		const init = async () => {
 			try {
@@ -176,20 +208,19 @@ export default function ProfileForm() {
 				)
 				if (res.ok) {
 					const data = await res.json()
-					setFormData(data)
+					setFormData(normalize(data))
 				}
 			} catch (e) {
 				console.error('Load profile failed:', e)
 			}
-
 			setLoading(false)
 		}
-
 		init()
 	}, [router])
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
+		const { name, value } = e.target
+		setFormData(prev => ({ ...prev, [name]: value }))
 	}
 
 	const handleSubmit = async () => {
@@ -199,12 +230,13 @@ export default function ProfileForm() {
 				{
 					method: 'PUT',
 					body: JSON.stringify({
-						full_name: formData.full_name,
-						phone: formData.phone,
-						instagram: formData.instagram,
-						tiktok: formData.tiktok,
-						telegram: formData.telegram,
-						youtube: formData.youtube
+						full_name: formData.full_name || '',
+						phone: formData.phone || '',
+						instagram: formData.instagram || '',
+						tiktok: formData.tiktok || '',
+						telegram: formData.telegram || '',
+						youtube: formData.youtube || ''
+						// promo_code не надсилаємо (read-only)
 					})
 				}
 			)
@@ -263,6 +295,7 @@ export default function ProfileForm() {
 				</Half>
 			</TwoColumnGrid>
 
+			{/* решта полів */}
 			<InputWrapper>
 				<IconCircle>
 					<FaInstagram />

@@ -1,8 +1,7 @@
 'use client'
 
-import type { StaticImageData } from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { Pagination } from 'swiper/modules'
@@ -10,15 +9,12 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 
 import ArrowUp from '@/assets/img/arrow-up.svg'
 import ProductBg from '@/assets/img/product-bg.png'
-import ProductImg from '@/assets/img/product.png'
 import cardBorder from '@/assets/img/specification-border.png'
 
 import { Background } from '../Autonomy/Banner/Background'
 import { Card } from '../Specifications/List/Card/Card'
 
 import { useBasket } from '@/context/BasketContext'
-
-type ImgLike = string | StaticImageData
 
 interface ProductInfo {
 	id: number
@@ -33,11 +29,12 @@ interface Variant {
 	sku: string
 	stock: any[]
 	price: number
-	socket: {
-		code: string
-		name: string
-	}
+	socket: { code: string; name: string } | null
+	images: { image: string; alt_text: string | null }[]
+	features: { name: string; value: string }[]
 }
+
+type Lng = 'en' | 'ru'
 
 function formatPrice(num: number) {
 	return Number(num).toLocaleString('en-US').replace(',', ' ')
@@ -48,47 +45,91 @@ export const ProductInformation = ({
 }: {
 	setProductName: (name: string) => void
 }) => {
-	const [isLoading, setIsLoading] = useState<boolean>(true)
+	const [isLoading, setIsLoading] = useState(true)
 	const [productInfo, setProductInfo] = useState<ProductInfo | null>(null)
 	const [version, setVersion] = useState<string>('')
 	const [showDescription, setShowDescription] = useState(false)
-	const [slidesData, setSlidesData] = useState<any>([])
+	const [slidesData, setSlidesData] = useState<any[]>([])
 	const [price, setPrice] = useState<number>(0)
+	const [byLang, setByLang] = useState<Partial<Record<Lng, ProductInfo>>>({})
 
-	const separatedName = productInfo ? productInfo.name.split(' ') : []
-
-	const { t } = useTranslation('common')
 	const { id } = useParams()
 	const router = useRouter()
 	const { addToBasket } = useBasket()
+	const { t, i18n } = useTranslation('common')
+
+	const currentLng: Lng = useMemo(() => {
+		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split(
+			'-'
+		)[0] as Lng
+		return raw === 'en' ? 'en' : 'ru'
+	}, [i18n.language, i18n.resolvedLanguage])
 
 	useEffect(() => {
-		fetch(`https://rpktask.sytes.net/api/catalog/products/${id}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
+		setByLang({})
+		setVersion('')
+		setSlidesData([])
+		setProductInfo(null)
+		setPrice(0)
+	}, [id])
+
+	const computeSlides = (data: ProductInfo) =>
+		data.variants.flatMap(variant =>
+			variant.images.map(img => ({
+				title: '',
+				subtitle: '',
+				photo: img.image,
+				slide: variant.id
+			}))
+		)
+
+	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
+		const url = `https://rpktask.sytes.net/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
+		const res = await fetch(url, {
+			cache: 'no-store',
+			headers: { 'Accept-Language': lng }
 		})
-			.then(res => res.json())
-			.then(data => {
-				setIsLoading(true)
-				setProductInfo(data)
-				setProductName(data.name)
-				setVersion(`version-${data.variants[0].id}`)
-				setSlidesData(
-					data.variants.map((item: any) => ({
-						title: '',
-						subtitle: '',
-						photo: ProductImg,
-						slide: item.id
-					}))
-				)
-				setPrice(data.variants[0].price)
-				setIsLoading(false)
-			})
-			.catch(err => setProductInfo(null))
-			.finally(() => setIsLoading(false))
-	}, [id, setProductName])
+		if (!res.ok) throw new Error('Failed to load product')
+		return res.json()
+	}
+
+	useEffect(() => {
+		let cancelled = false
+		const ensure = async () => {
+			setIsLoading(true)
+			try {
+				const cached = byLang[currentLng]
+				const data = cached ?? (await loadProduct(currentLng))
+				if (!cancelled) {
+					if (!cached) setByLang(prev => ({ ...prev, [currentLng]: data }))
+					setProductInfo(data)
+					setProductName(data.name)
+					const vId = data.variants[0]?.id
+					setVersion(prev => (prev ? prev : `version-${vId}`))
+					setSlidesData(computeSlides(data))
+					setPrice(data.variants[0]?.price ?? 0)
+				}
+			} catch {
+				if (!cancelled) setProductInfo(null)
+			} finally {
+				if (!cancelled) setIsLoading(false)
+			}
+		}
+		ensure()
+		return () => {
+			cancelled = true
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [id, currentLng])
+
+	useEffect(() => {
+		const other: Lng = currentLng === 'ru' ? 'en' : 'ru'
+		if (byLang[other]) return
+		loadProduct(other)
+			.then(data => setByLang(prev => ({ ...prev, [other]: data })))
+			.catch(() => {})
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng, id])
 
 	if (isLoading)
 		return (
@@ -108,6 +149,17 @@ export const ProductInformation = ({
 			</div>
 		)
 
+	const separatedName = productInfo.name.split(' ')
+	const activeVariant =
+		productInfo.variants.find(v => v.id === Number(version.split('-')[1])) ||
+		productInfo.variants[0]
+
+	// розкладемо характеристики у 2 колонки як на макеті
+	const features = activeVariant.features || []
+	const mid = Math.ceil(features.length / 2)
+	const colLeft = features.slice(0, mid)
+	const colRight = features.slice(mid)
+
 	return (
 		<>
 			<Wrapper
@@ -126,10 +178,12 @@ export const ProductInformation = ({
 							{separatedName[separatedName.length - 1]}
 						</OutlineText>
 					</Title>
+
 					<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
 						<span className='text-[#4BC785]'>{t('ProductItem.text1')}</span>{' '}
 						{t('ProductItem.text2')}
 					</p>
+
 					<StyledList
 						$cardBorder={cardBorder}
 						className='overflow-hidden'
@@ -138,10 +192,6 @@ export const ProductInformation = ({
 							spaceBetween={25}
 							modules={[Pagination]}
 							pagination={{ clickable: true }}
-							breakpoints={{
-								1024: { slidesPerView: 1 },
-								1200: { slidesPerView: 1 }
-							}}
 						>
 							<CanvasBlockOne>
 								<Background />
@@ -181,33 +231,26 @@ export const ProductInformation = ({
 							{t('ProductItem.article')}: {productInfo.id}
 						</CenterText>
 						<p className='text-[14px] font-light text-[#1DCF94]'>
-							{productInfo.variants[0].stock.length > 0
+							{activeVariant.stock.length > 0
 								? t('ProductItem.availability')
 								: t('ProductItem.not_availability')}
 						</p>
 					</div>
+
 					<CenterText className='text-[30px] font-semibold leading-[50px] mb-[20px]'>
 						{formatPrice(Number(price))} $
 					</CenterText>
+
 					<BuyButton
 						onClick={() => {
-							const variantId = Number(version.split('-')[1])
-							const selectedVariant =
-								productInfo.variants.find(v => v.id === variantId) ||
-								productInfo.variants[0]
-
 							addToBasket({
 								id: productInfo.id,
-								variantId: selectedVariant.id,
+								variantId: activeVariant.id,
 								name: productInfo.name,
-								price: selectedVariant.price,
+								price: activeVariant.price,
 								quantity: 1,
-								photo: {
-									src: slidesData[0]?.photo?.src || '/img/placeholder.png',
-									alt: productInfo.name
-								}
+								photo: activeVariant.images[0]?.image || '/img/placeholder.png'
 							})
-
 							router.push('/basket')
 						}}
 						className='cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] text-[#ffffff] text-[15px] font-semibold rounded-[61px]'
@@ -217,39 +260,79 @@ export const ProductInformation = ({
 
 					{/* Versions */}
 					<div className='border-b border-dashed border-[#313131]! mb-[22px]'></div>
-					{productInfo.variants[0].socket !== null ? (
+					{/* ^^^^^^^  ✅ FIX: було mb={[22]} — спричиняло білд-помилку */}
+
+					<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]'>
+						{t('ProductItem.version')}
+					</CenterText>
+
+					<VersionList>
+						{productInfo.variants.map(item => (
+							<WrapperVersion
+								key={`version-${item.id}`}
+								className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
+								style={{
+									color:
+										version === `version-${item.id}` ? '#4BC785' : '#FFFFFF'
+								}}
+								htmlFor={`version-${item.id}`}
+							>
+								<input
+									type='radio'
+									id={`version-${item.id}`}
+									value={`version-${item.id}`}
+									name='version'
+									className='version-radio'
+									checked={version === `version-${item.id}`}
+									onChange={e => {
+										setVersion(e.target.value)
+										setPrice(item.price)
+									}}
+								/>
+								<span className='truncate'>{item.sku}</span>
+							</WrapperVersion>
+						))}
+					</VersionList>
+
+					{/* Socket */}
+					{productInfo.variants.some(v => v.socket !== null) && (
 						<>
-							<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]'>
-								{t('ProductItem.version')}
+							<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px] mt-[22px]'>
+								{t('ProductItem.socket')}
 							</CenterText>
-							<div className='pb-[30px] border-b border-dashed border-[#313131]!'>
-								{productInfo.variants.map((item: any) => (
-									<WrapperVersion
-										key={`version-${item.id}`}
-										className={`flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] mb-[10px] cursor-pointer`}
-										style={{
-											color:
-												version === `version-${item.id}` ? '#4BC785' : '#FFFFFF'
-										}}
-									>
-										<input
-											type='radio'
-											id={`version-${item.id}`}
-											value={`version-${item.id}`}
-											name='version'
-											className='accent-[#E1E1E1] appearance-none w-[20px] h-[20px] rounded-full border border-[10px] border-[#FFFFFFC4] checked:bg-[#4BC785] checked:border-[#ffffff] checked:border-[3px]'
-											checked={version === `version-${item.id}`}
-											onChange={e => {
-												setVersion(e.target.value)
-												setPrice(item.price)
+							<SocketList>
+								{productInfo.variants
+									.filter(v => v.socket !== null)
+									.map(v => (
+										<WrapperVersion
+											key={`socket-${v.id}`}
+											className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
+											style={{
+												color:
+													version === `version-${v.id}` ? '#4BC785' : '#FFFFFF'
 											}}
-										/>
-										{item.socket.name}
-									</WrapperVersion>
-								))}
-							</div>
+											htmlFor={`socket-${v.id}`}
+										>
+											<input
+												type='radio'
+												id={`socket-${v.id}`}
+												value={`version-${v.id}`}
+												name='socket'
+												className='version-radio'
+												checked={version === `version-${v.id}`}
+												onChange={e => {
+													setVersion(e.target.value)
+													setPrice(v.price)
+												}}
+											/>
+											<span className='truncate'>
+												{v.socket?.name || v.socket?.code}
+											</span>
+										</WrapperVersion>
+									))}
+							</SocketList>
 						</>
-					) : null}
+					)}
 
 					{/* Description */}
 					<div
@@ -276,48 +359,41 @@ export const ProductInformation = ({
 				</SecondInfo>
 			</Wrapper>
 
-			{/* Technical Info */}
-			{productInfo.technical_info && productInfo.technical_info.length > 0 && (
-				<div className='main-wrapper'>
-					<h2 className='text-[30px] !text-left font-semibold text-[#FFFFFF] mb-[40px]'>
-						{t('ProductItem.technical_info.title')}
-					</h2>
-					<TechInfo className='h-[400px] grid grid-cols-2 gap-[10px] mb-[100px]'>
-						{productInfo.technical_info.map((item: any, index: number) => (
-							<div
-								key={index}
-								className='flex flex-row justify-between mb-[44px] w-full max-w-[100%]'
-							>
-								<StyledPrice className='w-[100%] block mr-[20px] text-[14px] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
-									{item.title}
-								</StyledPrice>
-								<p className='w-[100%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] font-bold'>
-									{item.value}
-									<span className='absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent'></span>
-								</p>
-							</div>
-						))}
-					</TechInfo>
-				</div>
+			{/* TECH CHARACTERISTICS — дизайн як на скріні */}
+			{features.length > 0 && (
+				<TechBlock className='main-wrapper'>
+					<h3 className='title'>{t('ProductItem.characteristics')}</h3>
+
+					<TechColumns>
+						<TechCol>
+							{colLeft.map(f => (
+								<TechRow key={`l-${f.name}`}>
+									<span className='name'>{f.name}</span>
+									<span className='value'>{f.value}</span>
+								</TechRow>
+							))}
+						</TechCol>
+
+						<Divider />
+
+						<TechCol>
+							{colRight.map(f => (
+								<TechRow key={`r-${f.name}`}>
+									<span className='name'>{f.name}</span>
+									<span className='value'>{f.value}</span>
+								</TechRow>
+							))}
+						</TechCol>
+					</TechColumns>
+				</TechBlock>
 			)}
 		</>
 	)
 }
 
-/* -------------------- styled-components -------------------- */
-const StyledPrice = styled.p`
-	@media (max-width: 764px) {
-		border-bottom: none !important;
-	}
-`
+/* ===================== styled-components ===================== */
 
-const TechInfo = styled.div`
-  @media (max-width: 1000px) {
-    grid-template-columns: 1fr;
-    height: auto;
-    mb-[40px];
-  }
-`
+const bg = '#0D0C0C'
 
 const CenterText = styled.p`
 	@media (max-width: 1000px) {
@@ -343,6 +419,13 @@ const BuyButton = styled.button`
 `
 
 const Title = styled.h1`
+	font-weight: 600;
+	font-style: DemiBold;
+	font-size: 70px;
+	line-height: 88px;
+	letter-spacing: 0%;
+	text-transform: uppercase;
+
 	@media (max-width: 1000px) {
 		span {
 			text-align: center;
@@ -407,8 +490,28 @@ const SecondInfo = styled.div`
 
 const WrapperVersion = styled.label`
 	font-weight: 600;
+	position: relative;
+	min-height: 44px;
+	display: flex;
+	align-items: center;
+
+	.version-radio {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: 999px;
+		border: 10px solid #ffffffc4;
+		margin-right: 6px;
+		flex-shrink: 0;
+	}
+	.version-radio:checked {
+		background: #4bc785;
+		border-color: #ffffff;
+		border-width: 3px;
+	}
+
 	@media (max-width: 1000px) {
-		justify-content: center;
+		justify-content: flex-start;
 	}
 `
 
@@ -419,20 +522,15 @@ const OutlineText = styled.span`
 	-webkit-text-stroke-color: #ffffff;
 `
 
-const StyledList = styled.div<{ $cardBorder: ImgLike }>`
+const StyledList = styled.div<{ $cardBorder: string }>`
 	.swiper-slide {
 		margin-bottom: 84px;
 		position: relative;
-		background: ${({ $cardBorder }) =>
-			`url(${
-				typeof $cardBorder === 'string' ? $cardBorder : $cardBorder.src
-			}) center/cover no-repeat`};
+		background: url(${({ $cardBorder }) => $cardBorder}) center/cover no-repeat;
 	}
-
 	.swiper-slide {
 		background: none !important;
 	}
-
 	@media (max-width: 1000px) {
 		.swiper-slide {
 			margin-bottom: 34px;
@@ -453,4 +551,129 @@ const CanvasBlockOne = styled.div`
 
 const CanvasBlockTwo = styled(CanvasBlockOne)`
 	transform: rotate(45deg);
+`
+
+/* Версії/сокети — адаптивні сітки */
+const VersionList = styled.div`
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px 12px;
+	padding-bottom: 30px;
+	border-bottom: 1px dashed #313131;
+
+	@media (max-width: 900px) {
+		grid-template-columns: 1fr;
+	}
+`
+const SocketList = styled(VersionList)`
+	border-bottom: 1px dashed #313131;
+`
+
+/* ====== ТЕХ. ХАРАКТЕРИСТИКИ — як у кошику і по центру ====== */
+
+/* ширший контейнер + центральне вирівнювання */
+const TechBlock = styled.section`
+	margin: 40px auto 60px;
+	max-width: min(95vw, 1440px); /* було ~1100 — тепер до 1440px, але з полями */
+	width: 100%;
+	padding: 0 24px; /* трохи ширші бокові відступи */
+	border-bottom: 1px dashed #313131;
+
+	.title {
+		color: #fff;
+		font-size: 23px;
+		font-weight: 600;
+		text-transform: uppercase;
+		margin-bottom: 20px;
+		text-align: center;
+	}
+`
+
+/* ґрід всередині теж ширший і по центру */
+const TechColumns = styled.div`
+	max-width: min(92vw, 1280px); /* було ~980 — розтягнули */
+	margin: 0 auto;
+	width: 100%;
+
+	display: grid;
+	grid-template-columns: 1fr 1px 1fr;
+	gap: 28px; /* трішки більше повітря */
+
+	@media (max-width: 900px) {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+`
+
+const Divider = styled.div``
+
+const TechCol = styled.div`
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding-bottom: 24px;
+`
+
+/* Рядок з таким самим підкресленням, як у CartSummary:
+   - .name: пунктир знизу (#ffffff42)
+   - .value: градієнтний underline 2px */
+const TechRow = styled.div`
+	display: grid;
+	grid-template-columns: 240px 1fr;
+	align-items: end; /* щоб лінії збігались по базовій лінії */
+	gap: 24px;
+	padding: 8px 0;
+
+	.name {
+		color: #ffffffa8;
+
+		font-weight: 300;
+		font-style: Light;
+		font-size: 14px;
+		leading-trim: NONE;
+		line-height: 18px;
+		letter-spacing: 1%;
+
+		padding-bottom: 12px;
+		border-bottom: 1px dashed #ffffff42; /* як Label у кошику */
+	}
+
+	.value {
+		position: relative;
+		color: #ffffffc9;
+		font-weight: 500;
+		font-style: Medium;
+		font-size: 14px;
+		leading-trim: NONE;
+		line-height: 18px;
+		letter-spacing: 1%;
+
+		padding-bottom: 14px; /* місце під лінію */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.value::after {
+		/* як Value у кошику */
+		content: '';
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 2px;
+		background: linear-gradient(to right, #d1d5db, transparent);
+	}
+
+	@media (max-width: 1200px) {
+		grid-template-columns: 200px 1fr;
+	}
+	@media (max-width: 900px) {
+		grid-template-columns: 1fr;
+		gap: 6px;
+
+		.name,
+		.value {
+			white-space: normal;
+		}
+	}
 `

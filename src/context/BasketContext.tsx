@@ -8,7 +8,7 @@ type BasketItem = {
 	name: string
 	price: number
 	quantity: number
-	photo: { src: string; alt: string }
+	photo: string // тільки url картинки
 }
 
 type BasketContextType = {

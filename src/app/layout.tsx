@@ -21,7 +21,7 @@ export default function RootLayout({
 	children: React.ReactNode
 }) {
 	return (
-		<html lang={'ru'}>
+		<html lang='ru'>
 			<body>
 				<I18nProvider>
 					<BasketProvider>

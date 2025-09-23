@@ -48,7 +48,7 @@ export const CartSummary = () => {
 							<Info>
 								<span>{product.quantity}x</span>
 								<Price>
-									{(product.price * product.quantity).toLocaleString()} грн
+									{(product.price * product.quantity).toLocaleString()} $
 								</Price>
 							</Info>
 						</Details>
@@ -59,24 +59,17 @@ export const CartSummary = () => {
 
 			<Row>
 				<Label>{t('complete_contract.cart.products_price')}</Label>
-				<Value>{subtotal.toLocaleString()} грн</Value>
+				<Value>{subtotal.toLocaleString()} $</Value>
 			</Row>
-
-			{discount > 0 && (
-				<Row>
-					<Label>Знижка ({discount}%)</Label>
-					<Value>-{((subtotal * discount) / 100).toLocaleString()} грн</Value>
-				</Row>
-			)}
 
 			<Row>
 				<Label>{t('complete_contract.cart.delivery')}</Label>
-				<Value>{deliveryPrice.toLocaleString()} грн</Value>
+				<Value>{deliveryPrice.toLocaleString()} $</Value>
 			</Row>
 
 			<Row>
 				<Label>{t('complete_contract.cart.total')}</Label>
-				<TotalValue>{finalTotal.toLocaleString()} грн</TotalValue>
+				<TotalValue>{finalTotal.toLocaleString()} $</TotalValue>
 			</Row>
 
 			<Button />

@@ -1,3 +1,4 @@
+// components/CompleteContract/Form/Button.tsx
 'use client'
 
 import { useTranslation } from 'next-i18next'
@@ -7,6 +8,8 @@ import styled from 'styled-components'
 import { useBasket } from '@/context/BasketContext'
 import { useOrder } from '@/context/OrderContext'
 
+// components/CompleteContract/Form/Button.tsx
+
 export const Button = () => {
 	const { t } = useTranslation()
 	const router = useRouter()
@@ -14,7 +17,9 @@ export const Button = () => {
 	const { clearBasket } = useBasket()
 
 	const handleClick = async () => {
-		const formEl = document.getElementById('order-form') as HTMLFormElement
+		const formEl = document.getElementById(
+			'order-form'
+		) as HTMLFormElement | null
 		if (!formEl) return
 
 		const formData = new FormData(formEl)
@@ -28,18 +33,24 @@ export const Button = () => {
 			'Address',
 			'Transport_company_address'
 		]
-		const missing = requiredFields.filter(name => !get(name))
-
+		const missing = requiredFields.filter(n => !get(n))
 		if (missing.length > 0) {
-			formEl.reportValidity()
+			formEl.reportValidity?.()
 			return
 		}
 
-		const ok = await submitOrder(formData)
+		const res = await submitOrder(formData)
 
-		if (ok) {
+		if (res.success) {
 			clearBasket()
-			router.push('/thanks-for-order')
+			const safeNumber =
+				res.orderNumber && String(res.orderNumber).trim()
+					? res.orderNumber
+					: 'unknown'
+			const orderParam = encodeURIComponent(safeNumber)
+			router.push(`/thanks-for-order?order=${orderParam}`)
+		} else if (res.error) {
+			alert(res.error)
 		}
 	}
 
@@ -48,8 +59,12 @@ export const Button = () => {
 			type='button'
 			onClick={handleClick}
 			disabled={loading}
+			aria-busy={loading}
+			aria-disabled={loading}
 		>
-			{loading ? 'Відправка...' : t('complete_contract.cart.confirm')}
+			{loading
+				? t('complete_contract.cart.sending', 'Відправка...')
+				: t('complete_contract.cart.confirm', 'Підтвердити')}
 		</StyledButton>
 	)
 }
@@ -70,8 +85,16 @@ const StyledButton = styled.button`
 	transition: all 0.3s;
 	cursor: pointer;
 	padding: 20px;
+	background: transparent;
+	color: #fff;
 
 	&:hover {
 		background: #1dcf94;
+		color: #000;
+	}
+	&:disabled,
+	&[aria-busy='true'] {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 `

@@ -545,7 +545,7 @@
 		"passwords_do_not_match": "Пароли не совпадают"
 	},
 	"Basket": {
-		"currency": "грн",
+		"currency": "$",
 		"price": "Цена товаров",
 		"delivery": "Доставка",
 		"total": "Общая сума заказа",
@@ -561,6 +561,7 @@
 		"my_orders": "Мои заказы"
 	},
 	"ProductItem": {
+		"characteristics": "Технические характеристики",
 		"choose_variant": "Выберите вариацию товара",
 		"main_page": "Главная",
 		"products": "Продукция",
@@ -693,8 +694,22 @@
 		}
 	},
 	"AdminDashboard": {
+		"sort_default": "По умолчанию",
+		"sort_id_down": "ID ↓",
+		"sort_id_up": "ID ↑'",
+		"sort_oldest": "Старі зверху",
+		"sort_newest": "Новые сверху",
+		"error_status": "This status transition is not allowed.",
+		"error_delete": "Не удалось отменить",
+		"confirm_delete": "Отменить этот заказ?",
+		"comment": "Комментарий",
+		"billing_address": "Адрес для выставления счета",
+		"shipping_address": "Адрес доставки",
+		"full_name": "Полное имя",
+		"edit_only_draft": "Редактировать можно только заказы в статусе DRAFT.",
 		"title": "Кабінет Адміністратора",
 		"my_promocode": "Мой промокод",
+		"no_promocode": "Промокод отсутствует",
 		"add_order": "Добавить заказ",
 		"orders_count": "Общee количество заказов: з ",
 		"sold_sum": "Общая сума продаж",
@@ -715,5 +730,10 @@
 		"currency": "грн",
 		"email": "E-mail",
 		"tel": "Телефон"
+	},
+	"basket": {
+		"basket_title": "Корзина пуста",
+		"promo_code": "Введите промокод",
+		"promo_active": "Промокод применен: -{{discount}}% скидка"
 	}
 }

@@ -1,10 +1,9 @@
 export function formatDate(input: string, locale: string = 'ru') {
-	const [datePart, hourStr, minuteStr] = input.split(/[:]/)
-	const [year, month, day] = datePart.split('-').map(Number)
-	const hour = Number(hourStr)
-	const minute = Number(minuteStr)
+	const date = new Date(input)
 
-	const date = new Date(year, month - 1, day, hour, minute)
+	if (isNaN(date.getTime())) {
+		return '' // якщо дата некоректна → повертаємо пусто
+	}
 
 	const parts = new Intl.DateTimeFormat(locale, {
 		day: '2-digit',
@@ -17,7 +16,8 @@ export function formatDate(input: string, locale: string = 'ru') {
 		.map(p => p.value)
 		.join('')
 
-	const formattedTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+	const hour = date.getHours().toString().padStart(2, '0')
+	const minute = date.getMinutes().toString().padStart(2, '0')
 
-	return `${formattedDate} / ${formattedTime}`
+	return `${formattedDate} / ${hour}:${minute}`
 }

@@ -20,6 +20,7 @@ const CardWrapper = styled.div`
 
 	@media (max-width: 768px) {
 		padding: 40px 20px;
+		gap: 14px; /* ↑ загальний вертикальний інтервал між блоками */
 	}
 `
 
@@ -32,15 +33,19 @@ const Corner = styled.div<{ pos: 'tl' | 'tr' | 'bl' | 'br' }>`
 		pos === 'tl' && `top: -10px; left: -10px; transform: rotate(0deg);`}
 	${({ pos }) =>
 		pos === 'tr' && `top: -10px; right: -10px; transform: rotate(90deg);`}
-	${({ pos }) =>
+  ${({ pos }) =>
 		pos === 'br' && `bottom: -10px; right: -10px; transform: rotate(180deg);`}
-	${({ pos }) =>
+  ${({ pos }) =>
 		pos === 'bl' && `bottom: -10px; left: -10px; transform: rotate(270deg);`}
 `
 
 const AvatarContainer = styled.div`
 	position: relative;
 	margin-bottom: 16px;
+
+	@media (max-width: 768px) {
+		margin-bottom: 22px; /* ↑ трохи більше під аватаром */
+	}
 `
 
 const AvatarWrapper = styled.div`
@@ -82,7 +87,6 @@ const EditButton = styled.button`
 		height: 18px;
 		color: #fff;
 	}
-
 	&:hover {
 		background: #4bc785;
 	}
@@ -99,6 +103,7 @@ const Name = styled.h2`
 	@media (max-width: 768px) {
 		font-size: 22px;
 		line-height: 32px;
+		margin: 6px 0 4px; /* ↑ відступи навколо імені */
 	}
 `
 
@@ -114,6 +119,7 @@ const Role = styled.p`
 	@media (max-width: 768px) {
 		font-size: 16px;
 		line-height: 28px;
+		margin: 2px 0 8px; /* ↑ відступ під роллю */
 	}
 `
 
@@ -128,56 +134,35 @@ const Label = styled.p`
 	@media (max-width: 768px) {
 		font-size: 14px;
 		line-height: 24px;
+		margin: 6px 0 6px; /* ↑ відступи для підписів */
 	}
 `
 
-const PromoButton = styled.button<{ $active?: boolean }>`
-	margin-top: 8px;
-	width: 100%;
-	padding: 5px 50px;
-	border: 1px solid ${({ $active }) => ($active ? '#4bc785' : '#ff4444')};
-	border-radius: 8px;
-	font-weight: 600;
-	font-size: 20px;
-	line-height: 58px;
-	color: ${({ $active }) => ($active ? '#ffffff' : '#ff4444')};
-	transition: all 0.3s ease;
-	background: transparent;
-
-	&:hover {
-		background: ${({ $active }) => ($active ? '#4bc785' : '#ff4444')};
-		color: #000;
-	}
-
+/* Пігулка промокоду з такими самими стилями та мобільним відступом */
+const PromoPill = styled.p`
+	padding: 10px 20px;
+	border: 1px solid #4bc785;
+	border-radius: 10px;
+	color: #ffffff;
+	font-weight: 300;
+	font-size: 18px;
+	line-height: 27px;
+	font-weight: 700; /* відповідає font-bold */
 	@media (max-width: 768px) {
-		font-size: 16px;
-		line-height: 36px;
-		padding: 5px 20px;
+		margin-top: 6px; /* ↑ відступ над пігулкою */
+		margin-bottom: 6px; /* ↑ відступ під пігулкою */
 	}
 `
 
-const CornerSVG = () => (
-	<svg
-		xmlns='http://www.w3.org/2000/svg'
-		width='50'
-		height='50'
-		fill='none'
-		stroke='#4bc785'
-		strokeWidth='1'
-		strokeDasharray='4 4'
-	>
-		<path d='M50 0 H15 L0 15 V50' />
-	</svg>
-)
+type UserMe = {
+	full_name: string
+	role: string
+	promo_code: string
+}
 
 export default function ProfileCard() {
 	const { t } = useTranslation('common')
-	const [userData, setUserData] = useState<null | {
-		full_name: string
-		role: string
-		promo_code: string
-	}>(null)
-	const [promoValid, setPromoValid] = useState<boolean | null>(null)
+	const [userData, setUserData] = useState<UserMe | null>(null)
 	const router = useRouter()
 
 	const requestWithToken = async (
@@ -185,7 +170,6 @@ export default function ProfileCard() {
 		init?: RequestInit
 	): Promise<Response> => {
 		let token = getAccessToken()
-
 		if (!token) {
 			const refreshed = await refreshToken()
 			if (!refreshed) {
@@ -194,7 +178,6 @@ export default function ProfileCard() {
 			}
 			token = getAccessToken()
 		}
-
 		let res = await fetch(input, {
 			...init,
 			headers: {
@@ -203,7 +186,6 @@ export default function ProfileCard() {
 				'Content-Type': 'application/json'
 			}
 		})
-
 		if (res.status === 401 || res.status === 403) {
 			const refreshed = await refreshToken()
 			if (refreshed) {
@@ -221,7 +203,6 @@ export default function ProfileCard() {
 				throw new Error('Session expired')
 			}
 		}
-
 		return res
 	}
 
@@ -234,51 +215,80 @@ export default function ProfileCard() {
 				if (res.ok) {
 					const data = await res.json()
 					setUserData({
-						full_name: data.full_name,
-						role: data.role,
-						promo_code: data.promo_code
+						full_name: data?.full_name || '',
+						role: data?.role || '',
+						promo_code: data?.promo_code || ''
 					})
 				}
 			} catch (error) {
 				console.error('Error loading profile:', error)
 			}
 		}
-
 		fetchUserData()
 	}, [router])
 
-	useEffect(() => {
-		const checkPromo = async () => {
-			if (!userData?.promo_code) return
-			try {
-				const res = await requestWithToken(
-					`https://rpktask.sytes.net/api/promocodes/check/?code=${userData.promo_code}`
-				)
-				setPromoValid(res.ok)
-			} catch (e) {
-				console.error('Promo check failed:', e)
-				setPromoValid(false)
-			}
-		}
-
-		checkPromo()
-	}, [userData])
-
 	if (!userData) return <p style={{ color: '#fff' }}>Loading...</p>
+
+	const nameUpper = (userData.full_name || '').toUpperCase()
+	const promoText =
+		(userData.promo_code || '').trim() ||
+		t('AdminDashboard.no_promocode') ||
+		'Промокод відсутній'
 
 	return (
 		<CardWrapper>
+			{/* кути */}
 			<Corner pos='tl'>
-				<CornerSVG />
+				<svg
+					xmlns='http://www.w3.org/2000/svg'
+					width='50'
+					height='50'
+					fill='none'
+					stroke='#4bc785'
+					strokeWidth='1'
+					strokeDasharray='4 4'
+				>
+					<path d='M50 0 H15 L0 15 V50' />
+				</svg>
 			</Corner>
 			<Corner pos='tr'>
-				<CornerSVG />
+				<svg
+					xmlns='http://www.w3.org/2000/svg'
+					width='50'
+					height='50'
+					fill='none'
+					stroke='#4bc785'
+					strokeWidth='1'
+					strokeDasharray='4 4'
+				>
+					<path d='M50 0 H15 L0 15 V50' />
+				</svg>
 			</Corner>
 			<Corner pos='br'>
-				<CornerSVG />
+				<svg
+					xmlns='http://www.w3.org/2000/svg'
+					width='50'
+					height='50'
+					fill='none'
+					stroke='#4bc785'
+					strokeWidth='1'
+					strokeDasharray='4 4'
+				>
+					<path d='M50 0 H15 L0 15 V50' />
+				</svg>
 			</Corner>
 			<Corner pos='bl'>
-				<CornerSVG />
+				<svg
+					xmlns='http://www.w3.org/2000/svg'
+					width='50'
+					height='50'
+					fill='none'
+					stroke='#4bc785'
+					strokeWidth='1'
+					strokeDasharray='4 4'
+				>
+					<path d='M50 0 H15 L0 15 V50' />
+				</svg>
 			</Corner>
 
 			<AvatarContainer>
@@ -295,24 +305,11 @@ export default function ProfileCard() {
 				</EditButton>
 			</AvatarContainer>
 
-			<Name>{userData.full_name.toUpperCase()}</Name>
+			<Name>{nameUpper}</Name>
 			<Role>{t('ambassador.role')}</Role>
-			<Label>{t('ambassador.promo_code')}</Label>
 
-			{userData.promo_code ? (
-				<>
-					<Label>{t('ambassador.promo_code')}</Label>
-					<PromoButton $active={promoValid ?? undefined}>
-						{userData.promo_code}
-						{promoValid === true && ''}
-						{promoValid === false && ''}
-					</PromoButton>
-				</>
-			) : (
-				<p style={{ color: '#ff4444', marginTop: '20px' }}>
-					{t('ambassador.no_promo_code')}
-				</p>
-			)}
+			<Label>{t('AdminDashboard.my_promocode')}</Label>
+			<PromoPill>{promoText}</PromoPill>
 		</CardWrapper>
 	)
 }

@@ -11,7 +11,6 @@ interface Category {
 	id: number
 	name: string
 }
-
 interface Product {
 	id: number
 	name: string
@@ -26,6 +25,13 @@ interface Product {
 	}[]
 }
 
+const API_BASE = 'https://rpktask.sytes.net/api'
+const toAbs = (url?: string) => {
+	if (!url) return ''
+	if (/^https?:\/\//i.test(url)) return url
+	return `https://rpktask.sytes.net${url.startsWith('/') ? '' : '/'}${url}`
+}
+
 export const List = ({ activeCategory }: { activeCategory: string }) => {
 	const [products, setProducts] = useState<Product[]>([])
 	const [loading, setLoading] = useState(true)
@@ -34,10 +40,9 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 	useEffect(() => {
 		const loadProducts = async () => {
 			setLoading(true)
+			setError(null)
 			try {
-				const res = await fetch(
-					'https://rpktask.sytes.net/api/catalog/products/'
-				)
+				const res = await fetch(`${API_BASE}/catalog/products/`)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
 				const json = await res.json()
@@ -60,7 +65,7 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 		data: Product[],
 		category: string
 	): Product[] => {
-		switch (category) {
+		switch ((category || '').toLowerCase()) {
 			case 'новинки':
 				return [...data].sort((a, b) => b.id - a.id).slice(0, 6)
 			case 'лідери продажів':
@@ -83,28 +88,44 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 	return (
 		<StyledList>
 			{loading && <p>Завантаження...</p>}
+			{!loading && !error && products.length === 0 && (
+				<Info>Нічого не знайдено</Info>
+			)}
 			{error && <p style={{ color: 'red' }}>{error}</p>}
+
 			{!loading &&
+				!error &&
 				products.map((product, index) => {
-					const image =
+					const raw =
 						product.variants?.[0]?.images?.[0]?.image || productImg.src
+					const image = raw === productImg.src ? raw : toAbs(raw)
+
 					return (
 						<div
 							key={product.id}
 							className={`card ${index % 3 === 2 ? 'no-border' : ''}`}
 						>
-							<ModelCard
-								photo={image}
-								title={product.name}
-								category={product.category?.name || ''}
-								link={`/products/${product.id}`}
-							/>
+							<div className='card-sizer'>
+								<ModelCard
+									photo={image}
+									title={product.name}
+									category={product.category?.name || ''}
+									link={`/products/${product.id}`}
+								/>
+							</div>
 						</div>
 					)
 				})}
 		</StyledList>
 	)
 }
+
+const Info = styled.p`
+	grid-column: 1 / -1;
+	color: #ffffffc9;
+	padding: 14px 0;
+	text-align: center;
+`
 
 const StyledList = styled.div`
 	display: grid;
@@ -125,9 +146,41 @@ const StyledList = styled.div`
 		border-right: 1px dashed #ffffff50;
 		border-radius: 0;
 		padding: 13px 11px;
-		&.no-border {
-			border-right: none;
-		}
+	}
+	.card.no-border {
+		border-right: none;
+	}
+
+	/* мінімальні стилі для вирівнювання всередині картки */
+	.card-sizer {
+		height: 100%;
+	}
+	.card-sizer > * {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+	/* фото не «розпирає» картку */
+	.card-sizer img {
+		width: 100%;
+		height: auto;
+		object-fit: contain;
+		display: block;
+		max-height: 55vh;
+	}
+	/* заголовок — максимум 2 рядки */
+	.card-sizer :is(h1, h2, h3, h4, .title, .card-title) {
+		margin-top: 10px;
+		min-height: 2.8em;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	/* останній елемент (стрілка/CTA) — донизу */
+	.card-sizer > * > :last-child {
+		margin-top: auto;
 	}
 
 	@media (max-width: 1200px) {
@@ -141,9 +194,9 @@ const StyledList = styled.div`
 		.card {
 			border-bottom: 1px dashed #ffffff50;
 			border-right: none;
-			&:last-child {
-				border-bottom: none;
-			}
+		}
+		.card:last-child {
+			border-bottom: none;
 		}
 	}
 
