@@ -634,6 +634,7 @@
 		}
 	},
 	"AdminDashboard": {
+		"drop_here": "Drag here",
 		"sort_default": "Default",
 		"sort_id_down": "ID ↓",
 		"sort_id_up": "ID ↑",
@@ -656,6 +657,7 @@
 		"avr_order_price": "Average order value",
 		"new_orders": "New/overdue payments",
 		"statuses": {
+			"confirmed": "Confirmed",
 			"delivered": "Delivered",
 			"paid": "Paid",
 			"sent": "Shipped",

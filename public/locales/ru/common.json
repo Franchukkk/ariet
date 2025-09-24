@@ -694,6 +694,7 @@
 		}
 	},
 	"AdminDashboard": {
+		"drop_here": "Перетащите сюда",
 		"sort_default": "По умолчанию",
 		"sort_id_down": "ID ↓",
 		"sort_id_up": "ID ↑'",
@@ -716,6 +717,7 @@
 		"avr_order_price": "Средний чек",
 		"new_orders": "Новые/просроченные оплаты",
 		"statuses": {
+			"confirmed": "Подтверждено",
 			"delivered": "Доставлено",
 			"paid": "Оплачено",
 			"sent": "Отправлен",

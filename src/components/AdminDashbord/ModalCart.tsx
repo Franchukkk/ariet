@@ -48,6 +48,7 @@ export const ModalCart = ({
 
 	const [editing, setEditing] = useState(false)
 	const [saving, setSaving] = useState(false)
+	const [deleting, setDeleting] = useState(false)
 	const [form, setForm] = useState({
 		full_name: item?.full_name || item?.name || '',
 		phone: item?.phone || item?.tel || '',
@@ -151,6 +152,29 @@ export const ModalCart = ({
 		}
 	}
 
+	const handleDelete = async () => {
+		if (!item?.id) return
+		if (!confirm(t('AdminDashboard.confirm_delete'))) return
+		try {
+			setDeleting(true)
+			const r = await fetch(`${API_BASE}/orders/${item.id}/cancel/`, {
+				method: 'POST',
+				headers: { ...authHeaders }
+			})
+			if (!r.ok) {
+				const msg = await readErrorMsg(r, t('AdminDashboard.error_delete'))
+				alert(msg)
+				return
+			}
+			onUpdated?.()
+			setIsOpen(false)
+		} catch (e: any) {
+			alert(e?.message || t('AdminDashboard.error_delete'))
+		} finally {
+			setDeleting(false)
+		}
+	}
+
 	const onChangeField =
 		(k: keyof typeof form) =>
 		(
@@ -170,6 +194,7 @@ export const ModalCart = ({
 					className='cursor-pointer absolute w-[24px] h-[24px] top-[20px] right-[20px]'
 					onClick={() => setIsOpen(false)}
 				/>
+
 				<WrapperOrder className='relative mb-[30px] flex flex-row justify-between'>
 					<div className='relative pl-[59px]'>
 						<p className='mb-[11px] font-[400] leading-[18px] text-[18px] text-[#ffffff]'>
@@ -178,6 +203,7 @@ export const ModalCart = ({
 						<p className='mb-[10px] font-[400] leading-[16px] text-[16px] text-[#7F7F7F]'>
 							{formatDate(item.date || item.created_at, i18n.language)}
 						</p>
+
 						{!editing ? (
 							<p className='mb-[10px] font-[600] leading-[17px] text-[17px] text-[#ffffff]'>
 								{form.status}
@@ -200,7 +226,6 @@ export const ModalCart = ({
 										'CONFIRMED',
 										'PAID',
 										'SHIPPED',
-										'DELIVERED',
 										'CANCELLED'
 									] as ApiStatus[]
 								).map(s => (
@@ -215,13 +240,15 @@ export const ModalCart = ({
 							</select>
 						)}
 					</div>
-					<IconWrapper className='flex flex-row gap-[50px] items-start'>
-						<div className='flex flex-row flex-row gap-[10px] items-center'>
+
+					<IconWrapper className='flex flex-row gap-[14px] items-start'>
+						<div className='flex flex-row gap-[10px] items-center'>
 							<Eye className='w-[24px] h-[24px]' />
 							<p className='font-[400] leading-[16px] text-[16px] text-[#7F7F7F]'>
 								15
 							</p>
 						</div>
+
 						<Pencil
 							className='w-[24px] h-[24px] cursor-pointer'
 							onClick={onPencilClick}
@@ -235,7 +262,20 @@ export const ModalCart = ({
 										: 'Save'
 							}
 						/>
+
 						<Notebook className='w-[24px] h-[24px]' />
+
+						{/* КНОПКА ВИДАЛИТИ */}
+						<DeleteBtn
+							type='button'
+							disabled={deleting}
+							onClick={handleDelete}
+							title={t('AdminDashboard.delete')}
+						>
+							{deleting
+								? t('AdminDashboard.loading') || '...'
+								: t('AdminDashboard.delete')}
+						</DeleteBtn>
 					</IconWrapper>
 				</WrapperOrder>
 
@@ -375,5 +415,27 @@ const Wrapper = styled.div`
 const IconWrapper = styled.div`
 	@media (max-width: 764px) {
 		gap: 10px;
+	}
+	display: flex;
+	align-items: center;
+`
+
+const DeleteBtn = styled.button`
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 6px;
+	border: 1px solid #ef4444;
+	color: #fff;
+	background: transparent;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+
+	&:hover {
+		background: #ef444433;
+	}
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 `

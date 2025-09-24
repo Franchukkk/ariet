@@ -52,24 +52,17 @@ export const UserAdminInfo = () => {
 				if (!r.ok) return
 				const data: MeResponse = await r.json()
 				setMe(data)
-			} catch {
-				// ігноруємо — покажемо дефолтні плейсхолдери
-			}
+			} catch {}
 		}
 		load()
 	}, [])
 
-	// Ім'я як у макеті: "Прізвище Ім’я"
 	const fullName = (me?.full_name || '').trim()
 	const parts = fullName.split(/\s+/)
 	const firstName = parts[0] || ''
 	const lastName = parts.slice(1).join(' ')
 	const shownName =
 		lastName || firstName ? `${lastName} ${firstName}`.trim() : '—'
-
-	const promo = (me?.promo_code || '').trim()
-	const promoText =
-		promo || t('AdminDashboard.no_promocode') || 'Промокод відсутній'
 
 	return (
 		<UserWrapper
@@ -95,15 +88,6 @@ export const UserAdminInfo = () => {
 
 				<p className='mb-[20px] text-[#FFFFFF]  text-[20px] leading-[27px] font-[300]'>
 					{roleLabel(me?.role)}
-				</p>
-
-				<p className='mb-[20px] text-[#FFFFFF] text-[18px] leading-[27px] font-bold'>
-					{t('AdminDashboard.my_promocode')}
-				</p>
-
-				{/* НЕ міняю стилі: той самий «піл» з рамкою #4BC785 */}
-				<p className='px-[20px] py-[10px] border border-[#4BC785] rounded-[10px] text-[#FFFFFF] font-[300] text-[18px] leading-[27px] font-bold'>
-					{promoText}
 				</p>
 			</WrapperDiv>
 

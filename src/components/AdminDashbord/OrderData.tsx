@@ -1,5 +1,11 @@
 'use client'
 
+import {
+	DragDropContext,
+	Draggable,
+	type DropResult,
+	Droppable
+} from '@hello-pangea/dnd'
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -43,34 +49,44 @@ const UI_TO_API_STATUS: Record<string, ApiStatus> = {
 const asApiStatus = (s: any): ApiStatus =>
 	(UI_TO_API_STATUS[s] || String(s || 'DRAFT').toUpperCase()) as ApiStatus
 
+// колонки → статус
+const COL_TO_STATUS = {
+	draft: 'DRAFT',
+	confirmed: 'CONFIRMED',
+	paid: 'PAID',
+	sent: 'SHIPPED'
+} as const
+type ColumnId = keyof typeof COL_TO_STATUS
+
 type StatusCounts = {
-	delivered: number
-	paid: number
 	draft: number
+	confirmed: number
+	paid: number
 	sent: number
 }
 
 const countStatuses = (rows: any[]): StatusCounts => {
-	const c: StatusCounts = { delivered: 0, paid: 0, draft: 0, sent: 0 }
+	const c: StatusCounts = { draft: 0, confirmed: 0, paid: 0, sent: 0 }
 	rows.forEach(it => {
 		const s = asApiStatus(it.status)
-		if (s === 'DELIVERED') c.delivered++
+		if (s === 'CONFIRMED') c.confirmed++
 		else if (s === 'PAID') c.paid++
 		else if (s === 'SHIPPED') c.sent++
 		else c.draft++
 	})
 	return c
 }
+
 const splitByStatuses = (rows: any[]) => {
-	const b: Record<'delivered' | 'paid' | 'draft' | 'sent', any[]> = {
-		delivered: [],
-		paid: [],
+	const b: Record<ColumnId, any[]> = {
 		draft: [],
+		confirmed: [],
+		paid: [],
 		sent: []
 	}
 	rows.forEach(it => {
 		const s = asApiStatus(it.status)
-		if (s === 'DELIVERED') b.delivered.push(it)
+		if (s === 'CONFIRMED') b.confirmed.push(it)
 		else if (s === 'PAID') b.paid.push(it)
 		else if (s === 'SHIPPED') b.sent.push(it)
 		else b.draft.push(it)
@@ -79,20 +95,19 @@ const splitByStatuses = (rows: any[]) => {
 }
 
 const API_BASE = 'https://rpktask.sytes.net/api'
-const FLOW: ApiStatus[] = ['DRAFT', 'CONFIRMED', 'PAID', 'SHIPPED', 'DELIVERED']
 
 export const OrderData = () => {
 	const [orders, setOrders] = useState<any[]>([])
 	const [counts, setCounts] = useState<StatusCounts>({
-		delivered: 0,
-		paid: 0,
 		draft: 0,
+		confirmed: 0,
+		paid: 0,
 		sent: 0
 	})
-	const [grouped, setGrouped] = useState<Record<string, any[]>>({
-		delivered: [],
-		paid: [],
+	const [grouped, setGrouped] = useState<Record<ColumnId, any[]>>({
 		draft: [],
+		confirmed: [],
+		paid: [],
 		sent: []
 	})
 	const [selectOrder, setSelectOrder] = useState<any | false>(false)
@@ -107,8 +122,7 @@ export const OrderData = () => {
 		'none' | 'date_new' | 'date_old' | 'id_up' | 'id_down'
 	>('none')
 	const sortRef = useRef<HTMLDivElement>(null)
-
-	const { t } = useTranslation('common')
+	const { t, i18n } = useTranslation('common')
 
 	const token =
 		typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
@@ -116,6 +130,7 @@ export const OrderData = () => {
 
 	const reload = () => setRefreshOrders(true)
 
+	// load orders
 	useEffect(() => {
 		const load = async () => {
 			setIsLoading(true)
@@ -132,8 +147,12 @@ export const OrderData = () => {
 					date: o.created_at ?? o.date
 				}))
 				setOrders(normalized)
+				setGrouped(splitByStatuses(normalized))
+				setCounts(countStatuses(normalized))
 			} catch {
 				setOrders([])
+				setGrouped({ draft: [], confirmed: [], paid: [], sent: [] })
+				setCounts({ draft: 0, confirmed: 0, paid: 0, sent: 0 })
 			} finally {
 				setIsLoading(false)
 			}
@@ -142,6 +161,7 @@ export const OrderData = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [refreshOrders])
 
+	// закриття сорту по кліку поза
 	useEffect(() => {
 		const onDocClick = (e: MouseEvent) => {
 			if (!sortRef.current) return
@@ -151,16 +171,19 @@ export const OrderData = () => {
 		return () => document.removeEventListener('mousedown', onDocClick)
 	}, [])
 
-	useEffect(() => {
-		setCounts(countStatuses(orders))
-		setGrouped(splitByStatuses(orders))
-	}, [orders])
-
+	// nextStatus
 	useEffect(() => {
 		if (!selectOrder) return
 		const current = asApiStatus(selectOrder.status)
-		const i = FLOW.indexOf(current)
-		setNextStatus(i >= 0 && i < FLOW.length - 1 ? FLOW[i + 1] : current)
+		const flow: ApiStatus[] = [
+			'DRAFT',
+			'CONFIRMED',
+			'PAID',
+			'SHIPPED',
+			'DELIVERED'
+		]
+		const i = flow.indexOf(current)
+		setNextStatus(i >= 0 && i < flow.length - 1 ? flow[i + 1] : current)
 	}, [selectOrder])
 
 	const readErrorMsg = async (r: Response, fallback: string) => {
@@ -206,93 +229,21 @@ export const OrderData = () => {
 		}
 	}
 
-	const stepsFromTo = (from: ApiStatus, to: ApiStatus): ApiStatus[] => {
-		if (to === from) return []
-		if (to === 'CANCELLED') return []
-		const iFrom = FLOW.indexOf(from)
-		const iTo = FLOW.indexOf(to)
-		if (iFrom === -1 || iTo === -1) return []
-
-		if (iTo > iFrom) return FLOW.slice(iFrom + 1, iTo + 1)
-		if (iTo < iFrom) return FLOW.slice(iTo, iFrom).reverse()
-		return []
-	}
-
 	const handleChangeStatus = async () => {
 		if (!selectOrder?.id) return
-		const current = asApiStatus(selectOrder.status)
-		const target = nextStatus
-
-		// CANCELLED — окремо
-		if (target === 'CANCELLED') {
-			if (!confirm(t('AdminDashboard.confirm_delete'))) return
-			try {
-				setIsLoading(true)
-				const r = await fetch(`${API_BASE}/orders/${selectOrder.id}/cancel/`, {
-					method: 'POST',
-					headers: { ...authHeaders }
-				})
-				if (!r.ok) {
-					const msg = await readErrorMsg(r, t('AdminDashboard.error_delete'))
-					alert(msg)
-					return
-				}
-				reload()
-			} catch (e: any) {
-				alert(e?.message || t('AdminDashboard.error_delete'))
-			} finally {
-				setIsLoading(false)
-			}
-			return
-		}
-
-		const steps = stepsFromTo(current, target)
-		if (!steps.length && target !== current) {
-			alert(t('AdminDashboard.error_status'))
-			return
-		}
-
 		try {
 			setIsLoading(true)
-			let last = current
-
-			for (const step of steps) {
-				const r = await fetch(`${API_BASE}/orders/${selectOrder.id}/update/`, {
-					method: 'PATCH',
-					headers: { 'Content-Type': 'application/json', ...authHeaders },
-					body: JSON.stringify({ status: toServer(step) })
-				})
-
-				if (!r.ok) {
-					if (step === 'SHIPPED' && (r.status === 403 || r.status === 405)) {
-						const r2 = await fetch(
-							`${API_BASE}/orders/${selectOrder.id}/ship/`,
-							{
-								method: 'POST',
-								headers: { ...authHeaders }
-							}
-						)
-						if (!r2.ok) {
-							const msg = await readErrorMsg(
-								r2,
-								t('AdminDashboard.error_status')
-							)
-							alert(msg)
-							break
-						}
-					} else {
-						const msg = await readErrorMsg(r, t('AdminDashboard.error_status'))
-						alert(msg)
-						break
-					}
-				}
-
-				last = step
-				setOrders(prev =>
-					prev.map(o => (o.id === selectOrder.id ? { ...o, status: step } : o))
-				)
+			const r = await fetch(`${API_BASE}/orders/${selectOrder.id}/update/`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json', ...authHeaders },
+				body: JSON.stringify({ status: toServer(nextStatus) })
+			})
+			if (!r.ok) {
+				const msg = await readErrorMsg(r, t('AdminDashboard.error_status'))
+				alert(msg)
+				return
 			}
-			if (last === target) reload()
+			reload()
 		} catch (e: any) {
 			alert(e?.message || t('AdminDashboard.error_status'))
 		} finally {
@@ -323,18 +274,16 @@ export const OrderData = () => {
 			? orders.filter(o => String(o.id).includes(searchValue))
 			: orders
 		const sorted = applySort(base, sort)
-		setCounts(countStatuses(sorted))
 		setGrouped(splitByStatuses(sorted))
+		setCounts(countStatuses(sorted))
 	}, [orders, searchValue, sort])
 
 	const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = e.target.value
-		setSearchValue(val)
+		setSearchValue(e.target.value)
 	}
 
 	const handlerCardClick = async (item: any, e: React.MouseEvent) => {
 		setSelectOrder(item)
-
 		const clickedIcon = e.target instanceof SVGElement
 		if (clickedIcon) {
 			try {
@@ -364,10 +313,88 @@ export const OrderData = () => {
 		setSortOpen(false)
 	}
 
+	// --------- DnD persistence ----------
+	const persistStatus = async (orderId: number, newStatus: ApiStatus) => {
+		// якщо рухаємося в SHIPPED — є спец. endpoint; якщо впаде, пробуємо PATCH
+		if (newStatus === 'SHIPPED') {
+			const r2 = await fetch(`${API_BASE}/orders/${orderId}/ship/`, {
+				method: 'POST',
+				headers: { ...authHeaders }
+			})
+			if (r2.ok) return
+			// fallback
+		}
+		const r = await fetch(`${API_BASE}/orders/${orderId}/update/`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...authHeaders },
+			body: JSON.stringify({ status: toServer(newStatus) })
+		})
+		if (!r.ok) throw new Error(await readErrorMsg(r, 'Failed to update'))
+	}
+
+	const onDragEnd = async (result: DropResult) => {
+		const { destination, source, draggableId } = result
+		if (!destination) return
+
+		const fromCol = source.droppableId as ColumnId
+		const toCol = destination.droppableId as ColumnId
+		if (fromCol === toCol && source.index === destination.index) return
+
+		const id = Number(draggableId)
+
+		// 1) поточні колонки
+		const current = splitByStatuses(orders)
+		const srcList = [...current[fromCol]]
+		const dstList = fromCol === toCol ? srcList : [...current[toCol]]
+
+		const [moved] = srcList.splice(source.index, 1)
+		if (!moved) return
+
+		if (fromCol !== toCol) moved.status = COL_TO_STATUS[toCol]
+		dstList.splice(destination.index, 0, moved)
+
+		const updatedGrouped = { ...current, [fromCol]: srcList, [toCol]: dstList }
+
+		// 2) оновити загальний список (інші замовлення теж зберігаємо)
+		const keptIds = new Set<number>([
+			...updatedGrouped.draft.map(i => i.id),
+			...updatedGrouped.confirmed.map(i => i.id),
+			...updatedGrouped.paid.map(i => i.id),
+			...updatedGrouped.sent.map(i => i.id)
+		])
+		const others = orders.filter(o => !keptIds.has(o.id))
+		const updatedOrders = [
+			...updatedGrouped.draft,
+			...updatedGrouped.confirmed,
+			...updatedGrouped.paid,
+			...updatedGrouped.sent,
+			...others
+		]
+
+		// 3) оптимістичний UI
+		const prevOrders = orders
+		const prevGrouped = grouped
+		setGrouped(updatedGrouped)
+		setCounts(countStatuses(updatedOrders))
+		setOrders(updatedOrders)
+
+		// 4) збереження статусу на беку (лише якщо змінилась колонка)
+		if (fromCol !== toCol) {
+			try {
+				await persistStatus(id, COL_TO_STATUS[toCol] as ApiStatus)
+			} catch (e: any) {
+				// відкотити
+				setOrders(prevOrders)
+				setGrouped(prevGrouped)
+				setCounts(countStatuses(prevOrders))
+				alert(e?.message || 'Failed to move order')
+			}
+		}
+	}
+
 	return (
 		<div className='flex flex-col justify-between'>
 			<Filters className='flex flex-row justify-between w-full gap-[10px] items-center mb-[30px]'>
-				{/* ---- Сортування (дропдаун під кнопкою) ---- */}
 				<div
 					ref={sortRef}
 					className='relative'
@@ -443,161 +470,215 @@ export const OrderData = () => {
 				</ResultFilter>
 			</Filters>
 
-			<div className='overflow-x-auto pt-[7px]'>
-				<Lists className='w-[988px] inline-grid grid-cols-4 gap-[20px] mb-[30px]'>
-					<div className='flex flex-col gap-[20px] w-[235px]'>
-						<StatusWrapper
-							className='flex flex-row justify-between items-center'
-							$status='delivered'
+			<DragDropContext onDragEnd={onDragEnd}>
+				<div className='overflow-x-auto pt-[7px]'>
+					<Lists className='w-[988px] inline-grid grid-cols-4 gap-[20px] mb-[30px]'>
+						{/* DRAFT */}
+						<Column
+							title={t('AdminDashboard.statuses.draft')}
+							count={counts.draft}
+							color='draft'
 						>
-							<img
-								className='absolute top-[-10px] left-[-5px]'
-								src={edit.src}
-								width={30}
-								height={30}
-								alt='edit'
-							/>
-							<p>{t('AdminDashboard.statuses.delivered')}</p>
-							<CountStatus>{counts.delivered}</CountStatus>
-						</StatusWrapper>
-						<ul className='flex flex-col gap-[10px] overflow-y-auto max-h-[480px]'>
-							{grouped.delivered?.map(item => (
-								<OrderCard
-									key={item.id}
-									item={item}
-									onClick={e => handlerCardClick(item, e)}
-									select={selectOrder?.id}
-								/>
-							))}
-						</ul>
-					</div>
+							<Droppable
+								droppableId='draft'
+								direction='vertical'
+								isDropDisabled={false}
+								isCombineEnabled={false}
+							>
+								{(provided, snapshot) => (
+									<DropArea
+										ref={provided.innerRef}
+										{...provided.droppableProps}
+										$isOver={snapshot.isDraggingOver}
+										$isEmpty={!grouped.draft?.length}
+									>
+										{grouped.draft?.length === 0 && (
+											<EmptyHint>
+												{t('AdminDashboard.drop_here') || 'Drop here'}
+											</EmptyHint>
+										)}
+										{grouped.draft?.map((item, index) => (
+											<Draggable
+												key={String(item.id)}
+												draggableId={String(item.id)}
+												index={index}
+											>
+												{dragProvided => (
+													<div
+														ref={dragProvided.innerRef}
+														{...dragProvided.draggableProps}
+														{...dragProvided.dragHandleProps}
+														onClick={e => handlerCardClick(item, e)}
+													>
+														<OrderCard
+															item={item}
+															select={selectOrder?.id}
+														/>
+													</div>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder}
+									</DropArea>
+								)}
+							</Droppable>
+						</Column>
 
-					<div className='flex flex-col gap-[20px] w-[235px]'>
-						<StatusWrapper
-							className='flex flex-row justify-between items-center'
-							$status='paid'
+						{/* CONFIRMED */}
+						<Column
+							title={t('AdminDashboard.statuses.confirmed') ?? 'Confirmed'}
+							count={counts.confirmed}
+							color='confirmed'
 						>
-							<img
-								className='absolute top-[-10px] left-[-5px]'
-								src={edit.src}
-								width={30}
-								height={30}
-								alt='edit'
-							/>
-							<p>{t('AdminDashboard.statuses.paid')}</p>
-							<CountStatus>{counts.paid}</CountStatus>
-						</StatusWrapper>
-						<ul className='flex flex-col gap-[10px] overflow-y-auto max-h-[480px]'>
-							{grouped.paid?.map(item => (
-								<OrderCard
-									key={item.id}
-									item={item}
-									onClick={e => handlerCardClick(item, e)}
-									select={selectOrder?.id}
-								/>
-							))}
-						</ul>
-					</div>
+							<Droppable
+								droppableId='confirmed'
+								direction='vertical'
+								isDropDisabled={false}
+								isCombineEnabled={false}
+							>
+								{(provided, snapshot) => (
+									<DropArea
+										ref={provided.innerRef}
+										{...provided.droppableProps}
+										$isOver={snapshot.isDraggingOver}
+										$isEmpty={!grouped.confirmed?.length}
+									>
+										{grouped.confirmed?.length === 0 && (
+											<EmptyHint>
+												{t('AdminDashboard.drop_here') || 'Drop here'}
+											</EmptyHint>
+										)}
+										{grouped.confirmed?.map((item, index) => (
+											<Draggable
+												key={String(item.id)}
+												draggableId={String(item.id)}
+												index={index}
+											>
+												{dragProvided => (
+													<div
+														ref={dragProvided.innerRef}
+														{...dragProvided.draggableProps}
+														{...dragProvided.dragHandleProps}
+														onClick={e => handlerCardClick(item, e)}
+													>
+														<OrderCard
+															item={item}
+															select={selectOrder?.id}
+														/>
+													</div>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder}
+									</DropArea>
+								)}
+							</Droppable>
+						</Column>
 
-					<div className='flex flex-col gap-[20px] w-[235px]'>
-						<StatusWrapper
-							className='flex flex-row justify-between items-center'
-							$status='draft'
+						{/* PAID */}
+						<Column
+							title={t('AdminDashboard.statuses.paid')}
+							count={counts.paid}
+							color='paid'
 						>
-							<img
-								className='absolute top-[-10px] left-[-5px]'
-								src={edit.src}
-								width={30}
-								height={30}
-								alt='edit'
-							/>
-							<p>{t('AdminDashboard.statuses.draft')}</p>
-							<CountStatus>{counts.draft}</CountStatus>
-						</StatusWrapper>
-						<ul className='flex flex-col gap-[10px] overflow-y-auto max-h-[480px]'>
-							{grouped.draft?.map(item => (
-								<OrderCard
-									key={item.id}
-									item={item}
-									onClick={e => handlerCardClick(item, e)}
-									select={selectOrder?.id}
-								/>
-							))}
-						</ul>
-					</div>
+							<Droppable
+								droppableId='paid'
+								direction='vertical'
+								isDropDisabled={false}
+								isCombineEnabled={false}
+							>
+								{(provided, snapshot) => (
+									<DropArea
+										ref={provided.innerRef}
+										{...provided.droppableProps}
+										$isOver={snapshot.isDraggingOver}
+										$isEmpty={!grouped.paid?.length}
+									>
+										{grouped.paid?.length === 0 && (
+											<EmptyHint>
+												{t('AdminDashboard.drop_here') || 'Drop here'}
+											</EmptyHint>
+										)}
+										{grouped.paid?.map((item, index) => (
+											<Draggable
+												key={String(item.id)}
+												draggableId={String(item.id)}
+												index={index}
+											>
+												{dragProvided => (
+													<div
+														ref={dragProvided.innerRef}
+														{...dragProvided.draggableProps}
+														{...dragProvided.dragHandleProps}
+														onClick={e => handlerCardClick(item, e)}
+													>
+														<OrderCard
+															item={item}
+															select={selectOrder?.id}
+														/>
+													</div>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder}
+									</DropArea>
+								)}
+							</Droppable>
+						</Column>
 
-					<div className='flex flex-col gap-[20px] w-[235px]'>
-						<StatusWrapper
-							className='flex flex-row justify-between items-center'
-							$status='sent'
+						{/* SENT (SHIPPED) */}
+						<Column
+							title={t('AdminDashboard.statuses.sent')}
+							count={counts.sent}
+							color='sent'
 						>
-							<img
-								className='absolute top-[-10px] left-[-5px]'
-								src={edit.src}
-								width={30}
-								height={30}
-								alt='edit'
-							/>
-							<p>{t('AdminDashboard.statuses.sent')}</p>
-							<CountStatus>{counts.sent}</CountStatus>
-						</StatusWrapper>
-						<ul className='flex flex-col gap-[10px] overflow-y-auto max-h-[480px]'>
-							{grouped.sent?.map(item => (
-								<OrderCard
-									key={item.id}
-									item={item}
-									onClick={e => handlerCardClick(item, e)}
-									select={selectOrder?.id}
-								/>
-							))}
-						</ul>
-					</div>
-				</Lists>
-			</div>
-
-			<BottomSet className='flex flex-row justify-end gap-[10px]'>
-				<select
-					value={nextStatus}
-					onChange={e => setNextStatus(e.target.value as ApiStatus)}
-					className='rounded-[10px] border border-[#333333] bg-transparent text-white px-3'
-				>
-					{(
-						[
-							'DRAFT',
-							'CONFIRMED',
-							'PAID',
-							'SHIPPED',
-							'DELIVERED',
-							'CANCELLED'
-						] as ApiStatus[]
-					).map(s => (
-						<option
-							key={s}
-							value={s}
-							className='text-black'
-						>
-							{s}
-						</option>
-					))}
-				</select>
-
-				<button
-					onClick={handleChangeStatus}
-					className='rounded-full w-[206px] h-[50px] bg-[#transparent] text-[#ffffff] font-[500] text-[15px] rounded-[10px] border border-[#1DCF94] cursor-pointer text-center'
-					disabled={!selectOrder?.id || isLoading}
-				>
-					{t('AdminDashboard.change_status')}
-				</button>
-
-				<button
-					onClick={handleDeleteOrder}
-					className='rounded-full w-[206px] h-[50px] bg-[#transparent] text-[#ffffff] font-[500] text-[15px] rounded-[10px] border border-[#1DCF94] cursor-pointer text-center'
-					disabled={!selectOrder?.id || isLoading || !canCancelSelected}
-					title={!canCancelSelected ? undefined : undefined}
-				>
-					{t('AdminDashboard.delete')}
-				</button>
-			</BottomSet>
+							<Droppable
+								droppableId='sent'
+								direction='vertical'
+								isDropDisabled={false}
+								isCombineEnabled={false}
+							>
+								{(provided, snapshot) => (
+									<DropArea
+										ref={provided.innerRef}
+										{...provided.droppableProps}
+										$isOver={snapshot.isDraggingOver}
+										$isEmpty={!grouped.sent?.length}
+									>
+										{grouped.sent?.length === 0 && (
+											<EmptyHint>
+												{t('AdminDashboard.drop_here') || 'Drop here'}
+											</EmptyHint>
+										)}
+										{grouped.sent?.map((item, index) => (
+											<Draggable
+												key={String(item.id)}
+												draggableId={String(item.id)}
+												index={index}
+											>
+												{dragProvided => (
+													<div
+														ref={dragProvided.innerRef}
+														{...dragProvided.draggableProps}
+														{...dragProvided.dragHandleProps}
+														onClick={e => handlerCardClick(item, e)}
+													>
+														<OrderCard
+															item={item}
+															select={selectOrder?.id}
+														/>
+													</div>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder}
+									</DropArea>
+								)}
+							</Droppable>
+						</Column>
+					</Lists>
+				</div>
+			</DragDropContext>
 
 			{isOpen && !!selectOrder && (
 				<ModalCart
@@ -610,7 +691,38 @@ export const OrderData = () => {
 	)
 }
 
-// styles
+/* допоміжні */
+
+const Column = ({
+	title,
+	count,
+	color,
+	children
+}: {
+	title: React.ReactNode
+	count: number
+	color: 'draft' | 'confirmed' | 'paid' | 'sent'
+	children: React.ReactNode
+}) => (
+	<div className='flex flex-col gap-[20px] w-[235px]'>
+		<StatusWrapper
+			className='flex flex-row justify-between items-center'
+			$status={color}
+		>
+			<img
+				className='absolute top-[-10px] left-[-5px]'
+				src={edit.src}
+				width={30}
+				height={30}
+				alt='edit'
+			/>
+			<p>{title}</p>
+			<CountStatus>{count}</CountStatus>
+		</StatusWrapper>
+		{children}
+	</div>
+)
+
 const Filters = styled.div`
 	@media (max-width: 800px) {
 		flex-direction: column;
@@ -621,7 +733,9 @@ const BottomSet = styled.div``
 const Find = styled.div``
 const ResultFilter = styled.p``
 
-const StatusWrapper = styled.div<{ $status: string }>`
+const StatusWrapper = styled.div<{
+	$status: 'draft' | 'confirmed' | 'paid' | 'sent'
+}>`
 	font-size: 20px;
 	font-weight: 600;
 	position: relative;
@@ -631,14 +745,15 @@ const StatusWrapper = styled.div<{ $status: string }>`
 	padding-bottom: 12px;
 	padding-right: 10px;
 	background-color: ${({ $status }) =>
-		$status === 'delivered'
-			? '#4BC785'
-			: $status === 'paid'
+		$status === 'draft'
+			? '#686868'
+			: $status === 'confirmed'
 				? '#1DA1E3'
-				: $status === 'draft'
-					? '#686868'
+				: $status === 'paid'
+					? '#1DA1E3'
 					: '#D56909'};
 `
+
 const CountStatus = styled.p`
 	font-size: 13px;
 	line-height: 100%;
@@ -652,4 +767,28 @@ const CountStatus = styled.p`
 	border-radius: 100%;
 	background-color: #00000040;
 	box-shadow: 0 4px 4px 0 #00000040 inset;
+`
+
+// зона скидання має мінімальну висоту, щоб приймати дроп навіть коли порожня
+const DropArea = styled.ul<{ $isOver?: boolean; $isEmpty?: boolean }>`
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	overflow-y: auto;
+	max-height: 480px;
+
+	/* ключове: */
+	min-height: 120px;
+	padding: 8px;
+	border: 1px dashed ${({ $isOver }) => ($isOver ? '#4BC785' : '#333')};
+	border-radius: 8px;
+	background: ${({ $isOver }) => ($isOver ? '#1b1b1b' : 'transparent')};
+`
+
+const EmptyHint = styled.div`
+	pointer-events: none;
+	color: #7f7f7f;
+	font-size: 13px;
+	text-align: center;
+	padding: 8px 0;
 `
