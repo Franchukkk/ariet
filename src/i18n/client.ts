@@ -12,7 +12,7 @@ export const supportedLngs = ['en', 'ru'] as const
 
 async function loadNamespace(lng: string, ns: string) {
 	const short = lng.split('-')[0]
-	const res = await fetch(`/locales/${short}/${ns}.json`)
+	const res = await fetch(`/locales/${short}/${ns}.json`, { cache: 'no-store' })
 	if (!res.ok) throw new Error(`Missing /locales/${short}/${ns}.json`)
 	const data = await res.json()
 	i18n.addResourceBundle(short, ns, data, true, true)
@@ -39,9 +39,8 @@ if (!i18n.isInitialized) {
 		},
 		interpolation: { escapeValue: false },
 		returnNull: false
-		// debug: true, // ← увімкни для діагностики за бажанням
+		// debug: true,
 	})
 }
 
 export default i18n
-// НЕ дублюй повторно defaultNS / fallbackLng нижче!

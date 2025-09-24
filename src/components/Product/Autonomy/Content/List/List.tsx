@@ -1,29 +1,23 @@
-import { useTranslation } from "react-i18next"
-import { Card } from "./Card"
+'use client'
 
-export const List = () => {
-  const { t } = useTranslation("common");
+import { Card } from './Card'
 
-  const DATA = [
-    {
-      title: t("battery.autonomy.title"),
-      subtitle: t("battery.autonomy.subtitle"),
-    },
-    {
-      title: t("battery.reliable_battery.title"),
-      subtitle: t("battery.reliable_battery.subtitle"),
-    },
-    {
-      title: t("battery.hr_series.title"),
-      subtitle: t("battery.hr_series.subtitle"),
-    },
-  ];
+export const List = ({ points }: { points: string[] }) => {
+	const DATA = points
+		.filter(p => p && p.trim().length)
+		.map(p => ({ title: p, subtitle: undefined }))
 
-  return (
-    <div className="flex flex-col gap-[7px]">
-      {DATA.map(({ title, subtitle }, i) => (
-        <Card key={i} title={title} subtitle={subtitle} />
-      ))}
-    </div>
-  );
-};
+	if (DATA.length === 0) return null
+
+	return (
+		<div className='flex flex-col gap-[7px]'>
+			{DATA.map(({ title, subtitle }, i) => (
+				<Card
+					key={i}
+					title={title}
+					subtitle={subtitle}
+				/>
+			))}
+		</div>
+	)
+}

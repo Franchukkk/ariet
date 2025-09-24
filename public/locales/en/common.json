@@ -682,8 +682,10 @@
 		"add_promo_code": "Add"
 	},
 	"basket": {
-		"basket_title": "Cart is empty",
-		"promo_code": "Enter promo code",
-		"promo_active": "Promo code applied: -{{discount}}% discount"
+		"empty_text": "Your cart is empty. Add items to continue.",
+		"go_to_catalog": "Go to catalog.",
+		"basket_title": "Cart is empty.",
+		"promo_code": "Enter promo code.",
+		"promo_active": "Promo code applied: -{{discount}}% discount."
 	}
 }

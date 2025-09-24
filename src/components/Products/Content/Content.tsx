@@ -50,7 +50,6 @@ export interface IVariantImage {
 
 export type ProductArray = IProduct[]
 
-// Обгортка без хуків
 export const Content = () => {
 	return (
 		<Suspense fallback={null}>
@@ -59,7 +58,6 @@ export const Content = () => {
 	)
 }
 
-// Сам компонент із useSearchParams усередині під Suspense
 function ContentInner() {
 	const { t } = useTranslation('common')
 	const [productData, setProductData] = useState<IProduct[]>([])
@@ -68,48 +66,110 @@ function ContentInner() {
 	const searchParams = useSearchParams()
 	const categoryQuery = searchParams.get('category')
 
-	useEffect(() => {
-		fetch('https://rpktask.sytes.net/api/catalog/products/')
-			.then(res => res.json())
-			.then(data => setProductData(data.results))
-	}, [])
-
-	useEffect(() => {
-		fetch('https://rpktask.sytes.net/api/catalog/categories/')
-			.then(res => res.json())
-			.then(data => setCategories(data.results))
-	}, [])
+	const PAGE_SIZE = 6
+	const [loading, setLoading] = useState(true)
+	const [error, setError] = useState<string | null>(null)
 
 	const [activeFilters, setActiveFilters] = useState<string[]>([])
 	const [pagination, setPagination] = useState({
 		currentPage: 1,
-		totalPages: 10
+		totalPages: 1
 	})
 	const [showFilters, setShowFilters] = useState(false)
 	const [query, setQuery] = useState('')
 
 	useEffect(() => {
+		let alive = true
+		fetch('https://rpktask.sytes.net/api/catalog/categories/', {
+			method: 'GET',
+			credentials: 'include',
+			headers: { 'Content-Type': 'application/json' },
+			cache: 'no-store'
+		})
+			.then(res => res.json())
+			.then(data => {
+				if (alive) setCategories(data.results ?? [])
+			})
+			.catch(() => {})
+		return () => {
+			alive = false
+		}
+	}, [])
+
+	useEffect(() => {
 		if (categoryQuery) setActiveFilters([categoryQuery])
+		else setActiveFilters([])
+
+		setPagination(p => ({ ...p, currentPage: 1 }))
 	}, [categoryQuery])
 
+	useEffect(() => {
+		let alive = true
+		const controller = new AbortController()
+		setLoading(true)
+		setError(null)
+
+		const params = new URLSearchParams()
+		params.set('page', String(pagination.currentPage))
+		params.set('page_size', String(PAGE_SIZE))
+		if (query.trim()) params.set('search', query.trim())
+
+		fetch(
+			`https://rpktask.sytes.net/api/catalog/products/?${params.toString()}`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				cache: 'no-store',
+				signal: controller.signal
+			}
+		)
+			.then(async r => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`)
+				const json = await r.json()
+				if (!alive) return
+				const results: IProduct[] = json?.results ?? []
+				const count: number = json?.count ?? results.length
+				setProductData(results)
+				setPagination(p => ({
+					...p,
+					totalPages: Math.max(1, Math.ceil(count / PAGE_SIZE))
+				}))
+			})
+			.catch(e => {
+				if (alive) setError(e?.message ?? 'Failed to load')
+			})
+			.finally(() => {
+				if (alive) setLoading(false)
+			})
+
+		return () => {
+			alive = false
+			controller.abort()
+		}
+	}, [pagination.currentPage, query])
+
 	const filteredData = useMemo(() => {
-		return productData.filter(p => {
-			const matchesQuery =
-				p.name.toLowerCase().includes(query.toLowerCase()) ||
-				p.category.name.toLowerCase().includes(query.toLowerCase())
+		const byCategory =
+			activeFilters.length === 0
+				? productData
+				: productData.filter(p =>
+						activeFilters.includes(p.category.id.toString())
+					)
 
-			const matchesFilters =
-				activeFilters.length === 0 ||
-				activeFilters.includes(p.category.id.toString())
-
-			return matchesQuery && matchesFilters
-		})
+		if (!query.trim()) return byCategory
+		const q = query.toLowerCase()
+		return byCategory.filter(
+			p =>
+				p.name.toLowerCase().includes(q) ||
+				p.category.name.toLowerCase().includes(q)
+		)
 	}, [query, productData, activeFilters])
 
 	const handlePaginationChange = (page: number) =>
 		setPagination(prev => ({ ...prev, currentPage: page }))
 
-	const handleFilterChange = (filter: string, isReset?: boolean) =>
+	const handleFilterChange = (filter: string, isReset?: boolean) => {
 		setActiveFilters(prev =>
 			isReset
 				? []
@@ -117,8 +177,36 @@ function ContentInner() {
 					? prev.filter(f => f !== filter)
 					: [...prev, filter]
 		)
+		setPagination(p => ({ ...p, currentPage: 1 }))
+	}
 
-	const handleLoadMore = () => setProductData(prev => [...prev, ...productData])
+	const handleLoadMore = async () => {
+		const nextPage = pagination.currentPage + 1
+		if (nextPage > pagination.totalPages) return
+
+		const params = new URLSearchParams()
+		params.set('page', String(nextPage))
+		params.set('page_size', String(PAGE_SIZE))
+		if (query.trim()) params.set('search', query.trim())
+
+		try {
+			const r = await fetch(
+				`https://rpktask.sytes.net/api/catalog/products/?${params.toString()}`,
+				{
+					method: 'GET',
+					credentials: 'include',
+					headers: { 'Content-Type': 'application/json' },
+					cache: 'no-store'
+				}
+			)
+			if (!r.ok) throw new Error(`HTTP ${r.status}`)
+			const json = await r.json()
+			const more: IProduct[] = json?.results ?? []
+			setProductData(prev => [...prev, ...more])
+			setPagination(p => ({ ...p, currentPage: nextPage }))
+		} catch {}
+	}
+
 	const handleToggleFilters = () => setShowFilters(!showFilters)
 
 	return (
@@ -144,15 +232,23 @@ function ContentInner() {
 						type='text'
 						placeholder={t('search.placeholder')}
 						value={query}
-						onChange={e => setQuery(e.target.value)}
+						onChange={e => {
+							setQuery(e.target.value)
+							setPagination(p => ({ ...p, currentPage: 1 }))
+						}}
 					/>
 					<SearchIcon />
 				</SearchWrapper>
 
-				{filteredData.length > 0 ? (
+				{loading && productData.length === 0 ? null : filteredData.length >
+				  0 ? (
 					<>
 						<List data={filteredData} />
-						<ShowMore onClick={handleLoadMore} />
+
+						{pagination.currentPage < pagination.totalPages && (
+							<ShowMore onClick={handleLoadMore} />
+						)}
+
 						<Pagination
 							currentPage={pagination.currentPage}
 							totalPages={pagination.totalPages}

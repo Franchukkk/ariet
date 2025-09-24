@@ -8,7 +8,6 @@ import { Burger } from './Burger'
 import { Catalog } from './Catalog/Catalog'
 import { Contacts } from './Contacts/Contacts'
 import { Logo } from './Logo'
-import { Message } from './Message/Message'
 import { Navigation } from './Navigation'
 import { User } from './User/User'
 
@@ -32,7 +31,6 @@ export const Header = () => {
 				<Navigation />
 				<Contacts />
 				<Basket />
-				<Message />
 				<User />
 			</div>
 			<Burger

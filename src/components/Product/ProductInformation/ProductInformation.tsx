@@ -83,11 +83,11 @@ export const ProductInformation = ({
 			}))
 		)
 
-	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
+	const loadProduct = async (lng: 'en' | 'ru'): Promise<ProductInfo> => {
 		const url = `https://rpktask.sytes.net/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
 		const res = await fetch(url, {
 			cache: 'no-store',
-			headers: { 'Accept-Language': lng }
+			headers: { 'Accept-Language': lng } // <= цього достатньо
 		})
 		if (!res.ok) throw new Error('Failed to load product')
 		return res.json()

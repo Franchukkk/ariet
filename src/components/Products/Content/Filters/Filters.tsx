@@ -27,26 +27,6 @@ export const Filters = ({
 				title: category.name,
 				value: category.id.toString()
 			}))
-		},
-		{
-			title: t('filters.filter_1'),
-			options: [
-				{ title: t('filters.filter_1_option_1'), value: '21' },
-				{ title: t('filters.filter_1_option_2'), value: '22' },
-				{ title: t('filters.filter_1_option_3'), value: '23' },
-				{ title: t('filters.filter_1_option_4'), value: '24' },
-				{ title: t('filters.filter_1_option_5'), value: '25' }
-			]
-		},
-		{
-			title: t('filters.filter_2'),
-			options: [
-				{ title: t('filters.filter_2_option_1'), value: '31' },
-				{ title: t('filters.filter_2_option_2'), value: '32' },
-				{ title: t('filters.filter_2_option_3'), value: '33' },
-				{ title: t('filters.filter_2_option_4'), value: '34' },
-				{ title: t('filters.filter_2_option_5'), value: '35' }
-			]
 		}
 	]
 

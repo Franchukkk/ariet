@@ -47,7 +47,6 @@ export const Dropdown = () => {
 	return (
 		<StyledDropdown className='dropdown'>
 			<div>
-				<div className='group-title'>{t('catalog.commercial')}</div>
 				<div className='flex flex-col gap-3'>
 					{loading && <p>Loading...</p>}
 					{error && <p style={{ color: 'red' }}>{error}</p>}

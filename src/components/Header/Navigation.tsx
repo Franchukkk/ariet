@@ -15,21 +15,21 @@ export const Navigation = () => {
 	const { t } = useTranslation('common')
 
 	return (
-		<StyledNavigation className='flex items-center gap-[26px]'>
+		<StyledNavigation className='flex items-center'>
 			{LINKS.map(({ title, link }, i) => (
-				<Link
+				<NavLink
 					key={i}
 					href={link}
 				>
 					{t(title)}
-				</Link>
+				</NavLink>
 			))}
 		</StyledNavigation>
 	)
 }
 
 const StyledNavigation = styled.nav`
-	padding: 23px 29px 20px;
+	padding: 0 29px;
 	border: 1px dashed #ffffff;
 	border-radius: 15px;
 	font-weight: 400;
@@ -37,19 +37,34 @@ const StyledNavigation = styled.nav`
 	line-height: 100%;
 	letter-spacing: 0%;
 	color: #f2f2f2;
-	height: 62px;
 	width: 100%;
-	a {
-		white-space: nowrap;
-	}
+
 	@media (max-width: 1400px) {
-		padding: 15px;
+		padding: 0 15px;
 	}
 	@media (max-width: 1300px) {
 		font-size: 12px;
-		gap: 10px;
 		grid-column: 1/3;
 		flex-direction: column;
-		height: max-content;
+	}
+`
+
+const NavLink = styled(Link)`
+	display: flex;
+	align-items: center;
+
+	padding: 23px 13px 20px;
+	white-space: nowrap;
+	text-decoration: none;
+	color: inherit;
+	transition: color 0.15s ease;
+
+	&:hover {
+		color: #4bc785;
+	}
+
+	@media (max-width: 1300px) {
+		width: 100%;
+		padding: 12px 0;
 	}
 `

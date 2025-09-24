@@ -1,64 +1,67 @@
-import bg from "@/assets/img/battery-bg.png"
-import battery from "@/assets/img/battery.png"
-import Image, { StaticImageData } from "next/image"
-import { useTranslation } from "react-i18next"
-import styled from "styled-components"
-import { Background } from "./Background"
+'use client'
 
-type ImgLike = string | StaticImageData;
+import Image, { StaticImageData } from 'next/image'
+import styled from 'styled-components'
 
-export const Banner = () => {
-  const { t } = useTranslation("common");
+import batteryFallback from '@/assets/big-logo.svg'
 
-  return (
-    <StyledBanner $bg={bg}>
-      <h3 dangerouslySetInnerHTML={{ __html: t("banner.max_autonomy") }} />
-      <Image src={battery} alt="battery img" className="block mx-auto" />
-      <Background />
-    </StyledBanner>
-  );
-};
+import { Background } from './Background'
 
-const StyledBanner = styled.div<{ $bg: ImgLike }>`
-  padding: 80px 49px 32px;
-  border-right: 1px dashed #313131;
-  position: relative;
-  overflow: hidden;
+export const Banner = ({
+	featureName,
+	featureImageUrl // ← передаємо з контейнера значення main_feature_image
+}: {
+	featureName: string
+	featureImageUrl?: string | null
+}) => {
+	// безпечний фолбек, щоб не було помилки "Image is missing required src"
+	const imgSrc: string | StaticImageData =
+		featureImageUrl && featureImageUrl.trim().length
+			? featureImageUrl
+			: batteryFallback
 
-  &::before {
-    content: "";
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    height: 100%;
-    width: 1205px;
-    /* background: ${({ $bg }) =>
-      `url(${typeof $bg === "string" ? $bg : $bg.src}) center/cover no-repeat`}; */
-    z-index: -1;
-  }
+	return (
+		<StyledBanner>
+			<h3>{featureName}</h3>
+			<Image
+				src={imgSrc}
+				alt='battery img'
+				className='block mx-auto'
+				width={460}
+				height={360}
+			/>
+			<Background />
+		</StyledBanner>
+	)
+}
 
-  h3 {
-    font-weight: 600;
-    font-size: 50px;
-    line-height: 48.91px;
-    letter-spacing: 0%;
-    text-transform: uppercase;
-    margin-bottom: 42px;
-  }
+const StyledBanner = styled.div`
+	padding: 80px 49px 32px;
+	border-right: 1px dashed #313131;
+	position: relative;
+	overflow: hidden;
 
-  @media (max-width: 1000px) {
-    padding: 20px;
+	h3 {
+		font-weight: 600;
+		font-size: 50px;
+		line-height: 48.91px;
+		letter-spacing: 0%;
+		text-transform: uppercase;
+		margin-bottom: 42px;
+	}
 
-    img {
-      width: 250px;
-    }
+	@media (max-width: 1000px) {
+		padding: 20px;
 
-    h3 {
-      font-size: 30px;
-      line-height: 1;
-      text-align: center;
-    }
-  }
-`;
+		img {
+			width: 250px;
+			height: auto;
+		}
+
+		h3 {
+			font-size: 30px;
+			line-height: 1;
+			text-align: center;
+		}
+	}
+`
