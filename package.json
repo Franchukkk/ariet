@@ -11,6 +11,7 @@
 	"dependencies": {
 		"@hello-pangea/dnd": "^18.0.1",
 		"@types/react-beautiful-dnd": "^13.1.8",
+		"detect-gpu": "^5.0.70",
 		"google-map-react": "^2.2.5",
 		"i18next": "^25.5.1",
 		"leaflet": "^1.9",
