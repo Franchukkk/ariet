@@ -28,7 +28,6 @@ varying vec3 vWorldNormal;
 uniform sampler2D dayTexture;
 uniform sampler2D nightTexture;
 uniform vec3 sunDirection;
-// sRGB <-> linear
 vec3 srgbToLinear(vec3 c){ return pow(c, vec3(2.2)); }
 vec3 linearToSrgb(vec3 c){ return pow(max(c, 0.0), vec3(1.0/2.2)); }
 void main() {
@@ -90,7 +89,6 @@ export const Earth = () => {
 		const container = containerRef.current!
 		while (container.firstChild) container.removeChild(container.firstChild)
 
-		// --- Mobile heuristics ---
 		const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(
 			navigator.userAgent
 		)
@@ -101,11 +99,12 @@ export const Earth = () => {
 
 		const showStaticFallback = () => {
 			const src = typeof dayImg === 'string' ? dayImg : dayImg?.src
-			if (src) {
+			if (src)
 				container.style.background = `radial-gradient(transparent 55%, rgba(0,0,0,0.25)), url("${src}") center/cover no-repeat`
-			}
 		}
-		const clearFallback = () => (container.style.background = 'none')
+		const clearFallback = () => {
+			container.style.background = 'none'
+		}
 
 		const getSize = () => {
 			const rect = container.getBoundingClientRect()
@@ -125,10 +124,9 @@ export const Earth = () => {
 			return
 		}
 
-		// Scene
+		// Scene / Camera
 		const scene = new THREE.Scene()
 		sceneRef.current = scene
-
 		const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
 		camera.position.set(0, 0, 2.3)
 		cameraRef.current = camera
@@ -137,7 +135,7 @@ export const Earth = () => {
 		let renderer: THREE.WebGLRenderer
 		try {
 			renderer = new THREE.WebGLRenderer({
-				antialias: !mobile, // вимикаємо AA на мобі для стабільності
+				antialias: !mobile,
 				alpha: true,
 				powerPreference: mobile ? 'low-power' : 'high-performance',
 				premultipliedAlpha: true,
@@ -169,7 +167,7 @@ export const Earth = () => {
 		const geometry = new THREE.SphereGeometry(1, seg, seg)
 		geoRef.current = geometry
 
-		// --- Texture loading (downscale on mobile) ---
+		// Textures
 		const loader = new THREE.TextureLoader()
 		const loadTextureSmart = (src: string) =>
 			new Promise<THREE.Texture>((resolve, reject) => {
@@ -227,7 +225,7 @@ export const Earth = () => {
 				dayTexRef.current = dayTex
 				nightTexRef.current = nightTex
 
-				// precision fallback (iOS інколи без highp)
+				// precision fallback
 				const gl = renderer.getContext()
 				let frag = fragmentShader
 				let atmoFrag = atmoFragment
@@ -276,7 +274,6 @@ export const Earth = () => {
 				earth.rotation.z = THREE.MathUtils.degToRad(23.5)
 				group.add(earth)
 
-				// Atmosphere (skip on very weak)
 				if (!mobile || seg >= 48) {
 					const atmoMat = new THREE.ShaderMaterial({
 						vertexShader: atmoVertex,
@@ -295,14 +292,12 @@ export const Earth = () => {
 					group.add(atmo)
 				}
 
-				// --- Animation with FPS cap & offscreen pause ---
+				// --- Animation ---
 				const targetFPS = mobile ? 30 : 60
 				const interval = prefersReduced ? 0 : 1000 / targetFPS
 				let prev = performance.now(),
 					acc = 0
-
 				const renderOnce = () => renderer.render(scene, camera)
-
 				const animate = (t: number) => {
 					if (document.hidden || !inViewRef.current) {
 						rafRef.current = requestAnimationFrame(animate)
@@ -325,59 +320,74 @@ export const Earth = () => {
 				}
 				clearFallback()
 				rafRef.current = requestAnimationFrame(animate)
+
+				// ---- WebGL context loss (Safari/iOS) ----
+				const onLost = (e: Event) => {
+					e.preventDefault()
+					if (rafRef.current) cancelAnimationFrame(rafRef.current)
+					rafRef.current = null
+					showStaticFallback()
+				}
+				const canvasEl: HTMLCanvasElement = renderer.domElement
+				canvasEl.addEventListener('webglcontextlost', onLost, {
+					passive: false
+				})
+
+				// ===== Resize / IO observers =====
+				const onResize = () => {
+					const { width: w, height: h } = getSize()
+					renderer.setPixelRatio(
+						Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
+					)
+					renderer.setSize(w, h, false)
+					camera.aspect = w / h
+					camera.updateProjectionMatrix()
+				}
+				let ro: ResizeObserver | null = null
+				if ('ResizeObserver' in window) {
+					ro = new ResizeObserver(onResize)
+					ro.observe(container)
+					roRef.current = ro
+				} else {
+					window.addEventListener('resize', onResize)
+				}
+
+				let io: IntersectionObserver | null = null
+				if ('IntersectionObserver' in window) {
+					io = new IntersectionObserver(
+						entries => {
+							inViewRef.current = entries.some(e => e.isIntersecting)
+						},
+						{ root: null, threshold: 0.01 }
+					)
+					io.observe(container)
+					ioRef.current = io
+				}
+
+				// ---- Cleanup (for this Promise branch) ----
+				const cleanup = () => {
+					canvasEl.removeEventListener('webglcontextlost', onLost)
+					if (ro) ro.disconnect()
+					if (io) io.disconnect()
+				}
+				// attach cleanup to component return by storing in ref
+				;(cleanup as any).tag = 'textures-ready'
+				;(Earth as any)._innerCleanup = cleanup
 			})
 			.catch(() => {
 				showStaticFallback()
 			})
 
-		// Resize
-		const onResize = () => {
-			const { width: w, height: h } = getSize()
-			renderer.setPixelRatio(
-				Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
-			)
-			renderer.setSize(w, h, false)
-			camera.aspect = w / h
-			camera.updateProjectionMatrix()
-		}
-		if ('ResizeObserver' in window) {
-			const ro = new ResizeObserver(onResize)
-			ro.observe(container)
-			roRef.current = ro
-		} else {
-			window.addEventListener('resize', onResize)
-		}
-
-		// Pause when offscreen
-		if ('IntersectionObserver' in window) {
-			const io = new IntersectionObserver(
-				entries => {
-					inViewRef.current = entries.some(e => e.isIntersecting)
-				},
-				{ root: null, threshold: 0.01 }
-			)
-			io.observe(container)
-			ioRef.current = io
-		}
-
-		// Context loss (Safari/iOS)
-		const onLost = (e: Event) => {
-			e.preventDefault()
-			if (rafRef.current) cancelAnimationFrame(rafRef.current)
-			rafRef.current = null
-			showStaticFallback()
-		}
-		const canvasEl: HTMLCanvasElement = (
-			rendererRef.current as THREE.WebGLRenderer
-		).domElement
-		canvasEl.addEventListener('webglcontextlost', onLost, { passive: false })
-
-		// Cleanup
+		// Global cleanup
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current)
+			// run inner cleanup if set (removes listeners/observers created after textures load)
+			const inner = (Earth as any)._innerCleanup as (() => void) | undefined
+			try {
+				inner?.()
+			} catch {}
 			ioRef.current?.disconnect?.()
 			roRef.current?.disconnect?.()
-			canvasEl.removeEventListener('webglcontextlost', onLost)
 
 			materialRef.current?.dispose()
 			atmoMatRef.current?.dispose()
@@ -410,13 +420,16 @@ export const Earth = () => {
 }
 
 const StyledEarth = styled.div`
+	/* ЛИШЕ позиціювання */
 	position: absolute;
+	top: 70px;
+	left: 50%;
+	transform: translateX(-50%);
+
 	width: 580px;
 	height: 580px;
-	top: 70px;
-	left: 48%;
-	transform: translateX(-50%);
-	z-index: 1; /* залишив як у тебе */
+
+	z-index: 1;
 	border-radius: 50%;
 	overflow: hidden;
 	isolation: isolate;
@@ -433,19 +446,17 @@ const StyledEarth = styled.div`
 		backface-visibility: hidden;
 		-webkit-backface-visibility: hidden;
 		will-change: transform;
-		pointer-events: none; /* не блокує скрол/тапи на мобі */
+		pointer-events: none;
 	}
 
 	@media (max-width: 1200px) {
 		top: 240px;
-		right: 10%;
-		left: auto;
-		transform: none;
+		left: 50%;
+		transform: translateX(-50%);
 	}
 	@media (max-width: 800px) {
 		top: 250px;
 		left: 50%;
-		right: auto;
 		transform: translateX(-50%);
 	}
 `

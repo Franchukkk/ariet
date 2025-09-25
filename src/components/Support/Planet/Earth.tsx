@@ -90,6 +90,7 @@ export const Earth = () => {
 	const dayTexRef = useRef<THREE.Texture | null>(null)
 	const nightTexRef = useRef<THREE.Texture | null>(null)
 	const roRef = useRef<ResizeObserver | null>(null)
+	const ioRef = useRef<IntersectionObserver | null>(null)
 
 	useEffect(() => {
 		let dispose: (() => void) | null = null
@@ -114,10 +115,10 @@ export const Earth = () => {
 						: 0
 			const tier = Math.max(0, Math.min(3, tierNumber)) // clamp 0..3
 
+			// Розмір від ширини контейнера (aspect-ratio забезпечує висоту)
 			const getSize = () => {
-				const rect = container.getBoundingClientRect()
-				const s = Math.min(rect.width || 580, rect.height || 580)
-				return { width: s, height: s }
+				const w = container.clientWidth || 320
+				return { width: w, height: w }
 			}
 			const { width, height } = getSize()
 
@@ -142,16 +143,31 @@ export const Earth = () => {
 			camera.position.set(0, 0, 2.3)
 			cameraRef.current = camera
 
-			// Quality by tier
+			// Якість за tier: НІКОЛИ не 0 fps (щоб завжди крутилось)
+			const baseFps = [24, 30, 60, 60][tier]
 			const quality = {
-				dpr: [0.75, 0.95, 1.2, 2.0][tier],
+				dpr: [0.85, 1.0, 1.4, 2.0][tier],
 				seg: [32, 48, 96, 128][tier],
 				anis: [1, 2, 4, 8][tier],
 				withAtmo: tier >= 1,
-				fps: prefersReduced ? 0 : [24, 30, 60, 60][tier]
+				fps: Math.max(24, baseFps) // мінімум 24 fps
 			}
 
-			// Renderer (typed as WebGLRenderer to avoid TS issues)
+			const isMobile = window.innerWidth < 768
+			let rotSpeed = 0.0006
+			if (isMobile) {
+				quality.dpr = Math.min(quality.dpr, 1.0)
+				quality.seg = Math.min(quality.seg, 64)
+				quality.fps = Math.min(quality.fps, 30)
+				rotSpeed = 0.0005
+			}
+			// Якщо користувач просить менше руху — уповільнюємо, але НЕ зупиняємо
+			if (prefersReduced) {
+				quality.fps = Math.max(24, Math.min(quality.fps, 24))
+				rotSpeed *= 0.6
+			}
+
+			// Renderer
 			let renderer: THREE.WebGLRenderer
 			try {
 				renderer = new THREE.WebGLRenderer({
@@ -311,31 +327,54 @@ export const Earth = () => {
 				group.add(atmo)
 			}
 
-			// Animation with FPS cap
+			// Animation with FPS cap (ніколи не 0)
 			const fps = quality.fps
-			const interval = fps ? 1000 / fps : 0
-			let prev = performance.now(),
-				acc = 0
+			const interval = 1000 / fps
+			let prev = performance.now()
+			let acc = 0
 
 			const renderOnce = () => renderer.render(scene, camera)
 
 			const animate = (t: number) => {
-				if (!fps) {
-					renderOnce()
-					return
-				} // one frame for reduced motion
 				const dt = t - prev
 				prev = t
 				acc += dt
 				if (acc >= interval) {
 					const steps = Math.max(1, Math.floor(acc / interval))
 					acc -= steps * interval
-					group.rotation.y += 0.0006 * steps * (interval / 16.67)
+					group.rotation.y += rotSpeed * steps * (interval / 16.67)
 					renderer.render(scene, camera)
 				}
 				rafRef.current = requestAnimationFrame(animate)
 			}
 			rafRef.current = requestAnimationFrame(animate)
+
+			// Pause/Resume коли елемент поза екраном (економія), але при поверненні — знову крутиться
+			if ('IntersectionObserver' in window) {
+				const io = new IntersectionObserver(
+					([entry]) => {
+						if (!entry.isIntersecting && rafRef.current) {
+							cancelAnimationFrame(rafRef.current)
+							rafRef.current = null
+						} else if (entry.isIntersecting && !rafRef.current) {
+							prev = performance.now()
+							rafRef.current = requestAnimationFrame(animate)
+						}
+					},
+					{ threshold: 0.1 }
+				)
+				io.observe(container)
+				ioRef.current = io
+			}
+
+			// Якщо вкладка була у фоні — відновити анімацію після повернення
+			const onVisibility = () => {
+				if (document.visibilityState === 'visible' && !rafRef.current) {
+					prev = performance.now()
+					rafRef.current = requestAnimationFrame(animate)
+				}
+			}
+			document.addEventListener('visibilitychange', onVisibility)
 
 			// Resize
 			const onResize = () => {
@@ -356,10 +395,12 @@ export const Earth = () => {
 				window.addEventListener('resize', onResize)
 			}
 
-			// Cleanup fn
+			// Cleanup
 			dispose = () => {
 				if (rafRef.current) cancelAnimationFrame(rafRef.current)
+				document.removeEventListener('visibilitychange', onVisibility)
 				roRef.current?.disconnect()
+				ioRef.current?.disconnect()
 				matRef.current?.dispose()
 				atmoMatRef.current?.dispose()
 				geoRef.current?.dispose()
@@ -394,12 +435,15 @@ export const Earth = () => {
 }
 
 const StyledEarth = styled.div`
+	/* НЕ міняю твій лейаут */
 	position: absolute;
-	width: 580px;
-	height: 580px;
 	top: 70px;
 	left: 48%;
 	transform: translateX(-50%);
+
+	width: min(580px, 92vw);
+	aspect-ratio: 1 / 1;
+
 	z-index: -1;
 	border-radius: 50%;
 	overflow: hidden;
