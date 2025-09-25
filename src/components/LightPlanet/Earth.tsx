@@ -12,7 +12,6 @@ const vertexShader = `
   varying vec2 vUv;
   varying vec3 vWorldPos;
   varying vec3 vWorldNormal;
-
   void main() {
     vUv = uv;
     vec4 worldPos = modelMatrix * vec4(position, 1.0);
@@ -22,41 +21,29 @@ const vertexShader = `
   }
 `
 
-// твій спрощений фрагментний шейдер (без specular), лишив як є
 const fragmentShader = `
 precision highp float;
-
 varying vec2 vUv;
 varying vec3 vWorldNormal;
-
 uniform sampler2D dayTexture;
 uniform sampler2D nightTexture;
 uniform vec3 sunDirection;
-
 // sRGB <-> linear
 vec3 srgbToLinear(vec3 c){ return pow(c, vec3(2.2)); }
 vec3 linearToSrgb(vec3 c){ return pow(max(c, 0.0), vec3(1.0/2.2)); }
-
 void main() {
   vec2 uv = vec2(1.0 - vUv.x, vUv.y);
-
   vec3 dayCol   = srgbToLinear(texture2D(dayTexture,   uv).rgb);
   vec3 nightCol = srgbToLinear(texture2D(nightTexture, uv).rgb) * 1.15;
-
   vec3 N = normalize(vWorldNormal);
   vec3 L = normalize(sunDirection);
-
   float ndl = max(dot(N, L), 0.0);
   float dayFactor = smoothstep(0.05, 0.35, ndl);
-  float nightFactor = 1.0 - dayFactor;
-
   vec3 colorLinear = mix(nightCol, dayCol, dayFactor);
-
   gl_FragColor = vec4(linearToSrgb(colorLinear), 1.0);
 }
 `
 
-// Атмосфера
 const atmoVertex = `
   varying vec3 vWorldPos;
   varying vec3 vWorldNormal;
@@ -72,7 +59,6 @@ const atmoFragment = `
 precision highp float;
 varying vec3 vWorldPos;
 varying vec3 vWorldNormal;
-
 void main() {
   vec3 V = normalize(cameraPosition - vWorldPos);
   float rim = 1.0 - max(dot(normalize(vWorldNormal), V), 0.0);
@@ -86,34 +72,37 @@ export const Earth = () => {
 	const containerRef = useRef<HTMLDivElement | null>(null)
 
 	const rafRef = useRef<number | null>(null)
-	const rendererRef = useRef<THREE.WebGLRenderer | THREE.WebGL1Renderer | null>(
-		null
-	)
+	const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
 	const sceneRef = useRef<THREE.Scene | null>(null)
 	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
 	const groupRef = useRef<THREE.Group | null>(null)
 	const materialRef = useRef<THREE.ShaderMaterial | null>(null)
 	const atmoMatRef = useRef<THREE.ShaderMaterial | null>(null)
 	const geoRef = useRef<THREE.SphereGeometry | null>(null)
+	const atmoGeoRef = useRef<THREE.SphereGeometry | null>(null)
 	const dayTexRef = useRef<THREE.Texture | null>(null)
 	const nightTexRef = useRef<THREE.Texture | null>(null)
 	const roRef = useRef<ResizeObserver | null>(null)
+	const ioRef = useRef<IntersectionObserver | null>(null)
+	const inViewRef = useRef<boolean>(true)
 
 	useEffect(() => {
 		const container = containerRef.current!
 		while (container.firstChild) container.removeChild(container.firstChild)
 
-		const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(
+		// --- Mobile heuristics ---
+		const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(
 			navigator.userAgent
 		)
+		const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 820
+		const mobile = isMobileUA || isSmallScreen
+		const prefersReduced =
+			window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
 
 		const showStaticFallback = () => {
 			const src = typeof dayImg === 'string' ? dayImg : dayImg?.src
 			if (src) {
 				container.style.background = `radial-gradient(transparent 55%, rgba(0,0,0,0.25)), url("${src}") center/cover no-repeat`
-			} else {
-				container.style.background =
-					'radial-gradient(transparent 55%, rgba(0,0,0,0.25))'
 			}
 		}
 		const clearFallback = () => (container.style.background = 'none')
@@ -125,12 +114,12 @@ export const Earth = () => {
 		}
 		const { width, height } = getSize()
 
-		// Перевірка WebGL
-		const canWebGL = (() => {
-			const c = document.createElement('canvas')
-			const gl = c.getContext('webgl') || c.getContext('experimental-webgl')
-			return !!gl
-		})()
+		// WebGL support
+		const testCanvas = document.createElement('canvas')
+		const canWebGL = !!(
+			testCanvas.getContext('webgl') ||
+			testCanvas.getContext('experimental-webgl')
+		)
 		if (!canWebGL) {
 			showStaticFallback()
 			return
@@ -144,29 +133,29 @@ export const Earth = () => {
 		camera.position.set(0, 0, 2.3)
 		cameraRef.current = camera
 
-		// Renderer (WebGL2 -> WebGL1)
-		let renderer: any
-		const commonAttrs = {
-			antialias: true,
-			alpha: true,
-			powerPreference: isMobile ? 'low-power' : 'high-performance',
-			premultipliedAlpha: true,
-			preserveDrawingBuffer: false,
-			failIfMajorPerformanceCaveat: false
-		} as const
-
+		// Renderer
+		let renderer: THREE.WebGLRenderer
 		try {
-			renderer = new THREE.WebGLRenderer(commonAttrs as any)
+			renderer = new THREE.WebGLRenderer({
+				antialias: !mobile, // вимикаємо AA на мобі для стабільності
+				alpha: true,
+				powerPreference: mobile ? 'low-power' : 'high-performance',
+				premultipliedAlpha: true,
+				preserveDrawingBuffer: false,
+				failIfMajorPerformanceCaveat: false
+			})
 		} catch {
-			// @ts-ignore
-			renderer = new THREE.WebGL1Renderer(commonAttrs as any)
+			renderer = new (THREE as any).WebGL1Renderer({
+				antialias: false,
+				alpha: true
+			}) as THREE.WebGLRenderer
 		}
 		;(renderer as any).outputColorSpace = THREE.SRGBColorSpace
 		renderer.toneMapping = THREE.NoToneMapping
 		renderer.toneMappingExposure = 1.0
 		renderer.setClearAlpha(0)
 		renderer.setPixelRatio(
-			Math.min(window.devicePixelRatio || 1, isMobile ? 1.3 : 2)
+			Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
 		)
 		renderer.setSize(width, height, false)
 		container.appendChild(renderer.domElement)
@@ -176,122 +165,166 @@ export const Earth = () => {
 		scene.add(group)
 		groupRef.current = group
 
-		const seg = isMobile ? 64 : 128
+		const seg = mobile ? 48 : 128
 		const geometry = new THREE.SphereGeometry(1, seg, seg)
 		geoRef.current = geometry
 
+		// --- Texture loading (downscale on mobile) ---
 		const loader = new THREE.TextureLoader()
-		const loadTex = (src: string) =>
-			new Promise<THREE.Texture>((resolve, reject) =>
-				loader.load(src, resolve, undefined, reject)
-			)
+		const loadTextureSmart = (src: string) =>
+			new Promise<THREE.Texture>((resolve, reject) => {
+				if (!mobile) {
+					loader.load(src, t => resolve(t), undefined, reject)
+					return
+				}
+				const img = new Image()
+				img.onload = () => {
+					let w = img.naturalWidth,
+						h = img.naturalHeight
+					const gl = renderer.getContext()
+					const cap = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096
+					const limit = Math.min(2048, cap)
+					while (Math.max(w, h) > limit) {
+						w = Math.floor(w / 2)
+						h = Math.floor(h / 2)
+					}
+					const c = document.createElement('canvas')
+					c.width = w
+					c.height = h
+					const ctx = c.getContext('2d', { alpha: false })!
+					ctx.drawImage(img, 0, 0, w, h)
+					const tex = new THREE.CanvasTexture(c)
+					resolve(tex)
+				}
+				img.onerror = reject
+				img.decoding = 'async'
+				img.loading = 'eager'
+				img.src = src
+			})
 
 		const srcDay = typeof dayImg === 'string' ? dayImg : dayImg?.src
 		const srcNight = typeof nightImg === 'string' ? nightImg : nightImg?.src
-
 		if (!srcDay || !srcNight) {
 			showStaticFallback()
 			return
 		}
 
-		const onTexturesReady = ([dayTex, nightTex]: [
-			THREE.Texture,
-			THREE.Texture
-		]) => {
-			const maxAnis = Math.max(
-				1,
-				Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 1)
-			)
-			const prep = (tex: THREE.Texture) => {
-				;(tex as any).colorSpace = THREE.SRGBColorSpace
-				tex.anisotropy = maxAnis
-				tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-			}
-			prep(dayTex)
-			prep(nightTex)
-			dayTexRef.current = dayTex
-			nightTexRef.current = nightTex
+		const prepTex = (tex: THREE.Texture) => {
+			;(tex as any).colorSpace = THREE.SRGBColorSpace
+			tex.generateMipmaps = true
+			tex.minFilter = THREE.LinearMipmapLinearFilter
+			tex.magFilter = THREE.LinearFilter
+			tex.anisotropy = mobile
+				? 2
+				: Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 1)
+			tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+		}
 
-			// Фолбек precision (highp -> mediump) для деяких мобільних
-			const gl = renderer.getContext()
-			let frag = fragmentShader
-			let atmoFrag = atmoFragment
-			try {
-				const fmt = gl.getShaderPrecisionFormat(
-					gl.FRAGMENT_SHADER,
-					gl.HIGH_FLOAT
-				)
-				if (!(fmt && fmt.precision > 0)) {
-					frag = fragmentShader.replace(
+		Promise.all([loadTextureSmart(srcDay), loadTextureSmart(srcNight)])
+			.then(([dayTex, nightTex]) => {
+				prepTex(dayTex)
+				prepTex(nightTex)
+				dayTexRef.current = dayTex
+				nightTexRef.current = nightTex
+
+				// precision fallback (iOS інколи без highp)
+				const gl = renderer.getContext()
+				let frag = fragmentShader
+				let atmoFrag = atmoFragment
+				try {
+					const fmt = gl.getShaderPrecisionFormat(
+						gl.FRAGMENT_SHADER,
+						gl.HIGH_FLOAT
+					)
+					if (!(fmt && fmt.precision > 0)) {
+						frag = frag.replace(
+							'precision highp float;',
+							'precision mediump float;'
+						)
+						atmoFrag = atmoFrag.replace(
+							'precision highp float;',
+							'precision mediump float;'
+						)
+					}
+				} catch {
+					frag = frag.replace(
 						'precision highp float;',
 						'precision mediump float;'
 					)
-					atmoFrag = atmoFragment.replace(
+					atmoFrag = atmoFrag.replace(
 						'precision highp float;',
 						'precision mediump float;'
 					)
 				}
-			} catch {
-				frag = fragmentShader.replace(
-					'precision highp float;',
-					'precision mediump float;'
-				)
-				atmoFrag = atmoFragment.replace(
-					'precision highp float;',
-					'precision mediump float;'
-				)
-			}
 
-			const sunDir = new THREE.Vector3(1, 0.2, 0).normalize()
+				const sunDir = new THREE.Vector3(1, 0.2, 0).normalize()
 
-			const material = new THREE.ShaderMaterial({
-				vertexShader,
-				fragmentShader: frag,
-				uniforms: {
-					dayTexture: { value: dayTex },
-					nightTexture: { value: nightTex },
-					sunDirection: { value: sunDir }
-				},
-				transparent: false
-			})
-			material.toneMapped = false
-			materialRef.current = material
+				const material = new THREE.ShaderMaterial({
+					vertexShader,
+					fragmentShader: frag,
+					uniforms: {
+						dayTexture: { value: dayTex },
+						nightTexture: { value: nightTex },
+						sunDirection: { value: sunDir }
+					},
+					transparent: false
+				})
+				material.toneMapped = false
+				materialRef.current = material
 
-			const earth = new THREE.Mesh(geometry, material)
-			earth.rotation.z = THREE.MathUtils.degToRad(23.5)
-			group.add(earth)
+				const earth = new THREE.Mesh(geometry, material)
+				earth.rotation.z = THREE.MathUtils.degToRad(23.5)
+				group.add(earth)
 
-			const atmoMat = new THREE.ShaderMaterial({
-				vertexShader: atmoVertex,
-				fragmentShader: atmoFrag,
-				transparent: true,
-				blending: THREE.AdditiveBlending,
-				depthWrite: false,
-				side: THREE.BackSide
-			})
-			atmoMat.toneMapped = false
-			atmoMatRef.current = atmoMat
+				// Atmosphere (skip on very weak)
+				if (!mobile || seg >= 48) {
+					const atmoMat = new THREE.ShaderMaterial({
+						vertexShader: atmoVertex,
+						fragmentShader: atmoFrag,
+						transparent: true,
+						blending: THREE.AdditiveBlending,
+						depthWrite: false,
+						side: THREE.BackSide
+					})
+					atmoMat.toneMapped = false
+					atmoMatRef.current = atmoMat
+					const atmoGeo = new THREE.SphereGeometry(1.03, seg, seg)
+					atmoGeoRef.current = atmoGeo
+					const atmo = new THREE.Mesh(atmoGeo, atmoMat)
+					atmo.rotation.copy(earth.rotation)
+					group.add(atmo)
+				}
 
-			const atmo = new THREE.Mesh(
-				new THREE.SphereGeometry(1.03, seg, seg),
-				atmoMat
-			)
-			atmo.rotation.copy(earth.rotation)
-			group.add(atmo)
+				// --- Animation with FPS cap & offscreen pause ---
+				const targetFPS = mobile ? 30 : 60
+				const interval = prefersReduced ? 0 : 1000 / targetFPS
+				let prev = performance.now(),
+					acc = 0
 
-			const animate = () => {
-				if (document.hidden) return
-				group.rotation.y += 0.0006
-				renderer.render(scene, camera)
-				rafRef.current = requestAnimationFrame(animate)
-			}
-			animate()
-		}
+				const renderOnce = () => renderer.render(scene, camera)
 
-		Promise.all([loadTex(srcDay), loadTex(srcNight)])
-			.then(res => {
+				const animate = (t: number) => {
+					if (document.hidden || !inViewRef.current) {
+						rafRef.current = requestAnimationFrame(animate)
+						return
+					}
+					if (interval === 0) {
+						renderOnce()
+						return
+					}
+					const dt = t - prev
+					prev = t
+					acc += dt
+					if (acc >= interval) {
+						const steps = Math.max(1, Math.floor(acc / interval))
+						acc -= steps * interval
+						group.rotation.y += 0.0006 * steps * (interval / 16.67)
+						renderer.render(scene, camera)
+					}
+					rafRef.current = requestAnimationFrame(animate)
+				}
 				clearFallback()
-				onTexturesReady(res as any)
+				rafRef.current = requestAnimationFrame(animate)
 			})
 			.catch(() => {
 				showStaticFallback()
@@ -300,11 +333,12 @@ export const Earth = () => {
 		// Resize
 		const onResize = () => {
 			const { width: w, height: h } = getSize()
-			try {
-				renderer.setSize(w, h, false)
-				camera.aspect = w / h
-				camera.updateProjectionMatrix()
-			} catch {}
+			renderer.setPixelRatio(
+				Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
+			)
+			renderer.setSize(w, h, false)
+			camera.aspect = w / h
+			camera.updateProjectionMatrix()
 		}
 		if ('ResizeObserver' in window) {
 			const ro = new ResizeObserver(onResize)
@@ -314,66 +348,53 @@ export const Earth = () => {
 			window.addEventListener('resize', onResize)
 		}
 
-		// Visibility + context loss
-		const onVis = () => {
-			if (
-				!document.hidden &&
-				rendererRef.current &&
-				sceneRef.current &&
-				cameraRef.current
-			) {
-				rendererRef.current.render(sceneRef.current, cameraRef.current)
-				if (!rafRef.current) {
-					rafRef.current = requestAnimationFrame(function loop() {
-						if (document.hidden) {
-							rafRef.current = null
-							return
-						}
-						groupRef.current!.rotation.y += 0.0006
-						rendererRef.current!.render(sceneRef.current!, cameraRef.current!)
-						rafRef.current = requestAnimationFrame(loop)
-					})
-				}
-			}
+		// Pause when offscreen
+		if ('IntersectionObserver' in window) {
+			const io = new IntersectionObserver(
+				entries => {
+					inViewRef.current = entries.some(e => e.isIntersecting)
+				},
+				{ root: null, threshold: 0.01 }
+			)
+			io.observe(container)
+			ioRef.current = io
 		}
-		document.addEventListener('visibilitychange', onVis)
 
+		// Context loss (Safari/iOS)
 		const onLost = (e: Event) => {
 			e.preventDefault()
 			if (rafRef.current) cancelAnimationFrame(rafRef.current)
 			rafRef.current = null
 			showStaticFallback()
 		}
-		const canvasEl = renderer.domElement
+		const canvasEl: HTMLCanvasElement = (
+			rendererRef.current as THREE.WebGLRenderer
+		).domElement
 		canvasEl.addEventListener('webglcontextlost', onLost, { passive: false })
 
 		// Cleanup
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current)
-			document.removeEventListener('visibilitychange', onVis)
+			ioRef.current?.disconnect?.()
+			roRef.current?.disconnect?.()
 			canvasEl.removeEventListener('webglcontextlost', onLost)
-			roRef.current?.disconnect()
-			window.removeEventListener?.('resize', onResize)
 
-			if (rendererRef.current) {
-				rendererRef.current.dispose()
-				const canvas = rendererRef.current.domElement
-				canvas?.parentElement?.removeChild(canvas)
-			}
 			materialRef.current?.dispose()
 			atmoMatRef.current?.dispose()
 			geoRef.current?.dispose()
+			atmoGeoRef.current?.dispose()
 			dayTexRef.current?.dispose()
 			nightTexRef.current?.dispose()
+
+			if (rendererRef.current) {
+				rendererRef.current.dispose()
+				const c = rendererRef.current.domElement
+				c?.parentElement?.removeChild(c)
+			}
 
 			sceneRef.current = null
 			cameraRef.current = null
 			groupRef.current = null
-			materialRef.current = null
-			atmoMatRef.current = null
-			geoRef.current = null
-			dayTexRef.current = null
-			nightTexRef.current = null
 			rendererRef.current = null
 			rafRef.current = null
 		}
@@ -395,7 +416,7 @@ const StyledEarth = styled.div`
 	top: 70px;
 	left: 48%;
 	transform: translateX(-50%);
-	z-index: -1; /* повернув назад, щоб не перекривав контент */
+	z-index: 1; /* залишив як у тебе */
 	border-radius: 50%;
 	overflow: hidden;
 	isolation: isolate;
@@ -412,6 +433,7 @@ const StyledEarth = styled.div`
 		backface-visibility: hidden;
 		-webkit-backface-visibility: hidden;
 		will-change: transform;
+		pointer-events: none; /* не блокує скрол/тапи на мобі */
 	}
 
 	@media (max-width: 1200px) {
