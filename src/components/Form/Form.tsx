@@ -1,4 +1,3 @@
-// src/components/Form.tsx
 'use client'
 
 import { useState } from 'react'
@@ -13,14 +12,28 @@ import { Button } from './Button'
 import { Input } from './Input'
 import { Title } from './Title'
 
-// src/components/Form.tsx
-
 interface Props {
 	title?: string
 }
 
 // site key з ТЗ
 const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
+
+// універсальний витягач значення з onChange
+function getVal(v: any): string {
+	if (typeof v === 'string') return v
+	if (v && typeof v === 'object') {
+		// React SyntheticEvent або native event
+		const t = (v.target ?? v.currentTarget) as
+			| HTMLInputElement
+			| HTMLTextAreaElement
+			| undefined
+		if (t && typeof t.value === 'string') return t.value
+		// деякі кастомні інпути кидають { value: '...' }
+		if ('value' in v && typeof v.value === 'string') return (v as any).value
+	}
+	return ''
+}
 
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
@@ -50,34 +63,46 @@ export const Form = ({ title }: Props) => {
 		setFormError(null)
 		setFormOk(null)
 
-		if (!email || !name || !message) {
+		// тримінг + базова перевірка
+		const _name = name.trim()
+		const _email = email.trim()
+		const _message = message.trim()
+
+		if (!_name || !_email || !_message) {
 			setFormError(t('partnerForm.required_fields'))
+			return
+		}
+
+		// дуже проста перевірка email
+		const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(_email)
+		if (!emailOk) {
+			setFormError(t('partnerForm.error_email') || 'Email is invalid')
 			return
 		}
 
 		try {
 			setLoading(true)
-
-			// 1) токен reCAPTCHA v3 у браузері
+			// Токен reCAPTCHA v3
 			const captcha_token = await execute('feedback')
 
-			// 2) відправляємо на бекенд
+			const payload = {
+				name: _name,
+				position: position.trim(),
+				phone: phone.trim(),
+				email: _email,
+				address: address.trim(),
+				postal_code: postalCode.trim(),
+				city: city.trim(),
+				country: country.trim(),
+				message: _message,
+				i_am_company_representative: checkbox,
+				captcha_token
+			}
+
 			const res = await fetch('/api/feedback/create/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					name,
-					position,
-					phone,
-					email,
-					address,
-					postal_code: postalCode,
-					city,
-					country,
-					message,
-					i_am_company_representative: checkbox,
-					captcha_token
-				})
+				body: JSON.stringify(payload)
 			})
 
 			if (!res.ok) {
@@ -120,12 +145,17 @@ export const Form = ({ title }: Props) => {
 					<Input
 						label={t('partnerForm.name')}
 						value={name}
-						onChange={e => setName((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setName(getVal(v))}
+						name='name'
+						autoComplete='name'
+						required
 					/>
 					<Input
 						label={t('partnerForm.position')}
 						value={position}
-						onChange={e => setPosition((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setPosition(getVal(v))}
+						name='position'
+						autoComplete='organization-title'
 					/>
 				</div>
 
@@ -133,45 +163,60 @@ export const Form = ({ title }: Props) => {
 					<Input
 						label={t('partnerForm.phone')}
 						value={phone}
-						onChange={e => setPhone((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setPhone(getVal(v))}
+						name='phone'
+						autoComplete='tel'
 					/>
 					<Input
 						label={t('partnerForm.email')}
 						type='email'
 						value={email}
-						onChange={e => setEmail((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setEmail(getVal(v))}
+						name='email'
+						autoComplete='email'
+						required
 					/>
 				</div>
 
 				<Input
 					label={t('partnerForm.address')}
 					value={address}
-					onChange={e => setAddress((e.target as HTMLInputElement).value)}
+					onChange={(v: any) => setAddress(getVal(v))}
+					name='address'
+					autoComplete='street-address'
 				/>
 
 				<div className='fields-group'>
 					<Input
 						label={t('partnerForm.zip')}
 						value={postalCode}
-						onChange={e => setPostalCode((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setPostalCode(getVal(v))}
+						name='postal_code'
+						autoComplete='postal-code'
 					/>
 					<Input
 						label={t('partnerForm.city')}
 						value={city}
-						onChange={e => setCity((e.target as HTMLInputElement).value)}
+						onChange={(v: any) => setCity(getVal(v))}
+						name='city'
+						autoComplete='address-level2'
 					/>
 				</div>
 
 				<Input
 					label={t('partnerForm.country')}
 					value={country}
-					onChange={e => setCountry((e.target as HTMLInputElement).value)}
+					onChange={(v: any) => setCountry(getVal(v))}
+					name='country'
+					autoComplete='country-name'
 				/>
 				<Input
 					label={t('partnerForm.message')}
 					textarea
 					value={message}
-					onChange={e => setMessage((e.target as HTMLTextAreaElement).value)}
+					onChange={(v: any) => setMessage(getVal(v))}
+					name='message'
+					required
 				/>
 			</div>
 
