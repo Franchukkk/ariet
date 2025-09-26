@@ -16,28 +16,11 @@ interface Props {
 	title?: string
 }
 
-// site key з ТЗ
+// v3 site key
 const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
-
-// універсальний витягач значення з onChange
-function getVal(v: any): string {
-	if (typeof v === 'string') return v
-	if (v && typeof v === 'object') {
-		// React SyntheticEvent або native event
-		const t = (v.target ?? v.currentTarget) as
-			| HTMLInputElement
-			| HTMLTextAreaElement
-			| undefined
-		if (t && typeof t.value === 'string') return t.value
-		// деякі кастомні інпути кидають { value: '...' }
-		if ('value' in v && typeof v.value === 'string') return (v as any).value
-	}
-	return ''
-}
 
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
-	const formTitle = (title ?? t('partnerForm.fill_form')).replace('\\n', '\n')
 
 	const [name, setName] = useState('')
 	const [position, setPosition] = useState('')
@@ -56,6 +39,8 @@ export const Form = ({ title }: Props) => {
 
 	const { ready: recaptchaReady, execute } = useRecaptchaV3(RECAPTCHA_SITE_KEY)
 
+	const formTitle = (title ?? t('Form.fill_form')).replace('\\n', '\n')
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		if (loading) return
@@ -63,26 +48,21 @@ export const Form = ({ title }: Props) => {
 		setFormError(null)
 		setFormOk(null)
 
-		// тримінг + базова перевірка
 		const _name = name.trim()
 		const _email = email.trim()
 		const _message = message.trim()
-
 		if (!_name || !_email || !_message) {
-			setFormError(t('partnerForm.required_fields'))
-			return
-		}
-
-		// дуже проста перевірка email
-		const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(_email)
-		if (!emailOk) {
-			setFormError(t('partnerForm.error_email') || 'Email is invalid')
+			setFormError(
+				t('Form.required_fields') ||
+					'Пожалуйста, заполните поля Имя, Электронная почта и Сообщение.'
+			)
 			return
 		}
 
 		try {
 			setLoading(true)
-			// Токен reCAPTCHA v3
+
+			// reCAPTCHA v3 токен
 			const captcha_token = await execute('feedback')
 
 			const payload = {
@@ -110,9 +90,9 @@ export const Form = ({ title }: Props) => {
 				throw new Error(txt || `HTTP ${res.status}`)
 			}
 
-			setFormOk(t('partnerForm.success'))
+			setFormOk(t('Form.success') || 'Ваш запрос успешно отправлен!')
 
-			// очистка форми
+			// очистити форму
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -123,10 +103,12 @@ export const Form = ({ title }: Props) => {
 			setCountry('')
 			setMessage('')
 			setCheckbox(false)
-		} catch (err: unknown) {
-			const msg =
-				err instanceof Error ? err.message : t('partnerForm.error_generic')
-			setFormError(msg)
+		} catch (err: any) {
+			setFormError(
+				err?.message ||
+					t('Form.error_generic') ||
+					'Произошла ошибка. Попробуйте ещё раз.'
+			)
 		} finally {
 			setLoading(false)
 		}
@@ -143,92 +125,77 @@ export const Form = ({ title }: Props) => {
 			<div className='fields'>
 				<div className='fields-group'>
 					<Input
-						label={t('partnerForm.name')}
-						value={name}
-						onChange={(v: any) => setName(getVal(v))}
+						label={t('Form.name')}
 						name='name'
-						autoComplete='name'
-						required
+						value={name}
+						onChange={e => setName(e.target.value)}
 					/>
 					<Input
-						label={t('partnerForm.position')}
-						value={position}
-						onChange={(v: any) => setPosition(getVal(v))}
+						label={t('Form.position')}
 						name='position'
-						autoComplete='organization-title'
+						value={position}
+						onChange={e => setPosition(e.target.value)}
 					/>
 				</div>
-
 				<div className='fields-group'>
 					<Input
-						label={t('partnerForm.phone')}
-						value={phone}
-						onChange={(v: any) => setPhone(getVal(v))}
+						label={t('Form.phone')}
 						name='phone'
-						autoComplete='tel'
+						value={phone}
+						onChange={e => setPhone(e.target.value)}
 					/>
 					<Input
-						label={t('partnerForm.email')}
+						label={t('Form.email')}
 						type='email'
-						value={email}
-						onChange={(v: any) => setEmail(getVal(v))}
 						name='email'
-						autoComplete='email'
-						required
+						value={email}
+						onChange={e => setEmail(e.target.value)}
 					/>
 				</div>
-
 				<Input
-					label={t('partnerForm.address')}
-					value={address}
-					onChange={(v: any) => setAddress(getVal(v))}
+					label={t('Form.address')}
 					name='address'
-					autoComplete='street-address'
+					value={address}
+					onChange={e => setAddress(e.target.value)}
 				/>
-
 				<div className='fields-group'>
 					<Input
-						label={t('partnerForm.zip')}
-						value={postalCode}
-						onChange={(v: any) => setPostalCode(getVal(v))}
+						label={t('Form.zip')}
 						name='postal_code'
-						autoComplete='postal-code'
+						value={postalCode}
+						onChange={e => setPostalCode(e.target.value)}
 					/>
 					<Input
-						label={t('partnerForm.city')}
-						value={city}
-						onChange={(v: any) => setCity(getVal(v))}
+						label={t('Form.city')}
 						name='city'
-						autoComplete='address-level2'
+						value={city}
+						onChange={e => setCity(e.target.value)}
 					/>
 				</div>
-
 				<Input
-					label={t('partnerForm.country')}
-					value={country}
-					onChange={(v: any) => setCountry(getVal(v))}
+					label={t('Form.country')}
 					name='country'
-					autoComplete='country-name'
+					value={country}
+					onChange={e => setCountry(e.target.value)}
 				/>
 				<Input
-					label={t('partnerForm.message')}
+					label={t('Form.message')}
 					textarea
-					value={message}
-					onChange={(v: any) => setMessage(getVal(v))}
 					name='message'
-					required
+					value={message}
+					onChange={e => setMessage((e.target as HTMLTextAreaElement).value)}
 				/>
 			</div>
 
 			<Checkbox
-				label={t('partnerForm.is_company')}
+				label={t('Form.is_company')}
 				checked={checkbox}
 				onChange={() => setCheckbox(!checkbox)}
 			/>
 
 			{!recaptchaReady && (
 				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-					{t('partnerForm.loading_captcha')}
+					{t('Form.loading_captcha') || 'Завантаження захисту…'}
 				</small>
 			)}
 
@@ -239,7 +206,7 @@ export const Form = ({ title }: Props) => {
 				type='submit'
 				loading={loading}
 				disabled={!recaptchaReady || loading}
-				labelKey='partnerButton.get_request'
+				labelKey='Button.get_request'
 			/>
 		</StyledForm>
 	)

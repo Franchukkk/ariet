@@ -1,4 +1,3 @@
-// app/api/feedback/create/route.ts
 import { NextResponse } from 'next/server'
 
 type FeedbackBody = {
@@ -26,8 +25,7 @@ type VerifyRes = {
 const MIN_SCORE = 0.5
 const EXPECTED_ACTION = 'feedback'
 
-// ⚠️ Тимчасово хардкодимо секрет (НЕ для продакшн!)
-// Встав свій секрет із reCAPTCHA v3 admin-консолі:
+// ❗️ВСТАВ СЮДИ СПРАВЖНІЙ SECRET ІЗ reCAPTCHA v3 ADMIN:
 const RECAPTCHA_SECRET_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
 
 export async function POST(req: Request) {
@@ -52,7 +50,6 @@ export async function POST(req: Request) {
 		captcha_token
 	} = body || {}
 
-	// базова валідація
 	if (!name || !email || !message) {
 		return NextResponse.json(
 			{ error: 'required fields missing' },
@@ -65,17 +62,13 @@ export async function POST(req: Request) {
 			{ status: 400 }
 		)
 	}
-
 	if (!RECAPTCHA_SECRET_KEY) {
 		return NextResponse.json(
-			{
-				error: 'server misconfigured: missing RECAPTCHA_SECRET_KEY (hardcoded)'
-			},
+			{ error: 'server misconfigured: missing RECAPTCHA_SECRET_KEY' },
 			{ status: 500 }
 		)
 	}
 
-	// перевірка reCAPTCHA v3
 	const verify = await fetch(
 		'https://www.google.com/recaptcha/api/siteverify',
 		{
@@ -84,12 +77,10 @@ export async function POST(req: Request) {
 			body: new URLSearchParams({
 				secret: RECAPTCHA_SECRET_KEY,
 				response: String(captcha_token)
-				// remoteip можна прокинути за потреби
 			}),
 			cache: 'no-store'
 		}
 	)
-
 	const v = (await verify.json()) as VerifyRes
 
 	if (!v.success) {
@@ -112,9 +103,8 @@ export async function POST(req: Request) {
 		)
 	}
 
-	// TODO: тут твоя бізнес-логіка (БД/емейл тощо)
+	// TODO: тут твоя бізнес-логіка
 
-	// Відповідаємо рівно як у твоїй схемі (без captcha_token):
 	return NextResponse.json({
 		name,
 		position,
