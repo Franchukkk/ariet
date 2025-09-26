@@ -3,6 +3,7 @@
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
+import { BillingZoneSelect } from './BillingZoneSelect'
 import { Input } from './Input'
 import { useOrder } from '@/context/OrderContext'
 
@@ -69,6 +70,16 @@ export const Form = () => {
 					<Input
 						name='Field_3'
 						label={t('complete_contract.form.Field_3')}
+					/>
+				</div>
+				<div className='fields-group'>
+					<Input
+						name='comment'
+						label={t('complete_contract.payment.comment')}
+					/>
+					<BillingZoneSelect
+						name='billing_zone'
+						label={t('BillingZoneSelect.billing_zone')}
 					/>
 				</div>
 			</div>

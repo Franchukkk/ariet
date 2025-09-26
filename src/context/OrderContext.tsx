@@ -16,10 +16,19 @@ type SubmitResult = {
 	error?: string | null
 }
 
+type Zone = {
+	id: number
+	name: string
+	code: string
+	markup_percent?: string | number
+}
+
 type OrderContextType = {
 	submitOrder: (formData: FormData) => Promise<SubmitResult>
 	loading: boolean
 	error: string | null
+	billingZone: Zone | null
+	setBillingZone: (z: Zone | null) => void
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined)
@@ -28,6 +37,8 @@ const API_BASE = 'https://rpktask.sytes.net/api'
 export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [billingZone, setBillingZone] = useState<Zone | null>(null)
+
 	const { basket, discount, promoCode } = useBasket()
 
 	const withAuth = async () => {
@@ -100,43 +111,54 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 
 			const safe = (v: FormDataEntryValue | null) => (v ? String(v).trim() : '')
 
+			// поля з <Form />
 			const name = safe(formData.get('Name'))
 			const surname = safe(formData.get('Surname'))
 			const email = safe(formData.get('Email'))
 			const phone = safe(formData.get('Phone'))
+			const city = safe(formData.get('City'))
+			const zip = safe(formData.get('Zip_code')) // → post_index
 			const billingAddress = safe(formData.get('Address'))
-			const shippingAddress = safe(formData.get('Transport_company_address'))
+			const transportAddr = safe(formData.get('Transport_company_address')) // окреме поле API
+			const tcNumber = safe(formData.get('TC_number')) // → company_name (як у вашому прикладі)
+			const field3 = safe(formData.get('Field_3')) // → vat_number (за вашим прикладом)
+			const comment = safe(formData.get('comment')) // було розбіжжя регістру — тепер правильно
 
+			// валідація обов'язкових
 			if (
 				!name ||
 				!surname ||
 				!email ||
 				!phone ||
 				!billingAddress ||
-				!shippingAddress
+				!transportAddr
 			) {
 				const msg = 'Будь ласка, заповніть усі обов’язкові поля'
 				setError(msg)
 				return { success: false, error: msg }
 			}
 
+			// товари з кошика
 			const items = basket.map(item => ({
 				variant: (item as any).variantId ?? item.id,
 				quantity: item.quantity || 1
 			}))
 
-			const body = {
+			const body: Record<string, any> = {
 				client_type: 'INDIVIDUAL',
 				full_name: `${name} ${surname}`,
 				email,
 				phone,
-				billing_address: billingAddress,
-				shipping_address: shippingAddress,
-				company_name: safe(formData.get('TC_number')),
-				vat_number: safe(formData.get('Field_3')),
-				comment: safe(formData.get('Comment')),
+				billing_address: city ? `${billingAddress}, ${city}` : billingAddress, // якщо потрібно докинути місто
+				shipping_address: transportAddr, // у вас це була адреса ТК
+				transport_company_address: transportAddr, // окремо кладемо також у відповідне поле API
+				company_name: tcNumber,
+				vat_number: field3,
+				comment,
+				post_index: zip || undefined, // з поля Zip_code
 				items,
-				promo_code: discount > 0 && promoCode ? promoCode : undefined
+				promo_code: discount > 0 && promoCode ? promoCode : undefined,
+				billing_zone: billingZone?.id ?? undefined // id з контексту (або з hidden інпута, якщо треба)
 			}
 
 			const res = await fetch(`${API_BASE}/orders/create/`, {
@@ -165,7 +187,7 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 				return { success: false, error: msg }
 			}
 
-			// 1) пробуємо взяти з відповіді
+			// витягуємо orderId / code з різних можливих форм відповіді
 			let orderId: number | undefined =
 				typeof data?.id === 'number'
 					? data.id
@@ -180,13 +202,11 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 						? data.order.code
 						: undefined
 
-			// 2) якщо є code, але немає id — шукаємо id по code
 			if (!orderId && orderCode) {
 				const found = await findOrderIdByCode(token, orderCode)
 				if (found) orderId = found
 			}
 
-			// 3) якщо взагалі нічого — беремо твій останній заказ
 			if (!orderId && !orderCode) {
 				const latest = await fetchOwnLatestOrder(token)
 				orderId = latest.id
@@ -205,7 +225,9 @@ export const OrderProvider = ({ children }: { children: React.ReactNode }) => {
 	}
 
 	return (
-		<OrderContext.Provider value={{ submitOrder, loading, error }}>
+		<OrderContext.Provider
+			value={{ submitOrder, loading, error, billingZone, setBillingZone }}
+		>
 			{children}
 		</OrderContext.Provider>
 	)

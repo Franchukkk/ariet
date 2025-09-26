@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import { Input } from '../Form/Input'
-
 type PaymentOption = {
 	id: number
 	logo: string
@@ -44,17 +42,6 @@ export const PaymentMethods = () => {
 					</Option>
 				))}
 			</Options>
-			<StyledForm>
-				<div className='fields'>
-					<div className='fields-group'>
-						<Input
-							name='comment'
-							label={t('complete_contract.payment.comment')}
-							textarea
-						/>
-					</div>
-				</div>
-			</StyledForm>
 		</Wrapper>
 	)
 }
@@ -114,22 +101,4 @@ const Logo = styled.img`
 	width: 60px;
 	height: auto;
 	object-fit: contain;
-`
-
-const StyledForm = styled.div`
-	padding-top: 95px;
-
-	.fields {
-		display: grid;
-		grid-template-columns: 1fr;
-		grid-auto-rows: max-content;
-		gap: 44px;
-		margin-bottom: 44px;
-	}
-
-	.fields-group {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 38px;
-	}
 `

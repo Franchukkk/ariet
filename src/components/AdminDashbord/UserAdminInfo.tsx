@@ -86,7 +86,7 @@ export const UserAdminInfo = () => {
 					{shownName}
 				</NamePerson>
 
-				<p className='mb-[20px] text-[#FFFFFF]  text-[20px] leading-[27px] font-[300]'>
+				<p className='mb-[10px] text-[#FFFFFF]  text-[18px] leading-[27px] font-[300]'>
 					{roleLabel(me?.role)}
 				</p>
 			</WrapperDiv>
@@ -122,7 +122,7 @@ const Corner = styled.img`
 
 const UserWrapper = styled.div<{ $bg: ImgLike }>`
 	position: relative;
-	padding: 10px;
+
 	@media (max-width: 600px) {
 		max-width: 280px;
 	}
@@ -134,7 +134,7 @@ const UserWrapper = styled.div<{ $bg: ImgLike }>`
 
 const NamePerson = styled.p`
 	display: inline-block;
-	font-size: 25px;
+	font-size: 20px;
 	line-height: 30px;
 	font-weight: 600;
 	color: #ffffff;
@@ -143,6 +143,8 @@ const NamePerson = styled.p`
 `
 
 const ImgDiv = styled.div`
+	width: 170px;
+	height: 170px;
 	@media (max-width: 600px) {
 		width: 200px;
 		height: 200px;

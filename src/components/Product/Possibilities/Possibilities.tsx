@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { List } from './List/List'
@@ -16,6 +17,8 @@ type ProductDetail = {
 	possibilities?: Possibility[]
 }
 
+type Lng = 'ru' | 'en'
+
 export const Possibilities = () => (
 	<Suspense fallback={null}>
 		<PossibilitiesInner />
@@ -29,8 +32,23 @@ function PossibilitiesInner() {
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
 
+	// ----- мова з URL
+	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
+	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
+
+	const { i18n, t } = useTranslation('common')
+
 	const [loading, setLoading] = useState(true)
 	const [product, setProduct] = useState<ProductDetail | null>(null)
+
+	// синхронізуємо i18n під URL
+	useEffect(() => {
+		;(async () => {
+			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
+		})()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng])
 
 	useEffect(() => {
 		let alive = true
@@ -42,12 +60,24 @@ function PossibilitiesInner() {
 		}
 
 		setLoading(true)
-		fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			method: 'GET',
-			credentials: 'include',
-			headers: { 'Content-Type': 'application/json' },
-			cache: 'no-store'
-		})
+
+		// варіант через локальний проксі + параметр мови
+		fetch(
+			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				cache: 'no-store'
+			}
+		)
+			// якщо без проксі — можна так:
+			// fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
+			//   method: 'GET',
+			//   credentials: 'include',
+			//   headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLng },
+			//   cache: 'no-store'
+			// })
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -71,7 +101,7 @@ function PossibilitiesInner() {
 		return () => {
 			alive = false
 		}
-	}, [productId])
+	}, [productId, currentLng])
 
 	const hasHeaderData = !!(
 		product?.name?.trim() || product?.main_feature_description?.trim()
@@ -83,14 +113,22 @@ function PossibilitiesInner() {
 	if (!product) return null
 	if (!hasHeaderData || !hasPossibilities) return null
 
-	const titleText = `Ваши возможности с ${product.name ?? ''}`.trim()
+	const i18nTitle = t('possibilities.title', {
+		name: product.name ?? '',
+		defaultValue:
+			currentLng === 'en'
+				? `Your possibilities with ${product.name ?? ''}`
+				: `Ваши возможности с ${product.name ?? ''}`
+	}).trim()
+
 	const subtitleText = product.main_feature_description ?? ''
 
 	return (
 		<StyledPossibilities className='main-wrapper'>
-			<Title text={titleText} />
+			<Title text={i18nTitle} />
 			<Subtitle text={subtitleText} />
-			<List productId={productId} />
+
+			<List productId={productId} /* lng={currentLng} */ />
 		</StyledPossibilities>
 	)
 }

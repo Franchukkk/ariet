@@ -1,4 +1,25 @@
 {
+	"partnerForm": {
+		"fill_form": "Fill out the form and we will contact yous",
+		"name": "Name",
+		"position": "Position",
+		"phone": "Phone",
+		"email": "Email",
+		"address": "Address",
+		"zip": "ZIP / Postal code",
+		"city": "City",
+		"country": "Country",
+		"message": "Message",
+		"is_company": "I am a company representative",
+		"required_fields": "Please fill in Name, Email, and Message.",
+		"success": "Your request has been sent successfully!",
+		"error_generic": "Something went wrong. Please try again.",
+		"loading_captcha": "Loading protection…"
+	},
+	"partnerButton": {
+		"get_request": "Send request",
+		"sending": "Sending…"
+	},
 	"Button": {
 		"get_request": "Get Request",
 		"more_about_us": "More about us",
@@ -634,6 +655,9 @@
 		}
 	},
 	"AdminDashboard": {
+		"edit": "Edit",
+		"loading": "Loading",
+		"save": "Save",
 		"drop_here": "Drag here",
 		"sort_default": "Default",
 		"sort_id_down": "ID ↓",
@@ -657,6 +681,7 @@
 		"avr_order_price": "Average order value",
 		"new_orders": "New/overdue payments",
 		"statuses": {
+			"deleted": "Deleted",
 			"confirmed": "Confirmed",
 			"delivered": "Delivered",
 			"paid": "Paid",
@@ -689,5 +714,9 @@
 		"basket_title": "Cart is empty.",
 		"promo_code": "Enter promo code.",
 		"promo_active": "Promo code applied: -{{discount}}% discount."
+	},
+	"BillingZoneSelect": {
+		"Nothing_found": "Nothing found",
+		"billing_zone": "Delivery location"
 	}
 }

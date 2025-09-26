@@ -32,15 +32,35 @@ export const Card = ({ title, subtitle, slide, totalSlides, photo }: Props) => (
 )
 
 const StyledCard = styled.div<{ $photo: string }>`
+	position: relative;
 	padding: 37px 27px;
 	height: 446px;
 	margin: 36px 44px;
 	background: url(${({ $photo }) => $photo}) center/cover no-repeat;
 	border-radius: 8px;
+	overflow: hidden;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		/* зліва темно → вправо прозоро */
+		background: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0) 80%);
+		pointer-events: none;
+	}
+
+	> * {
+		position: relative;
+		z-index: 1;
+	}
 
 	@media (max-width: 1000px) {
 		padding: 20px;
 		margin: 0;
 		width: 100%;
+		/* можна трохи розширити затемнення на мобільних */
+		&::after {
+			background: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0) 80%);
+		}
 	}
 `

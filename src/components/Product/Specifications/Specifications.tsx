@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { List } from '../Specifications/List/List'
@@ -9,6 +10,7 @@ import { List } from '../Specifications/List/List'
 import { Header } from './Header/Header'
 
 type KeyFeature = { name?: string; description?: string; image?: string }
+type Lng = 'ru' | 'en'
 
 export const Specifications = () => (
 	<Suspense fallback={null}>
@@ -23,8 +25,22 @@ function SpecificationsInner() {
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
 
+	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
+	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
+
+	const { i18n } = useTranslation('common')
+
 	const [items, setItems] = useState<KeyFeature[]>([])
 	const [loading, setLoading] = useState(true)
+
+	// синхронізуємо i18n під URL (як у ProductInformation)
+	useEffect(() => {
+		;(async () => {
+			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
+		})()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng])
 
 	useEffect(() => {
 		let alive = true
@@ -34,12 +50,17 @@ function SpecificationsInner() {
 			return
 		}
 		setLoading(true)
-		fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			method: 'GET',
-			credentials: 'include',
-			headers: { 'Content-Type': 'application/json' },
-			cache: 'no-store'
-		})
+
+		// ⚠️ тягнемо через локальний proxу + мова з URL
+		fetch(
+			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				cache: 'no-store'
+			}
+		)
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -59,11 +80,10 @@ function SpecificationsInner() {
 		return () => {
 			alive = false
 		}
-	}, [productId])
+	}, [productId, currentLng])
 
-	if (loading) return null
-	if (!productId) return null
-	if (items.length === 0) return null
+	if (loading || !productId || items.length === 0) return null
+
 	return (
 		<StyledSpecifications className='main-wrapper'>
 			<Header />

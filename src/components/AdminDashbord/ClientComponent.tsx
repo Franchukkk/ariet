@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { OrderData } from '@/components/AdminDashbord/OrderData'
 import { OrderInfo } from '@/components/AdminDashbord/OrderInfo'
 import { TitleAdminDashboard } from '@/components/AdminDashbord/TitleAdminDashboard'
 import { UserAdminInfo } from '@/components/AdminDashbord/UserAdminInfo'
 import { ProtectedRoute } from '@/components/ProtectedRoute/ProtectedRoute'
+
+import { OrderData } from './OrderData'
 
 const ordersInfo = {
 	totalOrders: 1000,
@@ -66,9 +67,11 @@ export const ClientComponent = () => {
 					<UserAdminInfo />
 					<div className='flex-1 min-w-0 max-w-full overflow-hidden'>
 						<OrderInfo orderInfo={ordersInfo} />
-						<OrderData />
 					</div>
 				</Wrapper>
+				<OrderDataWrapper>
+					<OrderData />
+				</OrderDataWrapper>
 			</MainWrapper>
 		</ProtectedRoute>
 	)
@@ -77,6 +80,22 @@ export const ClientComponent = () => {
 const MainWrapper = styled.div`
 	@media (max-width: 1000px) {
 		margin-bottom: 60px;
+	}
+`
+const OrderDataWrapper = styled.div`
+	display: flex; /* ← додали */
+	justify-content: center; /* центр по горизонталі */
+	width: 100%;
+	margin-top: 60px; /* "опустити вниз" від попереднього блоку */
+
+	/* щоб дитина гарантовано центрувалась навіть якщо має фікс/макс-ширину */
+	& > * {
+		margin-inline: auto;
+	}
+
+	@media (max-width: 1000px) {
+		margin-top: 30px;
+		padding-bottom: 10px;
 	}
 `
 

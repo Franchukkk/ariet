@@ -44,17 +44,20 @@ const UI_TO_API_STATUS: Record<string, ApiStatus> = {
 	Delivered: 'DELIVERED',
 	Cancelled: 'CANCELLED',
 	Отменен: 'CANCELLED',
-	Скасовано: 'CANCELLED'
+	Скасовано: 'CANCELLED',
+	Видалено: 'CANCELLED',
+	Deleted: 'CANCELLED'
 }
 const asApiStatus = (s: any): ApiStatus =>
 	(UI_TO_API_STATUS[s] || String(s || 'DRAFT').toUpperCase()) as ApiStatus
 
-// колонки → статус
+// колонки → статус (додали deleted)
 const COL_TO_STATUS = {
 	draft: 'DRAFT',
 	confirmed: 'CONFIRMED',
 	paid: 'PAID',
-	sent: 'SHIPPED'
+	sent: 'SHIPPED',
+	deleted: 'CANCELLED'
 } as const
 type ColumnId = keyof typeof COL_TO_STATUS
 
@@ -63,15 +66,23 @@ type StatusCounts = {
 	confirmed: number
 	paid: number
 	sent: number
+	deleted: number
 }
 
 const countStatuses = (rows: any[]): StatusCounts => {
-	const c: StatusCounts = { draft: 0, confirmed: 0, paid: 0, sent: 0 }
+	const c: StatusCounts = {
+		draft: 0,
+		confirmed: 0,
+		paid: 0,
+		sent: 0,
+		deleted: 0
+	}
 	rows.forEach(it => {
 		const s = asApiStatus(it.status)
 		if (s === 'CONFIRMED') c.confirmed++
 		else if (s === 'PAID') c.paid++
 		else if (s === 'SHIPPED') c.sent++
+		else if (s === 'CANCELLED') c.deleted++
 		else c.draft++
 	})
 	return c
@@ -82,13 +93,15 @@ const splitByStatuses = (rows: any[]) => {
 		draft: [],
 		confirmed: [],
 		paid: [],
-		sent: []
+		sent: [],
+		deleted: []
 	}
 	rows.forEach(it => {
 		const s = asApiStatus(it.status)
 		if (s === 'CONFIRMED') b.confirmed.push(it)
 		else if (s === 'PAID') b.paid.push(it)
 		else if (s === 'SHIPPED') b.sent.push(it)
+		else if (s === 'CANCELLED') b.deleted.push(it)
 		else b.draft.push(it)
 	})
 	return b
@@ -102,13 +115,15 @@ export const OrderData = () => {
 		draft: 0,
 		confirmed: 0,
 		paid: 0,
-		sent: 0
+		sent: 0,
+		deleted: 0
 	})
 	const [grouped, setGrouped] = useState<Record<ColumnId, any[]>>({
 		draft: [],
 		confirmed: [],
 		paid: [],
-		sent: []
+		sent: [],
+		deleted: []
 	})
 	const [selectOrder, setSelectOrder] = useState<any | false>(false)
 	const [searchValue, setSearchValue] = useState('')
@@ -151,8 +166,14 @@ export const OrderData = () => {
 				setCounts(countStatuses(normalized))
 			} catch {
 				setOrders([])
-				setGrouped({ draft: [], confirmed: [], paid: [], sent: [] })
-				setCounts({ draft: 0, confirmed: 0, paid: 0, sent: 0 })
+				setGrouped({
+					draft: [],
+					confirmed: [],
+					paid: [],
+					sent: [],
+					deleted: []
+				})
+				setCounts({ draft: 0, confirmed: 0, paid: 0, sent: 0, deleted: 0 })
 			} finally {
 				setIsLoading(false)
 			}
@@ -180,7 +201,8 @@ export const OrderData = () => {
 			'CONFIRMED',
 			'PAID',
 			'SHIPPED',
-			'DELIVERED'
+			'DELIVERED',
+			'CANCELLED'
 		]
 		const i = flow.indexOf(current)
 		setNextStatus(i >= 0 && i < flow.length - 1 ? flow[i + 1] : current)
@@ -202,52 +224,6 @@ export const OrderData = () => {
 			} catch {
 				return fallback
 			}
-		}
-	}
-
-	const handleDeleteOrder = async () => {
-		if (!selectOrder?.id) return
-		if (!confirm(t('AdminDashboard.confirm_delete'))) return
-
-		try {
-			setIsLoading(true)
-			const r = await fetch(`${API_BASE}/orders/${selectOrder.id}/cancel/`, {
-				method: 'POST',
-				headers: { ...authHeaders }
-			})
-			if (!r.ok) {
-				const msg = await readErrorMsg(r, t('AdminDashboard.error_delete'))
-				alert(msg)
-				return
-			}
-			setSelectOrder(false)
-			reload()
-		} catch (e: any) {
-			alert(e?.message || t('AdminDashboard.error_delete'))
-		} finally {
-			setIsLoading(false)
-		}
-	}
-
-	const handleChangeStatus = async () => {
-		if (!selectOrder?.id) return
-		try {
-			setIsLoading(true)
-			const r = await fetch(`${API_BASE}/orders/${selectOrder.id}/update/`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json', ...authHeaders },
-				body: JSON.stringify({ status: toServer(nextStatus) })
-			})
-			if (!r.ok) {
-				const msg = await readErrorMsg(r, t('AdminDashboard.error_status'))
-				alert(msg)
-				return
-			}
-			reload()
-		} catch (e: any) {
-			alert(e?.message || t('AdminDashboard.error_status'))
-		} finally {
-			setIsLoading(false)
 		}
 	}
 
@@ -315,14 +291,14 @@ export const OrderData = () => {
 
 	// --------- DnD persistence ----------
 	const persistStatus = async (orderId: number, newStatus: ApiStatus) => {
-		// якщо рухаємося в SHIPPED — є спец. endpoint; якщо впаде, пробуємо PATCH
+		// спец. endpoint лише для SHIPPED; інші — PATCH update/
 		if (newStatus === 'SHIPPED') {
 			const r2 = await fetch(`${API_BASE}/orders/${orderId}/ship/`, {
 				method: 'POST',
 				headers: { ...authHeaders }
 			})
 			if (r2.ok) return
-			// fallback
+			// fallback до PATCH нижче
 		}
 		const r = await fetch(`${API_BASE}/orders/${orderId}/update/`, {
 			method: 'PATCH',
@@ -360,7 +336,8 @@ export const OrderData = () => {
 			...updatedGrouped.draft.map(i => i.id),
 			...updatedGrouped.confirmed.map(i => i.id),
 			...updatedGrouped.paid.map(i => i.id),
-			...updatedGrouped.sent.map(i => i.id)
+			...updatedGrouped.sent.map(i => i.id),
+			...updatedGrouped.deleted.map(i => i.id)
 		])
 		const others = orders.filter(o => !keptIds.has(o.id))
 		const updatedOrders = [
@@ -368,6 +345,7 @@ export const OrderData = () => {
 			...updatedGrouped.confirmed,
 			...updatedGrouped.paid,
 			...updatedGrouped.sent,
+			...updatedGrouped.deleted,
 			...others
 		]
 
@@ -411,7 +389,7 @@ export const OrderData = () => {
 					{sortOpen && (
 						<ul
 							role='listbox'
-							className='absolute mt-[8px] z-[5] min-w-[180px] bg-[#0D0C0C] border border-[#333333] rounded-[8px] p-[6px]'
+							className='absolute mt-[8px] z-[5] min-w-[180px] w-max bg-[#0D0C0C] border border-[#333333] rounded-[8px] p-[8px]'
 						>
 							<li
 								role='option'
@@ -464,15 +442,59 @@ export const OrderData = () => {
 						/>
 					</label>
 				</Find>
-
-				<ResultFilter className='text-right text-center text-[#4BC785] font-[500] text-[15px]'>
-					{sortLabel}
-				</ResultFilter>
 			</Filters>
 
 			<DragDropContext onDragEnd={onDragEnd}>
-				<div className='overflow-x-auto pt-[7px]'>
-					<Lists className='w-[988px] inline-grid grid-cols-4 gap-[20px] mb-[30px]'>
+				<div className='pt-[7px] overflow-x-hidden'>
+					<Lists className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[20px] w-full mb-[30px]'>
+						{/* DELETED (CANCELLED) */}
+						<Column
+							title={t('AdminDashboard.statuses.deleted') ?? 'Deleted'}
+							count={counts.deleted}
+							color='deleted'
+						>
+							<Droppable
+								droppableId='deleted'
+								direction='vertical'
+							>
+								{(provided, snapshot) => (
+									<DropArea
+										ref={provided.innerRef}
+										{...provided.droppableProps}
+										$isOver={snapshot.isDraggingOver}
+										$isEmpty={!grouped.deleted?.length}
+									>
+										{grouped.deleted?.length === 0 && (
+											<EmptyHint>
+												{t('AdminDashboard.drop_here') || 'Drop here'}
+											</EmptyHint>
+										)}
+										{grouped.deleted?.map((item, index) => (
+											<Draggable
+												key={String(item.id)}
+												draggableId={String(item.id)}
+												index={index}
+											>
+												{dragProvided => (
+													<div
+														ref={dragProvided.innerRef}
+														{...dragProvided.draggableProps}
+														{...dragProvided.dragHandleProps}
+														onClick={e => handlerCardClick(item, e)}
+													>
+														<OrderCard
+															item={item}
+															select={selectOrder?.id}
+														/>
+													</div>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder}
+									</DropArea>
+								)}
+							</Droppable>
+						</Column>
 						{/* DRAFT */}
 						<Column
 							title={t('AdminDashboard.statuses.draft')}
@@ -482,8 +504,6 @@ export const OrderData = () => {
 							<Droppable
 								droppableId='draft'
 								direction='vertical'
-								isDropDisabled={false}
-								isCombineEnabled={false}
 							>
 								{(provided, snapshot) => (
 									<DropArea
@@ -533,8 +553,6 @@ export const OrderData = () => {
 							<Droppable
 								droppableId='confirmed'
 								direction='vertical'
-								isDropDisabled={false}
-								isCombineEnabled={false}
 							>
 								{(provided, snapshot) => (
 									<DropArea
@@ -584,8 +602,6 @@ export const OrderData = () => {
 							<Droppable
 								droppableId='paid'
 								direction='vertical'
-								isDropDisabled={false}
-								isCombineEnabled={false}
 							>
 								{(provided, snapshot) => (
 									<DropArea
@@ -635,8 +651,6 @@ export const OrderData = () => {
 							<Droppable
 								droppableId='sent'
 								direction='vertical'
-								isDropDisabled={false}
-								isCombineEnabled={false}
 							>
 								{(provided, snapshot) => (
 									<DropArea
@@ -701,7 +715,7 @@ const Column = ({
 }: {
 	title: React.ReactNode
 	count: number
-	color: 'draft' | 'confirmed' | 'paid' | 'sent'
+	color: 'draft' | 'confirmed' | 'paid' | 'sent' | 'deleted'
 	children: React.ReactNode
 }) => (
 	<div className='flex flex-col gap-[20px] w-[235px]'>
@@ -734,7 +748,7 @@ const Find = styled.div``
 const ResultFilter = styled.p``
 
 const StatusWrapper = styled.div<{
-	$status: 'draft' | 'confirmed' | 'paid' | 'sent'
+	$status: 'draft' | 'confirmed' | 'paid' | 'sent' | 'deleted'
 }>`
 	font-size: 20px;
 	font-weight: 600;
@@ -744,14 +758,18 @@ const StatusWrapper = styled.div<{
 	padding-top: 12px;
 	padding-bottom: 12px;
 	padding-right: 10px;
-	background-color: ${({ $status }) =>
-		$status === 'draft'
-			? '#686868'
-			: $status === 'confirmed'
-				? '#1DA1E3'
-				: $status === 'paid'
+	background-color: ${
+		({ $status }) =>
+			$status === 'draft'
+				? '#686868'
+				: $status === 'confirmed'
 					? '#1DA1E3'
-					: '#D56909'};
+					: $status === 'paid'
+						? '#1DA1E3'
+						: $status === 'sent'
+							? '#D56909'
+							: '#B63A3A' /* deleted */
+	};
 `
 
 const CountStatus = styled.p`

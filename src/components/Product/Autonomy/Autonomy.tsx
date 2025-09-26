@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { Banner } from './Banner/Banner'
@@ -17,6 +18,8 @@ type ProductDetail = {
 	main_feature_point_3?: string | null
 }
 
+type Lng = 'ru' | 'en'
+
 export const Autonomy = () => (
 	<Suspense fallback={null}>
 		<AutonomyInner />
@@ -30,8 +33,23 @@ function AutonomyInner() {
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
 
+	// --- мова з URL, як у Specifications ---
+	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
+	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
+
+	const { i18n } = useTranslation('common')
+
 	const [loading, setLoading] = useState(true)
 	const [product, setProduct] = useState<ProductDetail | null>(null)
+
+	// синхронізуємо i18n із мовою в URL
+	useEffect(() => {
+		;(async () => {
+			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
+		})()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng])
 
 	useEffect(() => {
 		let alive = true
@@ -43,12 +61,17 @@ function AutonomyInner() {
 		}
 
 		setLoading(true)
-		fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			method: 'GET',
-			credentials: 'include',
-			headers: { 'Content-Type': 'application/json' },
-			cache: 'no-store'
-		})
+
+		// ✅ варіант через локальний проксі з параметром мови
+		fetch(
+			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				cache: 'no-store'
+			}
+		)
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -73,7 +96,7 @@ function AutonomyInner() {
 		return () => {
 			alive = false
 		}
-	}, [productId])
+	}, [productId, currentLng])
 
 	const points = useMemo(
 		() =>
@@ -84,6 +107,7 @@ function AutonomyInner() {
 			].filter(Boolean) as string[],
 		[product]
 	)
+
 	const hasAnyData = !!(
 		product?.main_feature_name?.trim() ||
 		product?.main_feature_description?.trim() ||

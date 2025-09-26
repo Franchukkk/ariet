@@ -1,3 +1,4 @@
+import { Categories } from '@/components/Categories/Categories'
 import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
 
 import { Banner } from '../components/Home/Banner/Banner'
@@ -15,6 +16,7 @@ export default function Page() {
 			<Products />
 			<WhyUs />
 			<Info />
+			<Categories />
 			<Support />
 		</PublicRoute>
 	)

@@ -1,7 +1,7 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { Pagination } from 'swiper/modules'
@@ -26,6 +26,7 @@ interface ProductInfo {
 
 interface Variant {
 	id: number
+	name?: string
 	sku: string
 	stock: any[]
 	price: number
@@ -55,15 +56,18 @@ export const ProductInformation = ({
 
 	const { id } = useParams()
 	const router = useRouter()
+	const searchParams = useSearchParams()
 	const { addToBasket } = useBasket()
 	const { t, i18n } = useTranslation('common')
 
-	const currentLng: Lng = useMemo(() => {
-		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split(
-			'-'
-		)[0] as Lng
-		return raw === 'en' ? 'en' : 'ru'
-	}, [i18n.language, i18n.resolvedLanguage])
+	const urlLng = (searchParams?.get('lng') || 'ru').split('-')[0] as Lng
+	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
+
+	useEffect(() => {
+		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		if (cur !== currentLng) i18n.changeLanguage(currentLng)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng])
 
 	useEffect(() => {
 		setByLang({})
@@ -83,16 +87,15 @@ export const ProductInformation = ({
 			}))
 		)
 
-	const loadProduct = async (lng: 'en' | 'ru'): Promise<ProductInfo> => {
-		const url = `https://rpktask.sytes.net/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
-		const res = await fetch(url, {
-			cache: 'no-store',
-			headers: { 'Accept-Language': lng } // <= цього достатньо
-		})
+	// ✅ Тягнемо дані через локальний API-проксі, мова — з URL
+	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
+		const url = `/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
+		const res = await fetch(url, { cache: 'no-store' })
 		if (!res.ok) throw new Error('Failed to load product')
 		return res.json()
 	}
 
+	// Завантаження активної мови
 	useEffect(() => {
 		let cancelled = false
 		const ensure = async () => {
@@ -122,6 +125,7 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [id, currentLng])
 
+	// Прелоад другої мови (швидке перемикання)
 	useEffect(() => {
 		const other: Lng = currentLng === 'ru' ? 'en' : 'ru'
 		if (byLang[other]) return
@@ -154,7 +158,6 @@ export const ProductInformation = ({
 		productInfo.variants.find(v => v.id === Number(version.split('-')[1])) ||
 		productInfo.variants[0]
 
-	// розкладемо характеристики у 2 колонки як на макеті
 	const features = activeVariant.features || []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)
@@ -228,7 +231,7 @@ export const ProductInformation = ({
 				<SecondInfo className='border-l border-dashed border-[#313131]! w-[40%] pl-[20px]'>
 					<div className='flex flex-row justify-between mb-[7px]'>
 						<CenterText className='text-[18px] font-light text-[#FFFFFFA8]'>
-							{t('ProductItem.article')}: {productInfo.id}
+							{t('ProductItem.article')}: {activeVariant?.sku || '-'}
 						</CenterText>
 						<p className='text-[14px] font-light text-[#1DCF94]'>
 							{activeVariant.stock.length > 0
@@ -236,11 +239,9 @@ export const ProductInformation = ({
 								: t('ProductItem.not_availability')}
 						</p>
 					</div>
-
 					<CenterText className='text-[30px] font-semibold leading-[50px] mb-[20px]'>
 						{formatPrice(Number(price))} $
 					</CenterText>
-
 					<BuyButton
 						onClick={() => {
 							addToBasket({
@@ -257,43 +258,43 @@ export const ProductInformation = ({
 					>
 						{t('ProductItem.buy')}
 					</BuyButton>
-
 					{/* Versions */}
-					<div className='border-b border-dashed border-[#313131]! mb-[22px]'></div>
-					{/* ^^^^^^^  ✅ FIX: було mb={[22]} — спричиняло білд-помилку */}
-
+					<div className='border-b border-dashed border-[#313131]! mb-[22px]' />
 					<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]'>
 						{t('ProductItem.version')}
 					</CenterText>
 
 					<VersionList>
-						{productInfo.variants.map(item => (
-							<WrapperVersion
-								key={`version-${item.id}`}
-								className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
-								style={{
-									color:
-										version === `version-${item.id}` ? '#4BC785' : '#FFFFFF'
-								}}
-								htmlFor={`version-${item.id}`}
-							>
-								<input
-									type='radio'
-									id={`version-${item.id}`}
-									value={`version-${item.id}`}
-									name='version'
-									className='version-radio'
-									checked={version === `version-${item.id}`}
-									onChange={e => {
-										setVersion(e.target.value)
-										setPrice(item.price)
+						{productInfo.variants.map(item => {
+							const display =
+								item.name && item.name.trim() ? item.name : item.sku
+							return (
+								<WrapperVersion
+									key={`version-${item.id}`}
+									className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
+									style={{
+										color:
+											version === `version-${item.id}` ? '#4BC785' : '#FFFFFF'
 									}}
-								/>
-								<span className='truncate'>{item.sku}</span>
-							</WrapperVersion>
-						))}
+									htmlFor={`version-${item.id}`}
+								>
+									<input
+										type='radio'
+										id={`version-${item.id}`}
+										value={`version-${item.id}`}
+										name='version'
+										className='version-radio'
+										checked={version === `version-${item.id}`}
+										onChange={e => {
+											setVersion(e.target.value)
+											setPrice(item.price)
+										}}
+									/>
+									<span className='truncate'>{display}</span>
+								</WrapperVersion>
+							)
+						})}
 					</VersionList>
-
 					{/* Socket */}
 					{productInfo.variants.some(v => v.socket !== null) && (
 						<>
@@ -333,7 +334,6 @@ export const ProductInformation = ({
 							</SocketList>
 						</>
 					)}
-
 					{/* Description */}
 					<div
 						className='pb-[42px] relative'
@@ -359,7 +359,7 @@ export const ProductInformation = ({
 				</SecondInfo>
 			</Wrapper>
 
-			{/* TECH CHARACTERISTICS — дизайн як на скріні */}
+			{/* TECH CHARACTERISTICS */}
 			{features.length > 0 && (
 				<TechBlock className='main-wrapper'>
 					<h3 className='title'>{t('ProductItem.characteristics')}</h3>
@@ -392,8 +392,6 @@ export const ProductInformation = ({
 }
 
 /* ===================== styled-components ===================== */
-
-const bg = '#0D0C0C'
 
 const CenterText = styled.p`
 	@media (max-width: 1000px) {
@@ -548,12 +546,10 @@ const CanvasBlockOne = styled.div`
 	z-index: -2;
 	overflow: hidden;
 `
-
 const CanvasBlockTwo = styled(CanvasBlockOne)`
 	transform: rotate(45deg);
 `
 
-/* Версії/сокети — адаптивні сітки */
 const VersionList = styled.div`
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -569,14 +565,11 @@ const SocketList = styled(VersionList)`
 	border-bottom: 1px dashed #313131;
 `
 
-/* ====== ТЕХ. ХАРАКТЕРИСТИКИ — як у кошику і по центру ====== */
-
-/* ширший контейнер + центральне вирівнювання */
 const TechBlock = styled.section`
 	margin: 40px auto 60px;
-	max-width: min(95vw, 1440px); /* було ~1100 — тепер до 1440px, але з полями */
+	max-width: min(95vw, 1440px);
 	width: 100%;
-	padding: 0 24px; /* трохи ширші бокові відступи */
+	padding: 0 24px;
 	border-bottom: 1px dashed #313131;
 
 	.title {
@@ -589,15 +582,14 @@ const TechBlock = styled.section`
 	}
 `
 
-/* ґрід всередині теж ширший і по центру */
 const TechColumns = styled.div`
-	max-width: min(92vw, 1280px); /* було ~980 — розтягнули */
+	max-width: min(92vw, 1280px);
 	margin: 0 auto;
 	width: 100%;
 
 	display: grid;
 	grid-template-columns: 1fr 1px 1fr;
-	gap: 28px; /* трішки більше повітря */
+	gap: 28px;
 
 	@media (max-width: 900px) {
 		grid-template-columns: 1fr;
@@ -614,13 +606,10 @@ const TechCol = styled.div`
 	padding-bottom: 24px;
 `
 
-/* Рядок з таким самим підкресленням, як у CartSummary:
-   - .name: пунктир знизу (#ffffff42)
-   - .value: градієнтний underline 2px */
 const TechRow = styled.div`
 	display: grid;
 	grid-template-columns: 240px 1fr;
-	align-items: end; /* щоб лінії збігались по базовій лінії */
+	align-items: end;
 	gap: 24px;
 	padding: 8px 0;
 
@@ -635,7 +624,7 @@ const TechRow = styled.div`
 		letter-spacing: 1%;
 
 		padding-bottom: 12px;
-		border-bottom: 1px dashed #ffffff42; /* як Label у кошику */
+		border-bottom: 1px dashed #ffffff42;
 	}
 
 	.value {
@@ -648,13 +637,12 @@ const TechRow = styled.div`
 		line-height: 18px;
 		letter-spacing: 1%;
 
-		padding-bottom: 14px; /* місце під лінію */
+		padding-bottom: 14px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.value::after {
-		/* як Value у кошику */
 		content: '';
 		position: absolute;
 		left: 0;

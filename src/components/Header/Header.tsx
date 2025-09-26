@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { Basket } from './Basket/basket'
@@ -13,19 +14,77 @@ import { User } from './User/User'
 
 export const Header = () => {
 	const [open, setOpen] = useState(false)
+	const pathname = usePathname()
+	const contentRef = useRef<HTMLDivElement>(null)
+
+	const setBodyScroll = (enabled: boolean) => {
+		const body = document.querySelector('body')
+		if (body) body.style.overflow = enabled ? 'auto' : 'hidden'
+	}
+
+	const closeMenu = () => {
+		setOpen(false)
+		setBodyScroll(true)
+	}
 
 	const handleToggleSidebar = () => {
-		const body = document.querySelector('body')
-		if (body) {
-			body.style.overflow = open ? 'auto' : 'hidden'
+		if (open) {
+			// якщо було відкрите — повертаємо скрол
+			setBodyScroll(true)
+		} else {
+			setBodyScroll(false)
 		}
 		setOpen(!open)
 	}
+
+	// Автозакриття при зміні маршруту (клік по <Link>)
+	useEffect(() => {
+		if (open) closeMenu()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [pathname])
+
+	// Закриття по Esc
+	useEffect(() => {
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && open) closeMenu()
+		}
+		document.addEventListener('keydown', onKey)
+		return () => document.removeEventListener('keydown', onKey)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [open])
+
+	// Закривати по кліку на будь-який інтерактив у шторці:
+	// <a>, <button>, [role="button"], [data-close-on-click]
+	useEffect(() => {
+		if (!open) return
+		const el = contentRef.current
+		if (!el) return
+
+		const selector = 'a, button, [role="button"], [data-close-on-click]'
+		const onClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement | null
+			if (!target) return
+			const interactive = target.closest(selector)
+			if (interactive && el.contains(interactive)) {
+				// даємо роутинигу відпрацювати, потім схлопуємо
+				setTimeout(() => closeMenu(), 0)
+			}
+		}
+
+		el.addEventListener('click', onClick)
+		return () => el.removeEventListener('click', onClick)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [open])
+
+	// При розмонтуванні — повернути скрол
+	useEffect(() => () => setBodyScroll(true), [])
+
 	return (
 		<StyledHeader className='main-wrapper flex items-center gap-1.5 !mb-5'>
 			<Logo />
 			<div
-				className={`header-content flex items-center gap-1.5 ${open && 'open'}`}
+				ref={contentRef}
+				className={`header-content flex items-center gap-1.5 ${open ? 'open' : ''}`}
 			>
 				<Catalog />
 				<Navigation />
@@ -57,7 +116,7 @@ const StyledHeader = styled.header`
 				grid-template-columns: 1fr max-content;
 				grid-auto-rows: max-content;
 				gap: 20px;
-				z-index: 100;
+				z-index: 100; /* оверлей */
 				padding: 20px;
 			}
 		}

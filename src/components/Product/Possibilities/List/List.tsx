@@ -1,6 +1,8 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import 'swiper/css/pagination'
 import { Autoplay, Pagination as SwiperPagination } from 'swiper/modules'
@@ -9,14 +11,33 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Card } from './Card/Card'
 
 type Possibility = { name: string; description?: string | null }
+type Lng = 'ru' | 'en'
 
 export const List = ({
-	productId
+	productId,
+	lng // опціонально: якщо батьківський компонент знає мову — можна передавати сюди
 }: {
 	productId: number | string | null | ''
+	lng?: Lng
 }) => {
+	const sp = useSearchParams()
+	// мова з пропа або з URL (?lng=ru|en)
+	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
+	const currentLng: Lng = (lng ?? urlLng) === 'en' ? 'en' : 'ru'
+
+	const { i18n } = useTranslation('common')
+
 	const [possibilities, setPossibilities] = useState<Possibility[]>([])
 	const [loading, setLoading] = useState<boolean>(true)
+
+	// синхронізуємо i18n із мовою (для локалізованих підписів усередині List, якщо з’являться)
+	useEffect(() => {
+		;(async () => {
+			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
+		})()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentLng])
 
 	useEffect(() => {
 		let alive = true
@@ -28,12 +49,24 @@ export const List = ({
 		}
 
 		setLoading(true)
-		fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			method: 'GET',
-			credentials: 'include',
-			headers: { 'Content-Type': 'application/json' },
-			cache: 'no-store'
-		})
+
+		// ✅ через локальний проксі, щоб легко додати мову й куки
+		fetch(
+			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+				cache: 'no-store'
+			}
+		)
+			// ❗ альтернатива без проксі:
+			// fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
+			//   method: 'GET',
+			//   credentials: 'include',
+			//   headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLng },
+			//   cache: 'no-store',
+			// })
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -52,7 +85,7 @@ export const List = ({
 		return () => {
 			alive = false
 		}
-	}, [productId])
+	}, [productId, currentLng])
 
 	const slides = useMemo(() => {
 		const n = possibilities.length

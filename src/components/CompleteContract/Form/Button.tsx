@@ -1,4 +1,3 @@
-// components/CompleteContract/Form/Button.tsx
 'use client'
 
 import { useTranslation } from 'next-i18next'
@@ -7,8 +6,6 @@ import styled from 'styled-components'
 
 import { useBasket } from '@/context/BasketContext'
 import { useOrder } from '@/context/OrderContext'
-
-// components/CompleteContract/Form/Button.tsx
 
 export const Button = () => {
 	const { t } = useTranslation()

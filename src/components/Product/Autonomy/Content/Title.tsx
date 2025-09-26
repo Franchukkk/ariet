@@ -13,9 +13,7 @@ export const Title = ({
 		<>
 			<StyledTitle className='!mb-[30px]'>
 				{name || ''}
-				<span className='text-[#4BC785]'>
-					{/* збережено спан для дизайну */}
-				</span>
+				<span className='text-[#4BC785]'></span>
 			</StyledTitle>
 			{description ? <StyledTitle>{description}</StyledTitle> : null}
 		</>
@@ -25,10 +23,11 @@ export const Title = ({
 const StyledTitle = styled.p`
 	font-weight: 400;
 	font-size: 23px;
-	line-height: 33px;
+	line-height: normal;
 	letter-spacing: 0%;
 	text-transform: uppercase;
 	margin-bottom: 95px;
+	text-transform: lowercase;
 
 	b {
 		color: #4bc785;

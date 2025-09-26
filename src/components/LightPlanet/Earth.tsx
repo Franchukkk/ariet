@@ -131,23 +131,15 @@ export const Earth = () => {
 		camera.position.set(0, 0, 2.3)
 		cameraRef.current = camera
 
-		// Renderer
-		let renderer: THREE.WebGLRenderer
-		try {
-			renderer = new THREE.WebGLRenderer({
-				antialias: !mobile,
-				alpha: true,
-				powerPreference: mobile ? 'low-power' : 'high-performance',
-				premultipliedAlpha: true,
-				preserveDrawingBuffer: false,
-				failIfMajorPerformanceCaveat: false
-			})
-		} catch {
-			renderer = new (THREE as any).WebGL1Renderer({
-				antialias: false,
-				alpha: true
-			}) as THREE.WebGLRenderer
-		}
+		// Renderer (без WebGL1Renderer)
+		const renderer = new THREE.WebGLRenderer({
+			antialias: !mobile,
+			alpha: true,
+			powerPreference: mobile ? 'low-power' : 'high-performance',
+			premultipliedAlpha: true,
+			preserveDrawingBuffer: false,
+			failIfMajorPerformanceCaveat: false
+		})
 		;(renderer as any).outputColorSpace = THREE.SRGBColorSpace
 		renderer.toneMapping = THREE.NoToneMapping
 		renderer.toneMappingExposure = 1.0
@@ -305,6 +297,7 @@ export const Earth = () => {
 					}
 					if (interval === 0) {
 						renderOnce()
+						rafRef.current = requestAnimationFrame(animate)
 						return
 					}
 					const dt = t - prev
@@ -321,7 +314,7 @@ export const Earth = () => {
 				clearFallback()
 				rafRef.current = requestAnimationFrame(animate)
 
-				// ---- WebGL context loss (Safari/iOS) ----
+				// WebGL context loss
 				const onLost = (e: Event) => {
 					e.preventDefault()
 					if (rafRef.current) cancelAnimationFrame(rafRef.current)
@@ -333,7 +326,7 @@ export const Earth = () => {
 					passive: false
 				})
 
-				// ===== Resize / IO observers =====
+				// Resize / IO observers
 				const onResize = () => {
 					const { width: w, height: h } = getSize()
 					renderer.setPixelRatio(
@@ -364,13 +357,12 @@ export const Earth = () => {
 					ioRef.current = io
 				}
 
-				// ---- Cleanup (for this Promise branch) ----
+				// attach inner cleanup
 				const cleanup = () => {
 					canvasEl.removeEventListener('webglcontextlost', onLost)
 					if (ro) ro.disconnect()
 					if (io) io.disconnect()
 				}
-				// attach cleanup to component return by storing in ref
 				;(cleanup as any).tag = 'textures-ready'
 				;(Earth as any)._innerCleanup = cleanup
 			})
@@ -381,7 +373,6 @@ export const Earth = () => {
 		// Global cleanup
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current)
-			// run inner cleanup if set (removes listeners/observers created after textures load)
 			const inner = (Earth as any)._innerCleanup as (() => void) | undefined
 			try {
 				inner?.()
@@ -420,7 +411,6 @@ export const Earth = () => {
 }
 
 const StyledEarth = styled.div`
-	/* ЛИШЕ позиціювання */
 	position: absolute;
 	top: 70px;
 	left: 50%;
@@ -433,10 +423,6 @@ const StyledEarth = styled.div`
 	border-radius: 50%;
 	overflow: hidden;
 	isolation: isolate;
-
-	&::before {
-		content: none;
-	}
 
 	canvas {
 		position: absolute;
@@ -451,12 +437,8 @@ const StyledEarth = styled.div`
 
 	@media (max-width: 1200px) {
 		top: 240px;
-		left: 50%;
-		transform: translateX(-50%);
 	}
 	@media (max-width: 800px) {
 		top: 250px;
-		left: 50%;
-		transform: translateX(-50%);
 	}
 `

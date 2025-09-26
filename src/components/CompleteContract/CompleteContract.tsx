@@ -7,8 +7,6 @@ import { CartSummary } from '@/components/CompleteContract/Form/CartSummary'
 import { Form } from '@/components/CompleteContract/Form/Form'
 import { Title } from '@/components/CompleteContract/Title'
 
-import { DeliveryMethods } from './DeliveryMethods'
-import { PaymentMethods } from './PaymentMethods'
 import { useBasket } from '@/context/BasketContext'
 import { OrderProvider } from '@/context/OrderContext'
 
@@ -37,11 +35,6 @@ export default function CompleteContract() {
 				<Form />
 				<CartSummary />
 			</Wrapper>
-
-			<DeliveryWrapper>
-				<DeliveryMethods />
-				<PaymentMethods />
-			</DeliveryWrapper>
 		</OrderProvider>
 	)
 }

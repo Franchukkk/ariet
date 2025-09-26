@@ -1,17 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import Cross from '@/assets/img/close.svg'
-import Eye from '@/assets/img/eye.svg'
-import Notebook from '@/assets/img/notebook.svg'
 import Pencil from '@/assets/img/pencil.svg'
 
 import type { ApiStatus } from './OrderData'
 import { formatDate } from '@/helpers/formatDate'
 
+/* ===== типи ===== */
+type Zone = {
+	id: number
+	name: string
+	code?: string
+	markup_percent?: string | number
+}
+
+/* ===== мапа статусів ===== */
 const UI_TO_API_STATUS: Record<string, ApiStatus> = {
 	Черновик: 'DRAFT',
 	Draft: 'DRAFT',
@@ -32,9 +39,16 @@ const UI_TO_API_STATUS: Record<string, ApiStatus> = {
 }
 const asApiStatus = (s: any): ApiStatus =>
 	(UI_TO_API_STATUS[s] || String(s || 'DRAFT').toUpperCase()) as ApiStatus
-
 const toServer = (s: ApiStatus): ApiStatus => s
+const STATUSES: ApiStatus[] = [
+	'DRAFT',
+	'CONFIRMED',
+	'PAID',
+	'SHIPPED',
+	'CANCELLED'
+]
 
+/* ===== компонент ===== */
 export const ModalCart = ({
 	item,
 	setIsOpen,
@@ -46,50 +60,47 @@ export const ModalCart = ({
 }) => {
 	const { t, i18n } = useTranslation('common')
 
-	const [editing, setEditing] = useState(false)
-	const [saving, setSaving] = useState(false)
-	const [deleting, setDeleting] = useState(false)
-	const [form, setForm] = useState({
-		full_name: item?.full_name || item?.name || '',
-		phone: item?.phone || item?.tel || '',
-		email: item?.email || '',
-		shipping_address: item?.shipping_address || item?.address || '',
-		billing_address: item?.billing_address || '',
-		comment: item?.comment || '',
-		status: asApiStatus(item?.status || 'DRAFT') as ApiStatus
-	})
-
+	const API_BASE = 'https://rpktask.sytes.net/api'
 	const token =
 		typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
 	const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
-	const API_BASE = 'https://rpktask.sytes.net/api'
 
-	const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (
-			e.target instanceof HTMLElement &&
-			e.target.classList.contains('wraper')
-		) {
-			setIsOpen(false)
-		}
-	}
+	const [zones, setZones] = useState<Zone[]>([]) // для відображення імені з id
+	const [loadingZones, setLoadingZones] = useState(false)
 
-	if (!item) return null
+	const [editing, setEditing] = useState(false) // режим редагування для ІНШИХ полів
+	const [saving, setSaving] = useState(false)
+	const [deleting, setDeleting] = useState(false)
+	const [errorLoadOrder, setErrorLoadOrder] = useState<string | null>(null)
 
-	const lines = (Array.isArray(item.items) ? item.items : []).map((li: any) => {
-		const variant = Array.isArray(li.variant) ? li.variant[0] : li.variant
-		const img = variant?.images?.[0]?.image
-		return {
-			name: variant?.sku || variant?.name || t('AdminDashboard.product'),
-			quantity: li?.quantity ?? 1,
-			price: Number(li?.price) || Number(variant?.price) || 0,
-			photo: img || '/img/placeholder.png',
-			description:
-				Array.isArray(variant?.features) && variant.features.length
-					? `${variant.features[0].name}: ${variant.features[0].value}`
+	// індикатор автосейву СТАТУСУ
+	const [statusSaving, setStatusSaving] = useState<
+		'idle' | 'saving' | 'saved' | 'error'
+	>('idle')
+
+	const initialForm = useMemo(
+		() => ({
+			full_name: item?.full_name || item?.name || '',
+			phone: item?.phone || item?.tel || '',
+			email: item?.email || '',
+			shipping_address: item?.shipping_address || item?.address || '',
+			billing_address: item?.billing_address || '',
+			comment: item?.comment || '',
+			status: asApiStatus(item?.status || 'DRAFT') as ApiStatus,
+			billing_zone_id:
+				(typeof item?.billing_zone === 'number'
+					? item.billing_zone
+					: item?.billing_zone?.id) ?? null,
+			billing_zone_name:
+				typeof item?.billing_zone === 'object' && item?.billing_zone?.name
+					? String(item.billing_zone.name)
 					: ''
-		}
-	})
+		}),
+		[item]
+	)
+	const [form, setForm] = useState(initialForm)
 
+	/* ---------- helpers ---------- */
 	const readErrorMsg = async (r: Response, fallback: string) => {
 		try {
 			const json = await r.clone().json()
@@ -107,40 +118,156 @@ export const ModalCart = ({
 		}
 	}
 
-	const onPencilClick = async () => {
-		if (!editing) {
-			if (form.status !== 'DRAFT') {
-				alert(t('AdminDashboard.edit_only_draft'))
-				return
-			}
-			setEditing(true)
-			return
+	const handleBackdropClose = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (
+			e.target instanceof HTMLElement &&
+			e.target.classList.contains('wraper')
+		) {
+			setIsOpen(false)
 		}
+	}
 
+	/* ---------- 1) підтягнути свіжі дані замовлення ---------- */
+	useEffect(() => {
+		if (!item?.id) return
+		;(async () => {
+			try {
+				setErrorLoadOrder(null)
+				const r = await fetch(`${API_BASE}/orders/${item.id}/`, {
+					headers: { 'Content-Type': 'application/json', ...authHeaders },
+					cache: 'no-store'
+				})
+				if (!r.ok) {
+					const msg = await readErrorMsg(r, 'Failed to load order')
+					setErrorLoadOrder(msg)
+					return
+				}
+				const data = await r.json()
+				const zoneId =
+					typeof data?.billing_zone === 'number' ? data.billing_zone : null
+				setForm(prev => ({
+					...prev,
+					full_name: data?.full_name ?? prev.full_name,
+					phone: data?.phone ?? prev.phone,
+					email: data?.email ?? prev.email,
+					shipping_address: data?.shipping_address ?? prev.shipping_address,
+					billing_address: data?.billing_address ?? prev.billing_address,
+					comment: data?.comment ?? prev.comment,
+					status: asApiStatus(data?.status ?? prev.status),
+					billing_zone_id: zoneId
+				}))
+			} catch (e: any) {
+				setErrorLoadOrder(e?.message || 'Failed to load order')
+			}
+		})()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [item?.id])
+
+	/* ---------- 2) довідник зон (НЕ ЧІПАЮ логіку) ---------- */
+	useEffect(() => {
+		let alive = true
+		const loadZones = async () => {
+			try {
+				setLoadingZones(true)
+				const acc: Zone[] = []
+				let page = 1
+				const pageSize = 100
+				while (true) {
+					const r = await fetch(
+						`${API_BASE}/orders/billing-zones/?page=${page}&page_size=${pageSize}`,
+						{
+							headers: { 'Content-Type': 'application/json', ...authHeaders },
+							cache: 'no-store'
+						}
+					)
+					if (!r.ok) break
+					const json = await r.json()
+					const results: any[] = Array.isArray(json?.results)
+						? json.results
+						: []
+					acc.push(
+						...results.map(z => ({
+							id: z?.id,
+							name: String(z?.name ?? ''),
+							code: String(z?.code ?? ''),
+							markup_percent: z?.markup_percent
+						}))
+					)
+					if (!json?.next) break
+					page++
+				}
+				if (!alive) return
+				setZones(acc)
+			} finally {
+				if (alive) setLoadingZones(false)
+			}
+		}
+		loadZones()
+		return () => {
+			alive = false
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [item?.id])
+
+	// синхронізація назви зони (НЕ ЧІПАЮ поведінку)
+	useEffect(() => {
+		if (form.billing_zone_id == null || zones.length === 0) return
+		const found = zones.find(z => z.id === form.billing_zone_id)
+		if (found && found.name !== form.billing_zone_name) {
+			setForm(prev => ({ ...prev, billing_zone_name: found.name }))
+		}
+	}, [zones, form.billing_zone_id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+	/* ---------- дії ---------- */
+	const patchOrder = async (
+		body: any,
+		fallbackMsgKey = 'AdminDashboard.error_status'
+	) => {
+		const r = await fetch(`${API_BASE}/orders/${item.id}/update/`, {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...authHeaders },
+			body: JSON.stringify(body)
+		})
+		if (!r.ok) {
+			const msg = await readErrorMsg(r, t(fallbackMsgKey) || 'Failed to update')
+			throw new Error(msg)
+		}
+		return r
+	}
+
+	// автозбереження ТІЛЬКИ статусу (без режиму редагування)
+	const changeStatus = async (newStatus: ApiStatus) => {
+		if (newStatus === form.status) return
+		setForm(prev => ({ ...prev, status: newStatus }))
+		try {
+			setStatusSaving('saving')
+			await patchOrder({ status: toServer(newStatus) })
+			setStatusSaving('saved')
+			onUpdated?.()
+			setTimeout(() => setStatusSaving('idle'), 900)
+		} catch (e: any) {
+			setStatusSaving('error')
+			alert(
+				e?.message || t('AdminDashboard.error_status') || 'Failed to update'
+			)
+			setTimeout(() => setStatusSaving('idle'), 1200)
+		}
+	}
+
+	// зберегти інші поля лише кнопкою
+	const onSaveClick = async () => {
 		try {
 			setSaving(true)
-			const body: any = {
+			await patchOrder({
 				full_name: form.full_name,
 				phone: form.phone,
 				email: form.email,
 				shipping_address: form.shipping_address,
 				billing_address: form.billing_address,
 				comment: form.comment,
-				status: toServer(form.status)
-			}
-			const r = await fetch(`${API_BASE}/orders/${item.id}/update/`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json', ...authHeaders },
-				body: JSON.stringify(body)
+				// статус тут не чіпаємо — він уже міг автозберегтись вище
+				billing_zone: form.billing_zone_id ?? 0 // якщо 0 не валідний — приберіть поле
 			})
-			if (!r.ok) {
-				const msg = await readErrorMsg(
-					r,
-					t('AdminDashboard.error_status') || 'Failed to update'
-				)
-				alert(msg)
-				return
-			}
 			setEditing(false)
 			onUpdated?.()
 		} catch (e: any) {
@@ -177,16 +304,39 @@ export const ModalCart = ({
 
 	const onChangeField =
 		(k: keyof typeof form) =>
-		(
-			e: React.ChangeEvent<
-				HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-			>
-		) =>
+		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
 			setForm(prev => ({ ...prev, [k]: e.target.value }))
+
+	const onPickZoneLocal = (z: Zone | null) => {
+		if (!z) return
+		setForm(prev => ({
+			...prev,
+			billing_zone_id: z.id,
+			billing_zone_name: z.name
+		}))
+	}
+
+	/* ---------- вивід ---------- */
+	if (!item) return null
+
+	const lines = (Array.isArray(item.items) ? item.items : []).map((li: any) => {
+		const variant = Array.isArray(li.variant) ? li.variant[0] : li.variant
+		const img = variant?.images?.[0]?.image
+		return {
+			name: variant?.sku || variant?.name || t('AdminDashboard.product'),
+			quantity: li?.quantity ?? 1,
+			price: Number(li?.price) || Number(variant?.price) || 0,
+			photo: img || '/img/placeholder.png',
+			description:
+				Array.isArray(variant?.features) && variant.features.length
+					? `${variant.features[0].name}: ${variant.features[0].value}`
+					: ''
+		}
+	})
 
 	return (
 		<div
-			onClick={handleClose}
+			onClick={handleBackdropClose}
 			className='w-full h-full pt-[5%] px-[20px] fixed top-0 left-0 bg-[#00000080] z-[100] wraper'
 		>
 			<Wrapper className='relative pb-[47px] pt-[20px] pl-[0px] pr-[129px] w-full max-w-[888px] bg-[#292929] m-auto rounded-[10px]'>
@@ -195,77 +345,84 @@ export const ModalCart = ({
 					onClick={() => setIsOpen(false)}
 				/>
 
-				<WrapperOrder className='relative mb-[30px] flex flex-row justify-between'>
-					<div className='relative pl-[59px]'>
-						<p className='mb-[11px] font-[400] leading-[18px] text-[18px] text-[#ffffff]'>
-							{t('AdminDashboard.order_id')} {item.id}
-						</p>
-						<p className='mb-[10px] font-[400] leading-[16px] text-[16px] text-[#7F7F7F]'>
-							{formatDate(item.date || item.created_at, i18n.language)}
-						</p>
+				<WrapperOrder className='relative mb-[30px] flex flex-row justify-between items-start'>
+					<LeftHeader>
+						{editing && (
+							<BackBtn
+								type='button'
+								aria-label='Cancel edit'
+								onClick={() => {
+									setEditing(false)
+									setForm(initialForm) // скинути незбережені інші поля
+								}}
+								title={t('AdminDashboard.cancel_edit') || 'Cancel'}
+							>
+								<svg
+									width='18'
+									height='18'
+									viewBox='0 0 24 24'
+									fill='none'
+									aria-hidden='true'
+								>
+									<path
+										d='M15 18l-6-6 6-6'
+										stroke='currentColor'
+										strokeWidth='2'
+										strokeLinecap='round'
+										strokeLinejoin='round'
+									/>
+								</svg>
+							</BackBtn>
+						)}
 
-						{!editing ? (
-							<p className='mb-[10px] font-[600] leading-[17px] text-[17px] text-[#ffffff]'>
-								{form.status}
+						<div className='relative'>
+							<p className='mb-[6px] font-[600] leading-[18px] text-[18px] text-[#ffffff]'>
+								{t('AdminDashboard.order_id')} {item.id}
 							</p>
-						) : (
-							<select
-								className='mb-[10px] font-[600] leading-[17px] text-[17px] text-[#ffffff] bg-transparent border border-[#434343] rounded-[6px] px-[8px]'
+							<p className='mb-[10px] font-[400] leading-[16px] text-[14px] text-[#7F7F7F]'>
+								{formatDate(item.date || item.created_at, i18n.language)}
+							</p>
+
+							{/* СТАТУС — завжди активний + АВТОСЕЙВ */}
+							<StatusSelect
 								value={form.status}
-								onChange={onChangeField('status')}
-								disabled={form.status !== 'DRAFT'}
+								onChange={changeStatus}
+								busy={statusSaving === 'saving'}
+								saved={statusSaving === 'saved'}
+							/>
+							{errorLoadOrder && (
+								<ErrorText style={{ marginTop: 6 }}>{errorLoadOrder}</ErrorText>
+							)}
+						</div>
+					</LeftHeader>
+
+					<IconWrapper className='flex flex-row gap-[12px] items-center'>
+						{!editing ? (
+							<HeaderBtn
+								type='button'
+								onClick={() => setEditing(true)}
+								title={t('AdminDashboard.edit')}
+							>
+								<Pencil className='w-[20px] h-[20px]' />
+								<span>{t('AdminDashboard.edit')}</span>
+							</HeaderBtn>
+						) : (
+							<PrimaryBtn
+								type='button'
+								onClick={onSaveClick}
+								disabled={saving}
 								title={
-									form.status !== 'DRAFT'
-										? t('AdminDashboard.edit_only_draft')
-										: undefined
+									saving
+										? (t('AdminDashboard.loading') as string)
+										: t('AdminDashboard.save')
 								}
 							>
-								{(
-									[
-										'DRAFT',
-										'CONFIRMED',
-										'PAID',
-										'SHIPPED',
-										'CANCELLED'
-									] as ApiStatus[]
-								).map(s => (
-									<option
-										key={s}
-										value={s}
-										className='text-black'
-									>
-										{s}
-									</option>
-								))}
-							</select>
+								{saving
+									? t('AdminDashboard.loading')
+									: t('AdminDashboard.save')}
+							</PrimaryBtn>
 						)}
-					</div>
 
-					<IconWrapper className='flex flex-row gap-[14px] items-start'>
-						<div className='flex flex-row gap-[10px] items-center'>
-							<Eye className='w-[24px] h-[24px]' />
-							<p className='font-[400] leading-[16px] text-[16px] text-[#7F7F7F]'>
-								15
-							</p>
-						</div>
-
-						<Pencil
-							className='w-[24px] h-[24px] cursor-pointer'
-							onClick={onPencilClick}
-							title={
-								!editing
-									? form.status !== 'DRAFT'
-										? t('AdminDashboard.edit_only_draft')
-										: 'Edit'
-									: saving
-										? 'Saving...'
-										: 'Save'
-							}
-						/>
-
-						<Notebook className='w-[24px] h-[24px]' />
-
-						{/* КНОПКА ВИДАЛИТИ */}
 						<DeleteBtn
 							type='button'
 							disabled={deleting}
@@ -273,40 +430,35 @@ export const ModalCart = ({
 							title={t('AdminDashboard.delete')}
 						>
 							{deleting
-								? t('AdminDashboard.loading') || '...'
+								? t('AdminDashboard.loading')
 								: t('AdminDashboard.delete')}
 						</DeleteBtn>
 					</IconWrapper>
 				</WrapperOrder>
 
-				{form.status !== 'DRAFT' && (
-					<div className='mb-[12px] text-[14px] px-3 py-2 rounded-[8px] bg-[#D5690933] border border-[#D56909] text-white ml-[20px] mr-[20px]'>
-						{t('AdminDashboard.edit_only_draft')}
-					</div>
-				)}
-
+				{/* товари */}
 				<div className='mb-[40px] flex flex-row flex-wrap gap-[10px] pl-[20px] pr-[20px]'>
 					{lines.map((p: any, idx: number) => (
 						<div
 							key={idx}
 							className='flex flex-row gap-[10px] w-[45%] min-w-[300px]'
 						>
-							<div className='flex items-center justify-center rounded-[8px] bg-[#0D0C0C] w-[94px] h-[92px]'>
+							<Thumb>
 								<img
 									width={74}
 									src={p.photo}
 									alt={p.name}
 								/>
-							</div>
+							</Thumb>
 							<div className='flex flex-col gap-[10px]'>
-								<p className='mb-[11px] font-[600] leading-[17px] text-[17px] text-[#ffffff]'>
+								<p className='mb-[6px] font-[600] leading-[17px] text-[16px] text-[#ffffff]'>
 									{p.name}
 								</p>
 								<div className='flex flex-row gap-[10px] justify-between'>
-									<p className='font-[400] leading-[17px] text-[17px] text-[#ffffff]'>
+									<p className='font-[400] leading-[17px] text-[15px] text-[#ffffff]'>
 										{p.quantity}x
 									</p>
-									<p className='font-[600] leading-[17px] text-[17px] text-[#ffffff]'>
+									<p className='font-[600] leading-[17px] text-[15px] text-[#ffffff]'>
 										{p.price * p.quantity} {t('AdminDashboard.currency')}
 									</p>
 								</div>
@@ -315,6 +467,7 @@ export const ModalCart = ({
 					))}
 				</div>
 
+				{/* дані + білінг-зона — без змін автосейву */}
 				<div className='pl-[20px] pr-[20px]'>
 					{!editing ? (
 						<>
@@ -330,6 +483,15 @@ export const ModalCart = ({
 							<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
 								{form.shipping_address || form.billing_address}
 							</p>
+
+							{!!form.billing_zone_id && (
+								<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
+									{(t('complete_contract.form.billing_zone') as string) ||
+										'Billing zone'}
+									: {form.billing_zone_name || `#${form.billing_zone_id}`}
+								</p>
+							)}
+
 							{form.comment && (
 								<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
 									{form.comment}
@@ -338,38 +500,44 @@ export const ModalCart = ({
 						</>
 					) : (
 						<div className='flex flex-col gap-[10px] max-w-[520px]'>
-							<input
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] h-[36px]'
+							<Input
 								placeholder={t('AdminDashboard.full_name')}
 								value={form.full_name}
 								onChange={onChangeField('full_name')}
 							/>
-							<input
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] h-[36px]'
+							<Input
 								placeholder={t('AdminDashboard.tel') || 'Phone'}
 								value={form.phone}
 								onChange={onChangeField('phone')}
 							/>
-							<input
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] h-[36px]'
+							<Input
 								placeholder={t('AdminDashboard.email')}
 								value={form.email}
 								onChange={onChangeField('email')}
 							/>
-							<input
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] h-[36px]'
+							<Input
 								placeholder={t('AdminDashboard.shipping_address')}
 								value={form.shipping_address}
 								onChange={onChangeField('shipping_address')}
 							/>
-							<input
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] h-[36px]'
+							<Input
 								placeholder={t('AdminDashboard.billing_address')}
 								value={form.billing_address}
 								onChange={onChangeField('billing_address')}
 							/>
-							<textarea
-								className='text-[16px] leading-[18px] text-[#FFFFFF] bg-transparent border border-[#333333] rounded-[6px] px-[10px] py-[8px] min-h-[70px]'
+
+							{/* БІЛІНГ ЗОНУ НЕ ЧІПАЮ */}
+							<div>
+								<BillingZoneInputLike
+									zones={zones}
+									loading={loadingZones}
+									currentId={form.billing_zone_id}
+									currentName={form.billing_zone_name}
+									onSelect={onPickZoneLocal}
+								/>
+							</div>
+
+							<Textarea
 								placeholder={t('AdminDashboard.comment')}
 								value={form.comment}
 								onChange={onChangeField('comment')}
@@ -382,27 +550,236 @@ export const ModalCart = ({
 	)
 }
 
+/* ---------- селектор статусу (АВТОСЕЙВ) ---------- */
+function StatusSelect({
+	value,
+	onChange,
+	busy,
+	saved
+}: {
+	value: ApiStatus
+	onChange: (s: ApiStatus) => void
+	busy?: boolean
+	saved?: boolean
+}) {
+	const [open, setOpen] = useState(false)
+	const ref = useRef<HTMLDivElement | null>(null)
+
+	useEffect(() => {
+		const onDoc = (e: MouseEvent) => {
+			if (!ref.current) return
+			if (!ref.current.contains(e.target as Node)) setOpen(false)
+		}
+		const onEsc = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') setOpen(false)
+		}
+		document.addEventListener('mousedown', onDoc)
+		document.addEventListener('keydown', onEsc)
+		return () => {
+			document.removeEventListener('mousedown', onDoc)
+			document.removeEventListener('keydown', onEsc)
+		}
+	}, [])
+
+	const pick = (s: ApiStatus) => {
+		setOpen(false)
+		onChange(s) // одразу викликає PATCH у батьківському компоненті
+	}
+
+	return (
+		<SelectWrap
+			ref={ref}
+			data-open={open ? '1' : '0'}
+		>
+			<Trigger
+				type='button'
+				onClick={() => setOpen(v => !v)}
+				aria-haspopup='listbox'
+				aria-expanded={open}
+				title={busy ? 'Saving…' : saved ? 'Saved' : 'Change status'}
+			>
+				<span
+					className='dot'
+					data-status={value}
+				/>
+				<span className='label'>{value}</span>
+				{busy && <SmallBadge aria-live='polite'>…</SmallBadge>}
+				{saved && !busy && <SmallBadge aria-live='polite'>✓</SmallBadge>}
+				<svg
+					width='16'
+					height='16'
+					viewBox='0 0 24 24'
+					fill='none'
+					className='chev'
+					aria-hidden
+				>
+					<path
+						d='M6 9l6 6 6-6'
+						stroke='currentColor'
+						strokeWidth='2'
+						strokeLinecap='round'
+						strokeLinejoin='round'
+					/>
+				</svg>
+			</Trigger>
+
+			{open && (
+				<Menu role='listbox'>
+					{STATUSES.map(s => (
+						<MenuItem
+							key={s}
+							role='option'
+							aria-selected={s === value}
+							data-active={s === value ? '1' : '0'}
+							onClick={() => pick(s)}
+						>
+							<span
+								className='dot'
+								data-status={s}
+							/>
+							<span className='text'>{s}</span>
+						</MenuItem>
+					))}
+				</Menu>
+			)}
+		</SelectWrap>
+	)
+}
+
+/* ---------- інпут-лайк селектор білінг-зони (БЕЗ змін поведінки) ---------- */
+function BillingZoneInputLike({
+	zones,
+	loading,
+	currentId,
+	currentName,
+	onSelect
+}: {
+	zones: Zone[]
+	loading: boolean
+	currentId: number | null
+	currentName?: string
+	onSelect: (z: Zone | null) => void
+}) {
+	const [open, setOpen] = useState(false)
+	const [value, setValue] = useState(currentName || '')
+	const ref = useRef<HTMLDivElement | null>(null)
+
+	useEffect(() => {
+		if (currentId != null && (!currentName || currentName.trim() === '')) {
+			const found = zones.find(z => z.id === currentId)
+			if (found && found.name !== value) setValue(found.name)
+			return
+		}
+		setValue(currentName || '')
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [currentId, currentName, zones])
+
+	useEffect(() => {
+		const onDoc = (e: MouseEvent) => {
+			if (!ref.current) return
+			if (!ref.current.contains(e.target as Node)) setOpen(false)
+		}
+		const onEsc = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') setOpen(false)
+		}
+		document.addEventListener('mousedown', onDoc)
+		document.addEventListener('keydown', onEsc)
+		return () => {
+			document.removeEventListener('mousedown', onDoc)
+			document.removeEventListener('keydown', onEsc)
+		}
+	}, [])
+
+	const filtered = !value.trim()
+		? zones
+		: zones.filter(z => z.name.toLowerCase().includes(value.toLowerCase()))
+
+	useEffect(() => {
+		if (!value.trim()) return
+		const exact = zones.find(z => z.name.toLowerCase() === value.toLowerCase())
+		if (exact && exact.id !== currentId) {
+			onSelect(exact)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [value, zones])
+
+	const pick = (z: Zone) => {
+		setValue(z.name)
+		setOpen(false)
+		onSelect(z)
+	}
+	const { t } = useTranslation('common')
+	return (
+		<InputShell
+			ref={ref as any}
+			data-open={open ? '1' : '0'}
+		>
+			<InputCore
+				value={value}
+				onChange={e => {
+					setValue(e.target.value)
+					setOpen(true)
+				}}
+				onFocus={() => setOpen(true)}
+				onBlur={() => setTimeout(() => setOpen(false), 120)}
+				placeholder={t('complete_contract.form.billing_zone')}
+				autoComplete='off'
+				aria-autocomplete='list'
+				aria-expanded={open}
+			/>
+			<Chevron
+				viewBox='0 0 24 24'
+				aria-hidden
+			>
+				<path
+					d='M6 9l6 6 6-6'
+					stroke='currentColor'
+					strokeWidth='2'
+					strokeLinecap='round'
+					strokeLinejoin='round'
+				/>
+			</Chevron>
+
+			{open && (
+				<Menu role='listbox'>
+					{loading && <MenuEmpty>Loading…</MenuEmpty>}
+					{!loading && filtered.length === 0 && (
+						<MenuEmpty>Нічого не знайдено</MenuEmpty>
+					)}
+					{!loading &&
+						filtered.map(z => (
+							<MenuItem
+								key={z.id}
+								role='option'
+								onMouseDown={e => e.preventDefault()}
+								onClick={() => pick(z)}
+							>
+								<div className='title'>{z.name}</div>
+								<div className='meta'>
+									{!!z.markup_percent && (
+										<span className='pill'>markup: {z.markup_percent}%</span>
+									)}
+								</div>
+							</MenuItem>
+						))}
+				</Menu>
+			)}
+		</InputShell>
+	)
+}
+
+/* ===================== styled ===================== */
 const WrapperOrder = styled.div`
 	position: relative;
-	&::before {
-		content: '';
-		position: absolute;
-		left: 20px;
-		top: 0px;
-		width: 20px;
-		height: 20px;
-		background-color: #979797;
-		border: 1px solid #434343;
-		border-radius: 4px;
-	}
+	padding-left: 8px;
 	&::after {
 		content: '';
 		position: absolute;
-		left: 20px;
-		bottom: -10px;
-		width: calc(100% + 90px);
+		left: 0;
+		bottom: -12px;
+		width: 100%;
 		height: 1px;
-		background-color: #ffffff42;
+		background-color: #ffffff26;
 	}
 `
 const Wrapper = styled.div`
@@ -412,6 +789,66 @@ const Wrapper = styled.div`
 		overflow-y: auto;
 	}
 `
+const LeftHeader = styled.div`
+	margin-left: 10px;
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+`
+const BackBtn = styled.button`
+	height: 32px;
+	width: 32px;
+	border-radius: 8px;
+	border: 1px solid #434343;
+	color: #e5e7eb;
+	background: #0d0d0d;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s;
+	&:hover {
+		background: #1a1a1a;
+		border-color: #555;
+	}
+	&:active {
+		transform: translateY(1px);
+	}
+`
+const Thumb = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	background: #0d0c0c;
+	width: 94px;
+	height: 92px;
+	img {
+		display: block;
+	}
+`
+const Input = styled.input`
+	text-align: left;
+	font-size: 16px;
+	line-height: 18px;
+	color: #fff;
+	background: transparent;
+	border: 1px solid #333;
+	border-radius: 6px;
+	padding: 0 10px;
+	height: 36px;
+	outline: none;
+`
+const Textarea = styled.textarea`
+	font-size: 16px;
+	line-height: 18px;
+	color: #fff;
+	background: transparent;
+	border: 1px solid #333;
+	border-radius: 6px;
+	padding: 8px 10px;
+	min-height: 70px;
+	outline: none;
+`
 const IconWrapper = styled.div`
 	@media (max-width: 764px) {
 		gap: 10px;
@@ -419,7 +856,51 @@ const IconWrapper = styled.div`
 	display: flex;
 	align-items: center;
 `
-
+const HeaderBtn = styled.button`
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 6px;
+	border: 1px solid #333;
+	color: #fff;
+	background: #0f0f0f;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	transition: all 0.15s;
+	&:hover {
+		background: #1a1a1a;
+		border-color: #444;
+	}
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+	svg {
+		display: block;
+	}
+`
+const PrimaryBtn = styled.button`
+	height: 32px;
+	padding: 0 14px;
+	border-radius: 6px;
+	border: 1px solid #4bc785;
+	color: #0b0b0b;
+	background: #4bc785;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 700;
+	transition: filter 0.15s;
+	&:hover {
+		filter: brightness(1.05);
+	}
+	&:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+	}
+`
 const DeleteBtn = styled.button`
 	height: 32px;
 	padding: 0 12px;
@@ -430,7 +911,6 @@ const DeleteBtn = styled.button`
 	cursor: pointer;
 	font-size: 13px;
 	font-weight: 600;
-
 	&:hover {
 		background: #ef444433;
 	}
@@ -438,4 +918,119 @@ const DeleteBtn = styled.button`
 		opacity: 0.6;
 		cursor: not-allowed;
 	}
+`
+
+/* select (статус) */
+const SelectWrap = styled.div`
+	position: relative;
+	display: inline-block;
+	margin-top: 6px;
+`
+const Trigger = styled.button`
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 36px;
+	padding: 0 10px 0 8px;
+	min-width: 210px;
+	background: #101010;
+	color: #fff;
+	font-weight: 700;
+	font-size: 14px;
+	border: 1px solid #333;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.15s;
+	.chev {
+		margin-left: auto;
+		color: #d1d5db;
+	}
+	.label {
+		letter-spacing: 0.3px;
+	}
+`
+const SmallBadge = styled.span`
+	margin-left: 8px;
+	font-size: 12px;
+	opacity: 0.8;
+`
+const Menu = styled.ul`
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	z-index: 10;
+	min-width: 220px;
+	background: #0e0e0e;
+	border: 1px solid #333;
+	border-radius: 10px;
+	box-shadow:
+		0 12px 32px rgba(0, 0, 0, 0.45),
+		0 0 0 1px #1f1f1f inset;
+	padding: 6px;
+	backdrop-filter: blur(6px);
+`
+const MenuItem = styled.li`
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 10px;
+	border-radius: 8px;
+	cursor: pointer;
+	user-select: none;
+	&:hover {
+		background: #171717;
+	}
+	.text {
+		color: #e5e7eb;
+		font-weight: 600;
+		font-size: 14px;
+	}
+`
+
+/* інпут-лайк для зони (без змін) */
+const FieldLabel = styled.div`
+	color: #fff;
+	font-size: 14px;
+	font-weight: 600;
+	margin-bottom: 6px;
+`
+const InputShell = styled.div`
+	position: relative;
+	width: 100%;
+`
+const InputCore = styled.input`
+	width: 100%;
+	height: 36px;
+	padding: 0 42px 0 10px;
+	color: #fff;
+	background: transparent;
+	border: 1px solid #333;
+	border-radius: 6px;
+	outline: none;
+	transition:
+		border-color 0.15s,
+		box-shadow 0.15s;
+
+	&::placeholder {
+		color: #777;
+	}
+`
+const Chevron = styled.svg`
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 18px;
+	height: 18px;
+	color: #d1d5db;
+	pointer-events: none;
+`
+const MenuEmpty = styled.div`
+	padding: 10px 12px;
+	color: #9ca3af;
+	font-size: 14px;
+`
+const ErrorText = styled.div`
+	color: #ef4444;
+	font-size: 12px;
 `

@@ -1,29 +1,47 @@
 'use client'
 
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { Button } from './Button'
 import { useBasket } from '@/context/BasketContext'
+import { useOrder } from '@/context/OrderContext'
 
 export const CartSummary = () => {
 	const { t } = useTranslation('common')
-	const router = useRouter()
 	const { basket, discount } = useBasket()
+	const { billingZone } = useOrder() as {
+		billingZone?: {
+			id: number
+			name: string
+			code: string
+			markup_percent?: string | number
+		}
+	}
 
-	const deliveryPrice = 200
-
+	// сума товарів
 	const subtotal = basket.reduce(
-		(acc, product) => acc + product.price * (product.quantity || 1),
+		(acc, p) => acc + (p.price || 0) * (p.quantity || 1),
 		0
 	)
 
-	const discountedTotal =
-		discount > 0 ? subtotal - (subtotal * discount) / 100 : subtotal
+	// знижка промокоду
+	const discountPct = typeof discount === 'number' ? discount : 0
+	const discountAmount = discountPct > 0 ? (subtotal * discountPct) / 100 : 0
+	const discountedSubtotal = subtotal - discountAmount
 
-	const finalTotal = discountedTotal + deliveryPrice
+	// доставка = відсоток від (discountedSubtotal) згідно білінг-зони
+	const zoneMarkupPct = Number(billingZone?.markup_percent ?? 0) || 0
+
+	// якщо хочете від суми ДО знижки — підставте subtotal замість discountedSubtotal
+	const deliveryPriceRaw = discountedSubtotal * (zoneMarkupPct / 100)
+	const deliveryPrice = Math.max(0, Math.round(deliveryPriceRaw)) // без від’ємних, округлення
+
+	const finalTotal = discountedSubtotal + deliveryPrice
+
+	const fmt = (n: number) =>
+		n.toLocaleString(undefined, { maximumFractionDigits: 2 })
 
 	return (
 		<Container>
@@ -48,7 +66,7 @@ export const CartSummary = () => {
 							<Info>
 								<span>{product.quantity}x</span>
 								<Price>
-									{(product.price * product.quantity).toLocaleString()} $
+									{fmt((product.price || 0) * (product.quantity || 1))} $
 								</Price>
 							</Info>
 						</Details>
@@ -57,25 +75,34 @@ export const CartSummary = () => {
 				</div>
 			))}
 
-			<Row>
-				<Label>{t('complete_contract.cart.products_price')}</Label>
-				<Value>{subtotal.toLocaleString()} $</Value>
-			</Row>
+			{discountPct > 0 && (
+				<Row>
+					<Label>{t('complete_contract.cart.discount') || 'Discount'}</Label>
+					<Value>
+						-{fmt(discountAmount)} $ ({discountPct}%)
+					</Value>
+				</Row>
+			)}
 
 			<Row>
 				<Label>{t('complete_contract.cart.delivery')}</Label>
-				<Value>{deliveryPrice.toLocaleString()} $</Value>
+				<Value>
+					{fmt(deliveryPrice)} ${' '}
+					{zoneMarkupPct > 0 ? `(+${zoneMarkupPct}%)` : ''}
+				</Value>
 			</Row>
 
 			<Row>
 				<Label>{t('complete_contract.cart.total')}</Label>
-				<TotalValue>{finalTotal.toLocaleString()} $</TotalValue>
+				<TotalValue>{fmt(finalTotal)} $</TotalValue>
 			</Row>
 
 			<Button />
 		</Container>
 	)
 }
+
+/* ===== styles ===== */
 
 const Container = styled.div`
 	background: #1b1919;

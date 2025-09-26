@@ -1,7 +1,6 @@
 'use client'
 
 // @ts-nocheck
-import { getGPUTier } from 'detect-gpu'
 import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import * as THREE from 'three'
@@ -10,7 +9,6 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import dayImg from '@/assets/img/world-day.jpg'
 import nightImg from '@/assets/img/world-night.jpg'
 
-// ==== Shaders ====
 const vertexShader = `
   varying vec2 vUv;
   varying vec3 vWorldPos;
@@ -35,7 +33,7 @@ vec3 srgbToLinear(vec3 c){ return pow(c, vec3(2.2)); }
 vec3 linearToSrgb(vec3 c){ return pow(max(c, 0.0), vec3(1.0/2.2)); }
 void main() {
   vec2 uv = vec2(1.0 - vUv.x, vUv.y);
-  vec3 dayCol   = srgbToLinear(texture2D(dayTexture, uv).rgb) * 1.9; 
+  vec3 dayCol   = srgbToLinear(texture2D(dayTexture, uv).rgb) * 1.9;
   vec3 nightCol = srgbToLinear(texture2D(nightTexture, uv).rgb) * 1.2;
   vec3 N = normalize(vWorldNormal);
   vec3 L = normalize(sunDirection);
@@ -47,7 +45,7 @@ void main() {
   vec3 specular = vec3(1.0, 0.95, 0.8) * spec * 0.06;
   float rim = 1.0 - max(dot(N, V), 0.0);
   vec3 atmoDay = vec3(0.25, 0.5, 1.0) * pow(rim, 2.0) * ndl * 0.8;
-  vec3 faintMoonlight = srgbToLinear(vec3(0.02, 0.025, 0.04)); 
+  vec3 faintMoonlight = srgbToLinear(vec3(0.02, 0.025, 0.04));
   float dayFactor = smoothstep(0.0, 0.5, ndl);
   vec3 colorLinear = (nightCol + faintMoonlight) * (1.0 - dayFactor) + (litDay + specular + atmoDay) * dayFactor;
   gl_FragColor = vec4(linearToSrgb(colorLinear), 1.0);
@@ -99,23 +97,7 @@ export const Earth = () => {
 			const container = containerRef.current!
 			while (container.firstChild) container.removeChild(container.firstChild)
 
-			const prefersReduced =
-				window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ??
-				false
-
-			// GPU tier
-			const t = await getGPUTier({
-				mobileBenchmarkPercentages: [0, 25, 50, 75]
-			})
-			const tierNumber =
-				typeof t.tier === 'number'
-					? t.tier
-					: String(t.tier).match(/\d+/)?.[0]
-						? Number(String(t.tier).match(/\d+/)![0])
-						: 0
-			const tier = Math.max(0, Math.min(3, tierNumber)) // clamp 0..3
-
-			// Розмір від ширини контейнера (aspect-ratio забезпечує висоту)
+			// size
 			const getSize = () => {
 				const w = container.clientWidth || 320
 				return { width: w, height: w }
@@ -143,55 +125,20 @@ export const Earth = () => {
 			camera.position.set(0, 0, 2.3)
 			cameraRef.current = camera
 
-			// Якість за tier: НІКОЛИ не 0 fps (щоб завжди крутилось)
-			const baseFps = [24, 30, 60, 60][tier]
-			const quality = {
-				dpr: [0.85, 1.0, 1.4, 2.0][tier],
-				seg: [32, 48, 96, 128][tier],
-				anis: [1, 2, 4, 8][tier],
-				withAtmo: tier >= 1,
-				fps: Math.max(24, baseFps) // мінімум 24 fps
-			}
-
-			const isMobile = window.innerWidth < 768
-			let rotSpeed = 0.0006
-			if (isMobile) {
-				quality.dpr = Math.min(quality.dpr, 1.0)
-				quality.seg = Math.min(quality.seg, 64)
-				quality.fps = Math.min(quality.fps, 30)
-				rotSpeed = 0.0005
-			}
-			// Якщо користувач просить менше руху — уповільнюємо, але НЕ зупиняємо
-			if (prefersReduced) {
-				quality.fps = Math.max(24, Math.min(quality.fps, 24))
-				rotSpeed *= 0.6
-			}
-
-			// Renderer
-			let renderer: THREE.WebGLRenderer
-			try {
-				renderer = new THREE.WebGLRenderer({
-					antialias: true,
-					alpha: true,
-					powerPreference: tier <= 1 ? 'low-power' : 'high-performance',
-					premultipliedAlpha: true,
-					preserveDrawingBuffer: false,
-					failIfMajorPerformanceCaveat: false
-				})
-			} catch {
-				renderer = new (THREE as any).WebGL1Renderer({
-					antialias: true,
-					alpha: true
-				}) as THREE.WebGLRenderer
-			}
-
+			// Renderer (без WebGL1Renderer)
+			const renderer = new THREE.WebGLRenderer({
+				antialias: true,
+				alpha: true,
+				powerPreference: 'high-performance',
+				premultipliedAlpha: true,
+				preserveDrawingBuffer: false,
+				failIfMajorPerformanceCaveat: false
+			})
 			;(renderer as any).outputColorSpace = THREE.SRGBColorSpace
 			renderer.toneMapping = THREE.NoToneMapping
 			renderer.toneMappingExposure = 1.0
 			renderer.setClearAlpha(0)
-			renderer.setPixelRatio(
-				Math.min(window.devicePixelRatio || 1, quality.dpr)
-			)
+			renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
 			renderer.setSize(width, height, false)
 			container.appendChild(renderer.domElement)
 			rendererRef.current = renderer
@@ -200,10 +147,11 @@ export const Earth = () => {
 			scene.add(group)
 			groupRef.current = group
 
-			const geometry = new THREE.SphereGeometry(1, quality.seg, quality.seg)
+			const seg = 96
+			const geometry = new THREE.SphereGeometry(1, seg, seg)
 			geoRef.current = geometry
 
-			// Textures (KTX2 via CDN -> JPG fallback)
+			// Textures with KTX2 (fallback to JPG)
 			const srcDayJpg = typeof dayImg === 'string' ? dayImg : dayImg?.src
 			const srcNightJpg =
 				typeof nightImg === 'string' ? nightImg : nightImg?.src
@@ -252,7 +200,7 @@ export const Earth = () => {
 				tex.generateMipmaps = true
 				tex.minFilter = THREE.LinearMipmapLinearFilter
 				tex.magFilter = THREE.LinearFilter
-				tex.anisotropy = quality.anis
+				tex.anisotropy = 8
 				tex.wrapS = tex.wrapT = THREE.RepeatWrapping
 			}
 			prep(dayTex)
@@ -309,31 +257,27 @@ export const Earth = () => {
 			earth.rotation.z = THREE.MathUtils.degToRad(23.5)
 			group.add(earth)
 
-			if (quality.withAtmo) {
-				const atmoMat = new THREE.ShaderMaterial({
-					vertexShader: atmoVertex,
-					fragmentShader: atmoFrag,
-					transparent: true,
-					blending: THREE.AdditiveBlending,
-					depthWrite: false,
-					side: THREE.BackSide
-				})
-				atmoMat.toneMapped = false
-				atmoMatRef.current = atmoMat
-				const atmoGeo = new THREE.SphereGeometry(1.03, quality.seg, quality.seg)
-				atmoGeoRef.current = atmoGeo
-				const atmo = new THREE.Mesh(atmoGeo, atmoMat)
-				atmo.rotation.copy(earth.rotation)
-				group.add(atmo)
-			}
+			const atmoMat = new THREE.ShaderMaterial({
+				vertexShader: atmoVertex,
+				fragmentShader: atmoFrag,
+				transparent: true,
+				blending: THREE.AdditiveBlending,
+				depthWrite: false,
+				side: THREE.BackSide
+			})
+			atmoMat.toneMapped = false
+			atmoMatRef.current = atmoMat
+			const atmoGeo = new THREE.SphereGeometry(1.03, seg, seg)
+			atmoGeoRef.current = atmoGeo
+			const atmo = new THREE.Mesh(atmoGeo, atmoMat)
+			atmo.rotation.copy(earth.rotation)
+			group.add(atmo)
 
-			// Animation with FPS cap (ніколи не 0)
-			const fps = quality.fps
+			// animation
+			const fps = 60
 			const interval = 1000 / fps
 			let prev = performance.now()
 			let acc = 0
-
-			const renderOnce = () => renderer.render(scene, camera)
 
 			const animate = (t: number) => {
 				const dt = t - prev
@@ -342,46 +286,17 @@ export const Earth = () => {
 				if (acc >= interval) {
 					const steps = Math.max(1, Math.floor(acc / interval))
 					acc -= steps * interval
-					group.rotation.y += rotSpeed * steps * (interval / 16.67)
+					group.rotation.y += 0.0006 * steps * (interval / 16.67)
 					renderer.render(scene, camera)
 				}
 				rafRef.current = requestAnimationFrame(animate)
 			}
 			rafRef.current = requestAnimationFrame(animate)
 
-			// Pause/Resume коли елемент поза екраном (економія), але при поверненні — знову крутиться
-			if ('IntersectionObserver' in window) {
-				const io = new IntersectionObserver(
-					([entry]) => {
-						if (!entry.isIntersecting && rafRef.current) {
-							cancelAnimationFrame(rafRef.current)
-							rafRef.current = null
-						} else if (entry.isIntersecting && !rafRef.current) {
-							prev = performance.now()
-							rafRef.current = requestAnimationFrame(animate)
-						}
-					},
-					{ threshold: 0.1 }
-				)
-				io.observe(container)
-				ioRef.current = io
-			}
-
-			// Якщо вкладка була у фоні — відновити анімацію після повернення
-			const onVisibility = () => {
-				if (document.visibilityState === 'visible' && !rafRef.current) {
-					prev = performance.now()
-					rafRef.current = requestAnimationFrame(animate)
-				}
-			}
-			document.addEventListener('visibilitychange', onVisibility)
-
-			// Resize
+			// resize
 			const onResize = () => {
 				const { width: w, height: h } = getSize()
-				renderer.setPixelRatio(
-					Math.min(window.devicePixelRatio || 1, quality.dpr)
-				)
+				renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5))
 				renderer.setSize(w, h, false)
 				camera.aspect = w / h
 				camera.updateProjectionMatrix()
@@ -395,10 +310,9 @@ export const Earth = () => {
 				window.addEventListener('resize', onResize)
 			}
 
-			// Cleanup
+			// cleanup
 			dispose = () => {
 				if (rafRef.current) cancelAnimationFrame(rafRef.current)
-				document.removeEventListener('visibilitychange', onVisibility)
 				roRef.current?.disconnect()
 				ioRef.current?.disconnect()
 				matRef.current?.dispose()
@@ -429,29 +343,21 @@ export const Earth = () => {
 		<StyledEarth
 			ref={containerRef}
 			aria-label='Rotating Earth'
-			className='planet-wrapper'
 		/>
 	)
 }
 
 const StyledEarth = styled.div`
-	/* НЕ міняю твій лейаут */
 	position: absolute;
 	top: 70px;
 	left: 48%;
 	transform: translateX(-50%);
-
 	width: min(580px, 92vw);
 	aspect-ratio: 1 / 1;
-
 	z-index: -1;
 	border-radius: 50%;
 	overflow: hidden;
 	isolation: isolate;
-
-	&::before {
-		content: none;
-	}
 
 	canvas {
 		position: absolute;
