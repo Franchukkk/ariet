@@ -1,3 +1,4 @@
+// src/components/Form.tsx
 'use client'
 
 import { useState } from 'react'
@@ -12,6 +13,8 @@ import { Button } from './Button'
 import { Input } from './Input'
 import { Title } from './Title'
 
+// src/components/Form.tsx
+
 interface Props {
 	title?: string
 }
@@ -19,7 +22,6 @@ interface Props {
 // site key з ТЗ
 const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
 
-// Якщо твій Input очікує інші пропси — підлаштуй value/onChange нижче
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
 	const formTitle = (title ?? t('partnerForm.fill_form')).replace('\\n', '\n')
@@ -43,10 +45,11 @@ export const Form = ({ title }: Props) => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
+		if (loading) return
+
 		setFormError(null)
 		setFormOk(null)
 
-		// елементарна валідація
 		if (!email || !name || !message) {
 			setFormError(t('partnerForm.required_fields'))
 			return
@@ -54,27 +57,27 @@ export const Form = ({ title }: Props) => {
 
 		try {
 			setLoading(true)
-			// Отримуємо токен reCAPTCHA v3
-			const captcha_token = await execute('feedback') // action = "feedback" (із ТЗ)
 
-			const payload = {
-				name,
-				position,
-				phone,
-				email,
-				address,
-				postal_code: postalCode,
-				city,
-				country,
-				message,
-				i_am_company_representative: checkbox,
-				captcha_token
-			}
+			// 1) токен reCAPTCHA v3 у браузері
+			const captcha_token = await execute('feedback')
 
+			// 2) відправляємо на бекенд
 			const res = await fetch('/api/feedback/create/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload)
+				body: JSON.stringify({
+					name,
+					position,
+					phone,
+					email,
+					address,
+					postal_code: postalCode,
+					city,
+					country,
+					message,
+					i_am_company_representative: checkbox,
+					captcha_token
+				})
 			})
 
 			if (!res.ok) {
@@ -83,7 +86,8 @@ export const Form = ({ title }: Props) => {
 			}
 
 			setFormOk(t('partnerForm.success'))
-			// очистити форму
+
+			// очистка форми
 			setName('')
 			setPosition('')
 			setPhone('')
