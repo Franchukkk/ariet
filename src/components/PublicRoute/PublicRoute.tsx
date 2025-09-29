@@ -1,99 +1,92 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { getRefreshToken, refreshToken } from '@/helpers/auth'
 
 export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 	const router = useRouter()
 	const pathname = usePathname()
-	const [isLoading, setIsLoading] = useState(true)
+	const redirectedRef = useRef(false)
+	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-	const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-	// Інтервал для періодичного оновлення токена
+	// Не блокує UI: тихо оновлює токен у фоні кожні 2 хв
 	useEffect(() => {
-		if (!intervalRef.current) {
-			intervalRef.current = setInterval(
-				() => {
+		if (intervalRef.current) return
+		intervalRef.current = setInterval(
+			() => {
+				try {
 					refreshToken()
-				},
-				2 * 60 * 1000
-			) // раз на 2 хвилини
-		}
-
+				} catch {}
+			},
+			2 * 60 * 1000
+		)
 		return () => {
 			if (intervalRef.current) clearInterval(intervalRef.current)
 		}
 	}, [])
 
+	// Лише на /login або /registration перевіряємо й редіректимо, якщо вже залогінений
 	useEffect(() => {
-		if (pathname !== '/login' && pathname !== '/registration') {
-			setIsLoading(false)
-			return
-		}
+		if (pathname !== '/login' && pathname !== '/registration') return
+		let cancelled = false
 
 		const checkAuth = async () => {
-			const refreshTokenValue = getRefreshToken()
+			const refresh =
+				(typeof getRefreshToken === 'function' ? getRefreshToken() : null) ??
+				(typeof window !== 'undefined'
+					? localStorage.getItem('refreshToken')
+					: null)
 
-			if (!refreshTokenValue) {
-				setIsLoading(false) // немає токена — показуємо публічний контент
-				return
-			}
+			if (!refresh || redirectedRef.current) return
 
 			try {
-				// Оновлюємо токен
 				const refreshRes = await fetch(
 					'https://rpktask.sytes.net/api/token/refresh/',
 					{
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ refresh: refreshTokenValue })
+						body: JSON.stringify({ refresh })
 					}
 				)
+				if (!refreshRes.ok) return
+				const { access } = await refreshRes.json()
+				if (!access) return
 
-				const refreshData = await refreshRes.json()
+				localStorage.setItem('accessToken', access)
 
-				if (!refreshData.access) {
-					setIsLoading(false) // токен не отримано
-					return
-				}
-
-				localStorage.setItem('accessToken', refreshData.access)
-
-				// Отримуємо дані користувача
-				const userRes = await fetch('https://rpktask.sytes.net/api/users/me/', {
-					method: 'GET',
+				const meRes = await fetch('https://rpktask.sytes.net/api/users/me/', {
 					headers: {
 						'Content-Type': 'application/json',
-						Authorization: `Bearer ${refreshData.access}`
+						Authorization: `Bearer ${access}`
 					}
 				})
+				if (!meRes.ok) return
+				const user = await meRes.json()
 
-				const userData = await userRes.json()
+				if (cancelled || redirectedRef.current) return
+				const target =
+					user?.role === 'AMBASSADOR'
+						? '/ambassador'
+						: user?.role === 'ADMIN'
+							? '/admin-dashboard'
+							: '/my-account'
 
-				// Якщо користувач на сторінках логіну/реєстрації — редіректимо
-				if (pathname === '/login' || pathname === '/registration') {
-					const target =
-						userData.role === 'CLIENT'
-							? '/my-account'
-							: userData.role === 'AMBASSADOR'
-								? '/ambassador'
-								: userData.role === 'ADMIN'
-									? '/admin-dashboard'
-									: '/my-account' // За замовчуванням
-
-					router.replace(target)
-					return // не ставимо isLoading = false, бо редірект
-				}
-
-				// Якщо користувач не на сторінках логіну — просто показуємо контент
-			} catch (err) {}
+				redirectedRef.current = true
+				router.replace(target)
+			} catch {
+				// мовчазно ігноруємо — просто залишаємо юзера на login/registration
+			}
 		}
 
+		// запустимо перевірку без блокування рендера
 		checkAuth()
+		return () => {
+			cancelled = true
+		}
 	}, [pathname, router])
 
+	// Жодних лоадерів/блокувань — просто рендеримо дітей
 	return <>{children}</>
 }

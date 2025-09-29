@@ -16,9 +16,7 @@ interface Props {
 	title?: string
 }
 
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as
-	| string
-	| undefined
+const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
 
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
@@ -134,7 +132,6 @@ export const Form = ({ title }: Props) => {
 		try {
 			setLoading(true)
 
-			// 1) спроба з капчею, якщо вона доступна
 			let captcha_token: string | undefined
 			if (RECAPTCHA_SITE_KEY && recaptchaReady) {
 				try {
@@ -147,7 +144,6 @@ export const Form = ({ title }: Props) => {
 			const url = '/api/feedback/create/'
 			let res = await postJSON(url, { ...basePayload, captcha_token })
 
-			// 2) якщо бекенд впав — ще раз без капчі
 			if (res.status >= 500) {
 				console.warn(
 					'[feedback] 5xx with captcha, retrying without captcha_token (JSON)'
@@ -155,7 +151,6 @@ export const Form = ({ title }: Props) => {
 				res = await postJSON(url, basePayload)
 			}
 
-			// 3) якщо знову 5xx — пробуємо FormData (деякі бекенди чекають не JSON)
 			if (res.status >= 500) {
 				console.warn(
 					'[feedback] 5xx with JSON, retrying as FormData (no captcha)'
@@ -282,12 +277,10 @@ export const Form = ({ title }: Props) => {
 			<Button
 				type='submit'
 				loading={loading}
-				// якщо є site key — блокуємо доки рекапча не готова; якщо site key немає — не блокуємо
 				disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
 
-			{/* Disclosure для v3 */}
 			{RECAPTCHA_SITE_KEY && (
 				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
 					This site is protected by reCAPTCHA and the Google{' '}
