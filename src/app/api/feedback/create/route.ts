@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
+// src/api/feedback.ts
 
-type FeedbackBody = {
+export type FeedbackPayload = {
 	name: string
 	position?: string
 	phone?: string
@@ -14,107 +14,99 @@ type FeedbackBody = {
 	captcha_token?: string
 }
 
-type VerifyRes = {
-	success: boolean
-	score?: number
-	action?: string
-	hostname?: string
-	'error-codes'?: string[]
+export type FeedbackResponse = {
+	name: string
+	position?: string
+	phone?: string
+	email: string
+	address?: string
+	postal_code?: string
+	city?: string
+	country?: string
+	message: string
+	i_am_company_representative?: boolean
 }
 
-const MIN_SCORE = 0.5
-const EXPECTED_ACTION = 'feedback'
+const FEEDBACK_URL = '/api/feedback/create/'
 
-// ❗️ВСТАВ СЮДИ СПРАВЖНІЙ SECRET ІЗ reCAPTCHA v3 ADMIN:
-const RECAPTCHA_SECRET_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
+function getCookie(name: string) {
+	if (typeof document === 'undefined') return ''
+	const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'))
+	return m ? decodeURIComponent(m[2]) : ''
+}
 
-export async function POST(req: Request) {
-	let body: FeedbackBody
-	try {
-		body = (await req.json()) as FeedbackBody
-	} catch {
-		return NextResponse.json({ error: 'invalid JSON' }, { status: 400 })
-	}
-
-	const {
-		name,
-		position,
-		phone,
-		email,
-		address,
-		postal_code,
-		city,
-		country,
-		message,
-		i_am_company_representative,
-		captcha_token
-	} = body || {}
-
-	if (!name || !email || !message) {
-		return NextResponse.json(
-			{ error: 'required fields missing' },
-			{ status: 400 }
-		)
-	}
-	if (!captcha_token) {
-		return NextResponse.json(
-			{ error: 'missing captcha_token' },
-			{ status: 400 }
-		)
-	}
-	if (!RECAPTCHA_SECRET_KEY) {
-		return NextResponse.json(
-			{ error: 'server misconfigured: missing RECAPTCHA_SECRET_KEY' },
-			{ status: 500 }
-		)
-	}
-
-	const verify = await fetch(
-		'https://www.google.com/recaptcha/api/siteverify',
-		{
-			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			body: new URLSearchParams({
-				secret: RECAPTCHA_SECRET_KEY,
-				response: String(captcha_token)
-			}),
-			cache: 'no-store'
-		}
-	)
-	const v = (await verify.json()) as VerifyRes
-
-	if (!v.success) {
-		return NextResponse.json(
-			{ error: 'captcha failed', details: v },
-			{ status: 400 }
-		)
-	}
-	if (v.action && v.action !== EXPECTED_ACTION) {
-		return NextResponse.json(
-			{ error: 'captcha action mismatch', details: v },
-			{ status: 400 }
-		)
-	}
-	const score = v.score ?? 0
-	if (score < MIN_SCORE) {
-		return NextResponse.json(
-			{ error: 'low score', score, details: v },
-			{ status: 400 }
-		)
-	}
-
-	// TODO: тут твоя бізнес-логіка
-
-	return NextResponse.json({
-		name,
-		position,
-		phone,
-		email,
-		address,
-		postal_code,
-		city,
-		country,
-		message,
-		i_am_company_representative
+async function postJSON(url: string, payload: any) {
+	const csrftoken = getCookie('csrftoken')
+	return fetch(url, {
+		method: 'POST',
+		credentials: 'include', // пересилаємо csrftoken/session
+		headers: {
+			'Content-Type': 'application/json',
+			...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
+		},
+		body: JSON.stringify(payload)
 	})
+}
+
+async function postFormData(url: string, payload: Record<string, any>) {
+	const csrftoken = getCookie('csrftoken')
+	const fd = new FormData()
+	Object.entries(payload).forEach(([k, v]) => {
+		if (v !== undefined && v !== null) {
+			fd.append(k, typeof v === 'string' ? v : String(v))
+		}
+	})
+	return fetch(url, {
+		method: 'POST',
+		credentials: 'include',
+		headers: {
+			...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
+			// НЕ задаємо Content-Type — браузер виставить boundary сам
+		},
+		body: fd
+	})
+}
+
+/**
+ * Надсилає фідбек у форматі, як у Swagger.
+ * Повертає JSON-відповідь бекенду або кидає помилку з текстом.
+ *
+ * Стратегія:
+ *  1) JSON з captcha_token (якщо є у payload)
+ *  2) якщо 5xx → JSON без captcha_token
+ *  3) якщо знову 5xx → FormData без captcha_token
+ */
+export async function submitFeedback(
+	payload: FeedbackPayload,
+	url: string = FEEDBACK_URL
+): Promise<FeedbackResponse> {
+	// 1) JSON із captcha_token (якщо присутній)
+	let res = await postJSON(url, payload)
+
+	// 2) fallback без captcha_token, якщо сервер впав
+	if (res.status >= 500) {
+		const { captcha_token, ...withoutCaptcha } = payload
+		// лише якщо ми дійсно щось видаляємо або все одно 5xx
+		res = await postJSON(url, withoutCaptcha)
+	}
+
+	// 3) ще один fallback: FormData (деякі бекенди чекають не JSON)
+	if (res.status >= 500) {
+		const { captcha_token, ...withoutCaptcha } = payload
+		res = await postFormData(url, withoutCaptcha)
+	}
+
+	if (!res.ok) {
+		// Спробуємо зчитати текст помилки (HTML/JSON) для діагностики
+		const text = await res.text().catch(() => '')
+		throw new Error(text || `HTTP ${res.status}`)
+	}
+
+	// Очікуємо JSON за Swagger’ом
+	const data = (await res.json().catch(async () => {
+		const text = await res.text().catch(() => '')
+		throw new Error(text || 'Invalid JSON response')
+	})) as FeedbackResponse
+
+	return data
 }

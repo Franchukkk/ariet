@@ -1,6 +1,9 @@
+// src/hooks/useRecaptchaV3.ts
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+
+// src/hooks/useRecaptchaV3.ts
 
 declare global {
 	interface Window {
@@ -15,8 +18,7 @@ export function useRecaptchaV3(siteKey?: string, enabled: boolean = true) {
 	const [ready, setReady] = useState(false)
 
 	useEffect(() => {
-		if (typeof window === 'undefined') return
-		if (!enabled || !siteKey) return
+		if (typeof window === 'undefined' || !enabled || !siteKey) return
 
 		const markReady = () => window.grecaptcha?.ready(() => setReady(true))
 

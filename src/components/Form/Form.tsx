@@ -6,6 +6,8 @@ import styled from 'styled-components'
 
 import { useRecaptchaV3 } from '@/hooks/useRecaptchaV3'
 
+import { submitFeedback } from '@/api/feedback'
+
 import { Checkbox } from '../Checkbox'
 
 import { Button } from './Button'
@@ -29,17 +31,17 @@ export const Form = ({ title }: Props) => {
 	const [phone, setPhone] = useState('')
 	const [email, setEmail] = useState('')
 	const [address, setAddress] = useState('')
-	const [postalCode, setPostalCode] = useState('')
+	const [postal_code, setPostalCode] = useState('')
 	const [city, setCity] = useState('')
 	const [country, setCountry] = useState('')
 	const [message, setMessage] = useState('')
-	const [checkbox, setCheckbox] = useState(false)
+	const [i_am_company_representative, setIsCompany] = useState(false)
 
 	const [loading, setLoading] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [formOk, setFormOk] = useState<string | null>(null)
 
-	// підвантажуємо капчу тільки коли форма з’явиться у в’юпорті
+	// вмикаємо капчу лише коли форма у в’юпорті (щоб badge не був по всьому сайту)
 	const [captchaEnabled, setCaptchaEnabled] = useState(false)
 	useEffect(() => {
 		const el = formRef.current
@@ -64,46 +66,9 @@ export const Form = ({ title }: Props) => {
 
 	const formTitle = (title ?? t('Form.fill_form')).replace('\\n', '\n')
 
-	const getCookie = (name: string) => {
-		if (typeof document === 'undefined') return ''
-		const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'))
-		return m ? decodeURIComponent(m[2]) : ''
-	}
-
-	async function postJSON(url: string, payload: any) {
-		const csrftoken = getCookie('csrftoken')
-		return fetch(url, {
-			method: 'POST',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-				...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-			},
-			body: JSON.stringify(payload)
-		})
-	}
-
-	async function postFormData(url: string, payload: Record<string, any>) {
-		const csrftoken = getCookie('csrftoken')
-		const fd = new FormData()
-		Object.entries(payload).forEach(([k, v]) => {
-			if (v !== undefined && v !== null)
-				fd.append(k, typeof v === 'string' ? v : String(v))
-		})
-		return fetch(url, {
-			method: 'POST',
-			credentials: 'include',
-			headers: {
-				...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-			},
-			body: fd
-		})
-	}
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		if (loading) return
-
 		setFormError(null)
 		setFormOk(null)
 
@@ -118,23 +83,10 @@ export const Form = ({ title }: Props) => {
 			return
 		}
 
-		const basePayload = {
-			name: _name,
-			position: position.trim(),
-			phone: phone.trim(),
-			email: _email,
-			address: address.trim(),
-			postal_code: postalCode.trim(),
-			city: city.trim(),
-			country: country.trim(),
-			message: _message,
-			i_am_company_representative: checkbox
-		}
-
 		try {
 			setLoading(true)
 
-			// 1) спроба з капчею, якщо вона доступна
+			// опціональний токен reCAPTCHA v3
 			let captcha_token: string | undefined
 			if (RECAPTCHA_SITE_KEY && recaptchaReady) {
 				try {
@@ -144,29 +96,22 @@ export const Form = ({ title }: Props) => {
 				}
 			}
 
-			const url = '/api/feedback/create/'
-			let res = await postJSON(url, { ...basePayload, captcha_token })
-
-			// 2) якщо бекенд впав — ще раз без капчі
-			if (res.status >= 500) {
-				console.warn(
-					'[feedback] 5xx with captcha, retrying without captcha_token (JSON)'
-				)
-				res = await postJSON(url, basePayload)
+			// ті самі поля, що в Swagger
+			const payload = {
+				name: _name,
+				position: position.trim(),
+				phone: phone.trim(),
+				email: _email,
+				address: address.trim(),
+				postal_code: postal_code.trim(),
+				city: city.trim(),
+				country: country.trim(),
+				message: _message,
+				i_am_company_representative,
+				...(captcha_token ? { captcha_token } : {}) // додаємо лише якщо є
 			}
 
-			// 3) якщо знову 5xx — пробуємо FormData (деякі бекенди чекають не JSON)
-			if (res.status >= 500) {
-				console.warn(
-					'[feedback] 5xx with JSON, retrying as FormData (no captcha)'
-				)
-				res = await postFormData(url, basePayload)
-			}
-
-			if (!res.ok) {
-				const txt = await res.text().catch(() => '')
-				throw new Error(txt || `HTTP ${res.status}`)
-			}
+			await submitFeedback(payload)
 
 			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
 			setName('')
@@ -178,11 +123,11 @@ export const Form = ({ title }: Props) => {
 			setCity('')
 			setCountry('')
 			setMessage('')
-			setCheckbox(false)
+			setIsCompany(false)
 		} catch (err: any) {
-			const msg = err?.message?.includes('HTTP 5')
+			const msg = err?.message?.startsWith('HTTP 5')
 				? t('Form.server_error') ||
-					'Сервер тимчасово недоступний. Спробуйте пізніше або напишіть нам на info@example.com.'
+					'Сервер тимчасово недоступний. Спробуйте пізніше.'
 				: err?.message ||
 					t('Form.error_generic') ||
 					'Сталася помилка. Спробуйте ще раз.'
@@ -200,6 +145,7 @@ export const Form = ({ title }: Props) => {
 			noValidate
 		>
 			<Title title={formTitle} />
+
 			<div className='fields'>
 				<div className='fields-group'>
 					<Input
@@ -240,7 +186,7 @@ export const Form = ({ title }: Props) => {
 					<Input
 						label={t('Form.zip')}
 						name='postal_code'
-						value={postalCode}
+						value={postal_code}
 						onChange={e => setPostalCode(e.target.value)}
 					/>
 					<Input
@@ -267,8 +213,8 @@ export const Form = ({ title }: Props) => {
 
 			<Checkbox
 				label={t('Form.is_company')}
-				checked={checkbox}
-				onChange={() => setCheckbox(!checkbox)}
+				checked={i_am_company_representative}
+				onChange={() => setIsCompany(!i_am_company_representative)}
 			/>
 
 			{!captchaEnabled && (
@@ -282,12 +228,12 @@ export const Form = ({ title }: Props) => {
 			<Button
 				type='submit'
 				loading={loading}
-				// якщо є site key — блокуємо доки рекапча не готова; якщо site key немає — не блокуємо
+				// якщо є site key — чекаємо готовності капчі; якщо нема — не блокуємо
 				disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
 
-			{/* Disclosure для v3 */}
+			{/* Disclosure для v3 лише там, де реально вантажимо капчу */}
 			{RECAPTCHA_SITE_KEY && (
 				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
 					This site is protected by reCAPTCHA and the Google{' '}
