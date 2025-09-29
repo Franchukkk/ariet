@@ -15,12 +15,17 @@ export const Button = ({
 	...rest
 }: ButtonProps) => {
 	const { t } = useTranslation()
+
+	const label = loading
+		? t('Button.get_request')
+		: t(labelKey ?? 'Button.get_request')
+
 	return (
 		<StyledButton
 			disabled={disabled || loading}
 			{...rest}
 		>
-			{loading ? t('Button.sending') : t(labelKey)}
+			{label}
 		</StyledButton>
 	)
 }
@@ -40,9 +45,11 @@ const StyledButton = styled.button`
 	width: 100%;
 	margin-top: 58px;
 	transition: all 0.3s;
+
 	&:hover {
 		background: #1dcf94;
 	}
+
 	&:disabled {
 		opacity: 0.6;
 		cursor: not-allowed;

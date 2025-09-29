@@ -21,7 +21,6 @@ const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
 
 export const Form = ({ title }: Props) => {
 	useRecaptchaBadgeVisible()
-
 	const { t } = useTranslation('common')
 	const formRef = useRef<HTMLFormElement | null>(null)
 
@@ -37,10 +36,13 @@ export const Form = ({ title }: Props) => {
 	const [checkbox, setCheckbox] = useState(false)
 
 	const [loading, setLoading] = useState(false)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [formError, setFormError] = useState<string | null>(null)
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [formOk, setFormOk] = useState<string | null>(null)
 
 	const [captchaEnabled, setCaptchaEnabled] = useState(false)
+
 	useEffect(() => {
 		const el = formRef.current
 		if (!el) return
@@ -57,8 +59,6 @@ export const Form = ({ title }: Props) => {
 		return () => io.disconnect()
 	}, [])
 
-	// ВАЖЛИВО: лише один виклик хука reCAPTCHA
-	// (хук має підтримувати другий аргумент enabled; якщо ні — просто приберіть його)
 	const { ready: recaptchaReady, execute } = useRecaptchaV3(
 		RECAPTCHA_SITE_KEY,
 		captchaEnabled
@@ -72,6 +72,7 @@ export const Form = ({ title }: Props) => {
 		return m ? decodeURIComponent(m[2]) : ''
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function postJSON(url: string, payload: any) {
 		const csrftoken = getCookie('csrftoken')
 		return fetch(url, {
@@ -85,6 +86,7 @@ export const Form = ({ title }: Props) => {
 		})
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	async function postFormData(url: string, payload: Record<string, any>) {
 		const csrftoken = getCookie('csrftoken')
 		const fd = new FormData()
@@ -112,11 +114,9 @@ export const Form = ({ title }: Props) => {
 		const _name = name.trim()
 		const _email = email.trim()
 		const _message = message.trim()
+
 		if (!_name || !_email || !_message) {
-			setFormError(
-				t('Form.required_fields') ||
-					'Заповніть, будь ласка, Імʼя, Email і Повідомлення.'
-			)
+			setFormError(t('Form.required_fields'))
 			return
 		}
 
@@ -140,25 +140,18 @@ export const Form = ({ title }: Props) => {
 			if (RECAPTCHA_SITE_KEY && captchaEnabled && recaptchaReady) {
 				try {
 					captcha_token = await execute('feedback')
-				} catch (err) {
-					console.warn('[reCAPTCHA] execute failed:', err)
-				}
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				} catch (_) {}
 			}
 
 			const url = '/api/feedback/create/'
 			let res = await postJSON(url, { ...basePayload, captcha_token })
 
 			if (res.status >= 500) {
-				console.warn(
-					'[feedback] 5xx with captcha, retrying without captcha_token (JSON)'
-				)
 				res = await postJSON(url, basePayload)
 			}
 
 			if (res.status >= 500) {
-				console.warn(
-					'[feedback] 5xx with JSON, retrying as FormData (no captcha)'
-				)
 				res = await postFormData(url, basePayload)
 			}
 
@@ -167,8 +160,6 @@ export const Form = ({ title }: Props) => {
 				throw new Error(txt || `HTTP ${res.status}`)
 			}
 
-			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
-			// очистити форму
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -179,12 +170,9 @@ export const Form = ({ title }: Props) => {
 			setCountry('')
 			setMessage('')
 			setCheckbox(false)
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
-			setFormError(
-				err?.message ||
-					t('Form.error_generic') ||
-					'Сталася помилка. Спробуйте ще раз.'
-			)
+			setFormError(err?.message || t('Form.error_generic'))
 		} finally {
 			setLoading(false)
 		}
@@ -270,42 +258,12 @@ export const Form = ({ title }: Props) => {
 				onChange={() => setCheckbox(!checkbox)}
 			/>
 
-			{!captchaEnabled && (
-				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-					{t('Form.loading_captcha') || 'Завантаження захисту…'}
-				</small>
-			)}
-			{formError && <ErrorMsg>{formError}</ErrorMsg>}
-			{formOk && <OkMsg>{formOk}</OkMsg>}
-
 			<Button
 				type='submit'
 				loading={loading}
 				disabled={loading || (captchaEnabled && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
-
-			{RECAPTCHA_SITE_KEY && (
-				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-					This site is protected by reCAPTCHA and the Google{' '}
-					<a
-						href='https://policies.google.com/privacy'
-						target='_blank'
-						rel='noreferrer'
-					>
-						Privacy Policy
-					</a>{' '}
-					and{' '}
-					<a
-						href='https://policies.google.com/terms'
-						target='_blank'
-						rel='noreferrer'
-					>
-						Terms of Service
-					</a>{' '}
-					apply.
-				</small>
-			)}
 		</StyledForm>
 	)
 }
@@ -331,14 +289,4 @@ const StyledForm = styled.div`
 			gap: 20px;
 		}
 	}
-`
-const ErrorMsg = styled.div`
-	color: #d12f2f;
-	margin-top: 12px;
-	font-size: 14px;
-`
-const OkMsg = styled.div`
-	color: #1dcf94;
-	margin-top: 12px;
-	font-size: 14px;
 `

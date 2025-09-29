@@ -21,6 +21,7 @@ interface ProductInfo {
 	name: string
 	variants: Variant[]
 	description: string
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	technical_info: any[]
 }
 
@@ -28,6 +29,7 @@ interface Variant {
 	id: number
 	name?: string
 	sku: string
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	stock: any[]
 	price: number
 	socket: { code: string; name: string } | null
@@ -49,7 +51,6 @@ export const ProductInformation = ({
 	const [isLoading, setIsLoading] = useState(true)
 	const [productInfo, setProductInfo] = useState<ProductInfo | null>(null)
 
-	// незалежні вибори
 	const [selectedVersionKey, setSelectedVersionKey] = useState<string | null>(
 		null
 	)
@@ -57,9 +58,9 @@ export const ProductInformation = ({
 		null
 	)
 
-	// опис відкритий за замовчуванням
 	const [showDescription, setShowDescription] = useState(true)
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [slidesData, setSlidesData] = useState<any[]>([])
 	const [byLang, setByLang] = useState<Partial<Record<Lng, ProductInfo>>>({})
 
@@ -145,11 +146,10 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng, id])
 
-	// безпечні значення
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const variants = productInfo?.variants ?? []
 	const separatedName = (productInfo?.name ?? '').split(' ').filter(Boolean)
 
-	// списки опцій
 	const uniqueVersions = useMemo(() => {
 		const map = new Map<string, { display: string }>()
 		for (const v of variants) {
@@ -159,14 +159,12 @@ export const ProductInformation = ({
 		return Array.from(map, ([key, { display }]) => ({ key, display }))
 	}, [variants])
 
-	// обрана версія (ключ)
 	const activeVersionKey = useMemo(
 		() =>
 			selectedVersionKey ?? (variants[0] ? getVersionKey(variants[0]) : null),
 		[selectedVersionKey, variants]
 	)
 
-	// розетки ТІЛЬКИ для обраної версії
 	const socketsForActiveVersion = useMemo(() => {
 		if (!activeVersionKey) return []
 		const map = new Map<string, string>()
@@ -177,7 +175,6 @@ export const ProductInformation = ({
 		return Array.from(map, ([code, display]) => ({ code, display }))
 	}, [variants, activeVersionKey])
 
-	// якщо при зміні версії поточна розетка недоступна — обрати першу доступну
 	useEffect(() => {
 		if (!socketsForActiveVersion.length) {
 			setSelectedSocketCode(null)
@@ -190,13 +187,11 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeVersionKey, socketsForActiveVersion])
 
-	// ВАРІАНТ для відображення (опис/характеристики/ціна) — береться з першого варіанта обраної версії
 	const displayVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey) return null
 		return variants.find(v => getVersionKey(v) === activeVersionKey) ?? null
 	}, [variants, activeVersionKey])
 
-	// КОМБІНАЦІЯ для покупки (версія + розетка)
 	const combinationVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey || !selectedSocketCode)
 			return null
@@ -211,7 +206,6 @@ export const ProductInformation = ({
 
 	const canBuy = !!combinationVariant
 
-	// характеристики/опис/ціна — від displayVariant (залежно від версії)
 	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)

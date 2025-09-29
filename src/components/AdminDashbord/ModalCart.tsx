@@ -10,7 +10,6 @@ import Pencil from '@/assets/img/pencil.svg'
 import type { ApiStatus } from './OrderData'
 import { formatDate } from '@/helpers/formatDate'
 
-/* ===== типи ===== */
 type Zone = {
 	id: number
 	name: string

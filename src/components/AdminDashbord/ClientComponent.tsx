@@ -30,7 +30,6 @@ export const ClientComponent = () => {
 
 		if (!refresh || !access) return
 
-		// Оновлення access токена
 		fetch('https://rpktask.sytes.net/api/token/refresh/', {
 			method: 'POST',
 			headers: {
@@ -46,17 +45,13 @@ export const ClientComponent = () => {
 				}
 			})
 
-		// Отримання замовлень
 		fetch('https://rpktask.sytes.net/api/orders/', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 				Authorization: `Bearer ${access}`
 			}
-		})
-			.then(res => res.json())
-			.then(data => console.log('Orders:', data))
-			.catch(err => console.log('Fetch error:', err))
+		}).catch(() => {})
 	}, [])
 
 	return (
@@ -82,13 +77,13 @@ const MainWrapper = styled.div`
 		margin-bottom: 60px;
 	}
 `
-const OrderDataWrapper = styled.div`
-	display: flex; /* ← додали */
-	justify-content: center; /* центр по горизонталі */
-	width: 100%;
-	margin-top: 60px; /* "опустити вниз" від попереднього блоку */
 
-	/* щоб дитина гарантовано центрувалась навіть якщо має фікс/макс-ширину */
+const OrderDataWrapper = styled.div`
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	margin-top: 60px;
+
 	& > * {
 		margin-inline: auto;
 	}

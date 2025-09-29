@@ -11,7 +11,6 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 	const redirectedRef = useRef(false)
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-	// Не блокує UI: тихо оновлює токен у фоні кожні 2 хв
 	useEffect(() => {
 		if (intervalRef.current) return
 		intervalRef.current = setInterval(
@@ -27,7 +26,6 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 		}
 	}, [])
 
-	// Лише на /login або /registration перевіряємо й редіректимо, якщо вже залогінений
 	useEffect(() => {
 		if (pathname !== '/login' && pathname !== '/registration') return
 		let cancelled = false
@@ -75,18 +73,14 @@ export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 
 				redirectedRef.current = true
 				router.replace(target)
-			} catch {
-				// мовчазно ігноруємо — просто залишаємо юзера на login/registration
-			}
+			} catch {}
 		}
 
-		// запустимо перевірку без блокування рендера
 		checkAuth()
 		return () => {
 			cancelled = true
 		}
 	}, [pathname, router])
 
-	// Жодних лоадерів/блокувань — просто рендеримо дітей
 	return <>{children}</>
 }

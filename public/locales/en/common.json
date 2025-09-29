@@ -256,6 +256,8 @@
 		"snmp_description": "Connect to your monitoring and management system with real-time data access."
 	},
 	"Form": {
+		"error_generic": "An error occurred. Please try again.",
+		"required_fields": "Please fill in your Name, Email and Message.",
 		"fill_form": "Fill out the form and we\\nwill contact you",
 		"name": "Name",
 		"position": "Position",

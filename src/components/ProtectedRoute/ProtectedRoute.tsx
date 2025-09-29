@@ -1,88 +1,95 @@
-"use client"
+'use client'
 
-import { getRefreshToken, refreshToken } from "@/helpers/auth"
-import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+import { getRefreshToken, refreshToken } from '@/helpers/auth'
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+	const router = useRouter()
+	const [isLoading, setIsLoading] = useState(true)
+	const pathname = usePathname()
 
+	useEffect(() => {
+		const idInterval = setInterval(refreshToken, 2 * 60 * 1000)
 
-    const router = useRouter()
-    const [isLoading, setIsLoading] = useState(true)
-    const pathname = usePathname()
+		return () => clearInterval(idInterval)
+	}, [])
 
-    let idInterval: NodeJS.Timeout
+	useEffect(() => {
+		const refreshTokenValue = getRefreshToken()
 
-    useEffect(() => {
-        idInterval = setInterval(refreshToken, 2 * 60 * 1000);
+		if (!refreshTokenValue) {
+			router.push('/login')
+			return
+		}
 
-        return () => clearInterval(idInterval)
-    }, [])
+		const refreshAccessToken = async () => {
+			try {
+				const res = await fetch(
+					'https://rpktask.sytes.net/api/token/refresh/',
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ refresh: refreshTokenValue })
+					}
+				)
 
+				const data = await res.json()
 
-    useEffect(() => {
-        const refreshTokenValue = getRefreshToken()
+				if (data?.code === 'token_not_valid') {
+					router.push('/login')
+					return
+				}
 
-        if (!refreshTokenValue) {
-            if (pathname === '/login' || pathname === '/registration') {
-                router.push('/login')
-                return
-            } else {
-                router.push('/login')
-                return
-            }
-        }
+				if (data?.access) {
+					localStorage.setItem('accessToken', data.access)
 
-        fetch('https://rpktask.sytes.net/api/token/refresh/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ refresh: refreshTokenValue })
-        }).then(res => res.json()).then(data => {
-            if (data.code === 'token_not_valid') {
-                router.push('/login')
-                return
-            }
-            if (data.access) {
-                localStorage.setItem('accessToken', data.access)
+					const userRes = await fetch(
+						'https://rpktask.sytes.net/api/users/me/',
+						{
+							method: 'GET',
+							headers: {
+								'Content-Type': 'application/json',
+								Authorization: `Bearer ${data.access}`
+							}
+						}
+					)
 
-                fetch('https://rpktask.sytes.net/api/users/me/', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${data.access}`
-                    },
-                }).then(res => res.json())
-                    .then(userData => {
-                        const userRole = userData.role
+					const userData = await userRes.json()
+					const userRole = userData.role
 
-                        // Визначаємо куди має йти користувач
-                        let targetPath = '/login'
-                        if (userRole === 'CLIENT') {
-                            targetPath = '/my-account'
-                        } else if (userRole === 'AMBASSADOR') {
-                            targetPath = '/ambassador'
-                        } else if (userRole === 'ADMIN') {
-                            targetPath = '/admin-dashboard'
-                        }
+					let targetPath = '/login'
+					if (userRole === 'CLIENT') {
+						targetPath = '/my-account'
+					} else if (userRole === 'AMBASSADOR') {
+						targetPath = '/ambassador'
+					} else if (userRole === 'ADMIN') {
+						targetPath = '/admin-dashboard'
+					}
 
-                        // Редіректимо ТІЛЬКИ якщо користувач НЕ на своїй сторінці
-                        if (pathname !== targetPath) {
-                            console.log('Redirecting to:', targetPath)
-                            router.push(targetPath)
-                            return
-                        }
-                        setIsLoading(false)
-                    })
-            }
-        }).catch(err => {
-            console.error('Auth error:', err)
-            router.push('/login')
-        })
+					if (pathname !== targetPath) {
+						router.push(targetPath)
+						return
+					}
 
-        return () => clearInterval(idInterval as NodeJS.Timeout)
-    }, [pathname, router])
+					setIsLoading(false)
+				}
+			} catch {
+				router.push('/login')
+			}
+		}
 
-    return <div className="mb-[50px]">{isLoading ? <div className="flex justify-center items-center h-[500px]">Loading...</div> : children}</div>
+		refreshAccessToken()
+
+		return () => {
+			clearInterval(refreshToken as unknown as NodeJS.Timeout)
+		}
+	}, [pathname, router])
+
+	if (isLoading) return null
+
+	return <>{children}</>
 }
