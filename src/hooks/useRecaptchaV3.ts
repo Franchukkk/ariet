@@ -15,19 +15,30 @@ declare global {
 }
 
 /**
- * Завантажує reCAPTCHA v3 тільки якщо enabled === true.
+ * Ледаче підвантаження reCAPTCHA v3: вантажимо лише якщо enabled=true (тобто є siteKey),
+ * та лише на сторінці з формою.
  */
-export function useRecaptchaV3(siteKey: string, enabled: boolean = true) {
+export function useRecaptchaV3(siteKey?: string, enabled: boolean = true) {
 	const [ready, setReady] = useState(false)
 
 	useEffect(() => {
 		if (typeof window === 'undefined') return
-		if (!enabled) return
+		if (!enabled || !siteKey) return
 
-		const onLoad = () => window.grecaptcha?.ready(() => setReady(true))
-
+		// вже є
 		if (window.grecaptcha) {
-			onLoad()
+			window.grecaptcha.ready(() => setReady(true))
+			return
+		}
+
+		// скрипт ще не вставляли
+		const existing = document.querySelector(
+			`script[src="https://www.google.com/recaptcha/api.js?render=${siteKey}"]`
+		)
+		if (existing) {
+			existing.addEventListener('load', () =>
+				window.grecaptcha?.ready(() => setReady(true))
+			)
 			return
 		}
 
@@ -35,33 +46,20 @@ export function useRecaptchaV3(siteKey: string, enabled: boolean = true) {
 		s.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
 		s.async = true
 		s.defer = true
-		s.onload = onLoad
-		s.onerror = () => console.error('[reCAPTCHA] failed to load script')
+		s.onload = () => window.grecaptcha?.ready(() => setReady(true))
+		s.onerror = () => console.error('[reCAPTCHA] failed to load api.js')
 		document.head.appendChild(s)
-
-		return () => {
-			// за бажанням можна чистити <script>, але зазвичай не потрібно
-		}
 	}, [siteKey, enabled])
 
 	const execute = useCallback(
 		async (action: string) => {
-			if (!enabled) throw new Error('reCAPTCHA disabled')
-			if (!window.grecaptcha) throw new Error('reCAPTCHA not ready')
-			for (let i = 0; i < 2; i++) {
-				try {
-					const token = await window.grecaptcha.execute(siteKey, { action })
-					if (!token) throw new Error('empty token')
-					return token
-				} catch (e) {
-					if (i === 1) throw e
-					await new Promise(r => setTimeout(r, 300 * (i + 1)))
-				}
-			}
-			throw new Error('captcha failed')
+			if (!enabled || !siteKey) throw new Error('reCAPTCHA disabled')
+			if (!window.grecaptcha)
+				throw new Error('reCAPTCHA not ready / api.js not loaded')
+			return window.grecaptcha.execute(siteKey, { action })
 		},
 		[siteKey, enabled]
 	)
 
-	return { ready: enabled && ready, execute }
+	return { ready: enabled && !!siteKey && ready, execute }
 }

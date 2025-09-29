@@ -15,7 +15,10 @@ import { Title } from './Title'
 interface Props {
 	title?: string
 }
-const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
+
+// БЕРЕМО ЛИШЕ З ПУБЛІЧНОГО ENV (щоб не хардкодити):
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
 	const formRef = useRef<HTMLFormElement | null>(null)
@@ -32,15 +35,18 @@ export const Form = ({ title }: Props) => {
 	const [message, setMessage] = useState('')
 	const [checkbox, setCheckbox] = useState(false)
 
-	// стани
+	// soft-захист
+	const [hp, setHp] = useState('') // honeypot
+	const startedAt = useRef<number>(Date.now()) // мін. час
+	const keyLS = 'form_rate_cnt'
+	const maxPerMinute = 5
+
 	const [loading, setLoading] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [formOk, setFormOk] = useState<string | null>(null)
 
-	// ➜ керуємо, чи взагалі вантажити reCAPTCHA
+	// капчу вмикаємо тільки коли форма у в'юпорті
 	const [captchaEnabled, setCaptchaEnabled] = useState(false)
-
-	// ввімкнемо капчу лише коли форма потрапить у зону видимості
 	useEffect(() => {
 		const el = formRef.current
 		if (!el) return
@@ -51,7 +57,7 @@ export const Form = ({ title }: Props) => {
 					io.disconnect()
 				}
 			},
-			{ rootMargin: '200px' } // підгрузимо трішки завчасно
+			{ rootMargin: '200px' }
 		)
 		io.observe(el)
 		return () => io.disconnect()
@@ -64,12 +70,47 @@ export const Form = ({ title }: Props) => {
 
 	const formTitle = (title ?? t('Form.fill_form')).replace('\\n', '\n')
 
+	const overLocalRate = () => {
+		try {
+			const now = Date.now()
+			const val = localStorage.getItem(keyLS)
+			const obj = val
+				? (JSON.parse(val) as { t: number; c: number })
+				: { t: now, c: 0 }
+			// обнуляємо лічильник щохвилини
+			if (now - obj.t > 60_000) {
+				obj.t = now
+				obj.c = 0
+			}
+			obj.c += 1
+			localStorage.setItem(keyLS, JSON.stringify(obj))
+			return obj.c > maxPerMinute
+		} catch {
+			return false
+		}
+	}
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		if (loading) return
 
 		setFormError(null)
 		setFormOk(null)
+
+		// soft-вихідні перевірки
+		if (hp) {
+			setFormError('Bot detected')
+			return
+		} // honeypot
+		if (Date.now() - startedAt.current < 1500) {
+			// мінімальний час
+			setFormError(t('Form.too_fast') || 'Занадто швидко. Спробуйте ще раз.')
+			return
+		}
+		if (overLocalRate()) {
+			setFormError(t('Form.rate_limit') || 'Забагато спроб. Спробуйте пізніше.')
+			return
+		}
 
 		const _name = name.trim()
 		const _email = email.trim()
@@ -84,8 +125,16 @@ export const Form = ({ title }: Props) => {
 		try {
 			setLoading(true)
 
-			// отримаємо токен тільки тут, коли справді сабмітимось
-			const captcha_token = await execute('feedback')
+			// токен беремо лише якщо реально можна виконати капчу
+			let captcha_token: string | undefined
+			if (recaptchaReady && RECAPTCHA_SITE_KEY) {
+				try {
+					captcha_token = await execute('feedback')
+				} catch (err) {
+					// якщо скрипт не завантажився / ключ не валідний — просто йдемо без токена
+					console.warn('[reCAPTCHA] execute failed:', err)
+				}
+			}
 
 			const payload = {
 				name: _name,
@@ -98,14 +147,21 @@ export const Form = ({ title }: Props) => {
 				country: country.trim(),
 				message: _message,
 				i_am_company_representative: checkbox,
-				captcha_token
+				captcha_token, // буде undefined, якщо капча недоступна
+				soft_proof: {
+					// передамо на бекенд (якщо він щось логить)
+					dwell_ms: Date.now() - startedAt.current,
+					had_honeypot: !!hp
+				}
 			}
 
+			// ⚠️ ваш endpoint — не змінюю
 			const res = await fetch('/api/feedback/create/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			})
+
 			if (!res.ok) {
 				const txt = await res.text().catch(() => '')
 				throw new Error(txt || `HTTP ${res.status}`)
@@ -123,6 +179,7 @@ export const Form = ({ title }: Props) => {
 			setCountry('')
 			setMessage('')
 			setCheckbox(false)
+			startedAt.current = Date.now()
 		} catch (err: any) {
 			setFormError(
 				err?.message ||
@@ -142,6 +199,29 @@ export const Form = ({ title }: Props) => {
 			noValidate
 		>
 			<Title title={formTitle} />
+
+			{/* honeypot — приховане поле */}
+			<div
+				style={{
+					position: 'absolute',
+					left: '-9999px',
+					width: 0,
+					height: 0,
+					overflow: 'hidden'
+				}}
+				aria-hidden
+			>
+				<label>
+					Website
+					<input
+						name='website'
+						autoComplete='off'
+						tabIndex={-1}
+						value={hp}
+						onChange={e => setHp(e.target.value)}
+					/>
+				</label>
+			</div>
 
 			<div className='fields'>
 				<div className='fields-group'>
@@ -225,29 +305,32 @@ export const Form = ({ title }: Props) => {
 			<Button
 				type='submit'
 				loading={loading}
-				disabled={!recaptchaReady || loading}
+				disabled={loading || (RECAPTCHA_SITE_KEY ? !recaptchaReady : false)}
 				labelKey='Button.get_request'
 			/>
-			{/* Вимога Google: у місці, де працює reCAPTCHA, має бути disclosure */}
-			<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-				This site is protected by reCAPTCHA and the Google{' '}
-				<a
-					href='https://policies.google.com/privacy'
-					target='_blank'
-					rel='noreferrer'
-				>
-					Privacy Policy
-				</a>{' '}
-				and{' '}
-				<a
-					href='https://policies.google.com/terms'
-					target='_blank'
-					rel='noreferrer'
-				>
-					Terms of Service
-				</a>{' '}
-				apply.
-			</small>
+
+			{/* Disclosure для v3 (показуємо лише якщо є site key) */}
+			{RECAPTCHA_SITE_KEY && (
+				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
+					This site is protected by reCAPTCHA and the Google{' '}
+					<a
+						href='https://policies.google.com/privacy'
+						target='_blank'
+						rel='noreferrer'
+					>
+						Privacy Policy
+					</a>{' '}
+					and{' '}
+					<a
+						href='https://policies.google.com/terms'
+						target='_blank'
+						rel='noreferrer'
+					>
+						Terms of Service
+					</a>{' '}
+					apply.
+				</small>
+			)}
 		</StyledForm>
 	)
 }
