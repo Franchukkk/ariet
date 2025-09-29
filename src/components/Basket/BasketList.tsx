@@ -16,7 +16,7 @@ function formatPrice(num: number) {
 
 export const BasketList = () => {
 	const { t } = useTranslation('common')
-	const router = useRouter() // ⬅️ додали
+	const router = useRouter()
 	const { basket, updateQuantity, discount, setDiscount, setPromoCode } =
 		useBasket()
 	const [promocode, setPromocode] = useState('')
@@ -108,11 +108,10 @@ export const BasketList = () => {
 		}
 	}
 
-	// ⬇️ новий обробник "Оформить заказ"
+	// "Оформить заказ" з редіректом на /login, якщо немає refresh токена
 	const handleMakeOrder = () => {
 		if (isEmpty) return
 		const next = '/complete-contract'
-		// Вважаємо неавторизованим, якщо немає refresh токена
 		const refresh =
 			(typeof getRefreshToken === 'function' ? getRefreshToken() : null) ??
 			localStorage.getItem('refreshToken')
@@ -141,15 +140,25 @@ export const BasketList = () => {
 							</EmptyActions>
 						</EmptyCard>
 					) : (
-						basket.map((product, index) => (
-							<ProductCart
-								key={product.id}
-								product={product}
-								index={index}
-								quantity={product.quantity}
-								onQuantityChange={handleQuantityChange}
-							/>
-						))
+						basket.map((product, index) => {
+							// УНІКАЛЬНИЙ КЛЮЧ: id + variantId + socketCode (із запасним index)
+							const key = [
+								product.id,
+								product.variantId ?? 'novar',
+								(product as any).socketCode ?? 'nosocket',
+								index // страховка, якщо бек дозволяє дублікати однієї комбінації
+							].join('::')
+
+							return (
+								<ProductCart
+									key={key}
+									product={product}
+									index={index}
+									quantity={product.quantity}
+									onQuantityChange={handleQuantityChange}
+								/>
+							)
+						})
 					)}
 				</ul>
 

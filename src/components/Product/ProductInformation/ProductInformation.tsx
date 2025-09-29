@@ -119,7 +119,8 @@ export const ProductInformation = ({
 
 				const first = data.variants[0]
 				if (first) {
-					setSelectedVersionKey(getVersionKey(first))
+					const vk = getVersionKey(first)
+					setSelectedVersionKey(vk)
 					setSelectedSocketCode(first.socket?.code ?? null)
 				}
 			} catch {
@@ -144,7 +145,7 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng, id])
 
-	// безпечні значення (щоб не міняти порядок хуків)
+	// безпечні значення
 	const variants = productInfo?.variants ?? []
 	const separatedName = (productInfo?.name ?? '').split(' ').filter(Boolean)
 
@@ -158,36 +159,59 @@ export const ProductInformation = ({
 		return Array.from(map, ([key, { display }]) => ({ key, display }))
 	}, [variants])
 
-	const uniqueSockets = useMemo(() => {
+	// обрана версія (ключ)
+	const activeVersionKey = useMemo(
+		() =>
+			selectedVersionKey ?? (variants[0] ? getVersionKey(variants[0]) : null),
+		[selectedVersionKey, variants]
+	)
+
+	// розетки ТІЛЬКИ для обраної версії
+	const socketsForActiveVersion = useMemo(() => {
+		if (!activeVersionKey) return []
 		const map = new Map<string, string>()
 		for (const v of variants) {
+			if (getVersionKey(v) !== activeVersionKey) continue
 			if (v.socket?.code) map.set(v.socket.code, v.socket.name || v.socket.code)
 		}
 		return Array.from(map, ([code, display]) => ({ code, display }))
-	}, [variants])
+	}, [variants, activeVersionKey])
 
-	// ВАРІАНТ для відображення (залежить тільки від версії)
+	// якщо при зміні версії поточна розетка недоступна — обрати першу доступну
+	useEffect(() => {
+		if (!socketsForActiveVersion.length) {
+			setSelectedSocketCode(null)
+			return
+		}
+		const exists = socketsForActiveVersion.some(
+			s => s.code === selectedSocketCode
+		)
+		if (!exists) setSelectedSocketCode(socketsForActiveVersion[0].code)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeVersionKey, socketsForActiveVersion])
+
+	// ВАРІАНТ для відображення (опис/характеристики/ціна) — береться з першого варіанта обраної версії
 	const displayVariant = useMemo(() => {
-		if (!variants.length) return null
-		const vk = selectedVersionKey ?? getVersionKey(variants[0])
-		return variants.find(v => getVersionKey(v) === vk) ?? variants[0]
-	}, [variants, selectedVersionKey])
+		if (!variants.length || !activeVersionKey) return null
+		return variants.find(v => getVersionKey(v) === activeVersionKey) ?? null
+	}, [variants, activeVersionKey])
 
 	// КОМБІНАЦІЯ для покупки (версія + розетка)
 	const combinationVariant = useMemo(() => {
-		if (!displayVariant || !selectedSocketCode) return null
+		if (!variants.length || !activeVersionKey || !selectedSocketCode)
+			return null
 		return (
 			variants.find(
 				v =>
-					getVersionKey(v) === getVersionKey(displayVariant) &&
+					getVersionKey(v) === activeVersionKey &&
 					v.socket?.code === selectedSocketCode
 			) ?? null
 		)
-	}, [variants, displayVariant, selectedSocketCode])
+	}, [variants, activeVersionKey, selectedSocketCode])
 
 	const canBuy = !!combinationVariant
 
-	// характеристики/опис/ціна — від displayVariant (від обраної версії)
+	// характеристики/опис/ціна — від displayVariant (залежно від версії)
 	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)
@@ -336,21 +360,21 @@ export const ProductInformation = ({
 											name='version'
 											className='version-radio'
 											checked={selectedVersionKey === key}
-											onChange={e => setSelectedVersionKey(e.target.value)} // не чіпаємо розетку
+											onChange={e => setSelectedVersionKey(e.target.value)} // НЕ чіпаємо розетку напряму
 										/>
 										<span className='truncate'>{display}</span>
 									</WrapperVersion>
 								))}
 							</VersionList>
 
-							{/* Socket */}
-							{uniqueSockets.length > 0 && (
+							{/* Socket — тільки для обраної версії */}
+							{socketsForActiveVersion.length > 0 && (
 								<>
 									<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px] mt-[22px]'>
 										{t('ProductItem.socket')}
 									</CenterText>
 									<SocketList>
-										{uniqueSockets.map(({ code, display }) => (
+										{socketsForActiveVersion.map(({ code, display }) => (
 											<WrapperVersion
 												key={`socket-${code}`}
 												className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
@@ -367,7 +391,7 @@ export const ProductInformation = ({
 													name='socket'
 													className='version-radio'
 													checked={selectedSocketCode === code}
-													onChange={e => setSelectedSocketCode(e.target.value)} // версію не змінюємо
+													onChange={e => setSelectedSocketCode(e.target.value)}
 												/>
 												<span className='truncate'>{display}</span>
 											</WrapperVersion>

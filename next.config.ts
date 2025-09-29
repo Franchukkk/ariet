@@ -4,7 +4,6 @@ import type { RuleSetRule } from 'webpack'
 const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	compiler: { styledComponents: true },
-
 	typescript: { ignoreBuildErrors: true },
 	eslint: { ignoreDuringBuilds: true },
 	images: {

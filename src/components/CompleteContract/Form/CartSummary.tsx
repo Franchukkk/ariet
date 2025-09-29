@@ -26,17 +26,27 @@ export const CartSummary = () => {
 		[billingZone?.markup_percent]
 	)
 
-	// Перерахунок кожного айтема з урахуванням націнки (без доставки як окремої позиції)
+	// Перерахунок кожного айтема з урахуванням націнки
 	const lines = useMemo(() => {
-		return basket.map(p => {
+		return basket.map((p, idx) => {
 			const qty = p.quantity || 1
 			const base = p.price || 0
 			const priceWithMarkup = base * (1 + zoneMarkupPct / 100)
 			const lineTotal = priceWithMarkup * qty
+
+			// УНІКАЛЬНИЙ ключ для рендера
+			const lineKey = [
+				p.id,
+				(p as any).variantId ?? 'novar',
+				(p as any).socketCode ?? 'nosocket',
+				idx // страховка, якщо одна й та сама комбінація додана кілька разів
+			].join('::')
+
 			return {
+				key: lineKey,
 				id: p.id,
 				name: p.name,
-				description: p.description,
+				description: (p as any).description || '',
 				photo: typeof p.photo === 'string' ? p.photo : p.photo?.src,
 				qty,
 				unit: priceWithMarkup,
@@ -60,7 +70,7 @@ export const CartSummary = () => {
 	return (
 		<Container>
 			{lines.map(product => (
-				<div key={product.id}>
+				<div key={product.key}>
 					<ProductItem>
 						<ImageWrapper>
 							{product.photo ? (

@@ -5,7 +5,7 @@ import { ClientComponent } from '@/components/RegistrationForm/RegistrationClien
 export const dynamic = 'force-dynamic'
 export default function Page() {
 	return (
-		<Suspense fallback={<div>Loading...</div>}>
+		<Suspense>
 			<ClientComponent />
 		</Suspense>
 	)

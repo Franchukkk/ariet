@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
+import { useRecaptchaBadgeVisible } from '@/hooks/useRecaptchaBadgeVisible'
 import { useRecaptchaV3 } from '@/hooks/useRecaptchaV3'
 
 import { Checkbox } from '../Checkbox'
@@ -19,6 +20,8 @@ interface Props {
 const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
 
 export const Form = ({ title }: Props) => {
+	useRecaptchaBadgeVisible()
+
 	const { t } = useTranslation('common')
 	const formRef = useRef<HTMLFormElement | null>(null)
 
@@ -37,7 +40,6 @@ export const Form = ({ title }: Props) => {
 	const [formError, setFormError] = useState<string | null>(null)
 	const [formOk, setFormOk] = useState<string | null>(null)
 
-	// підвантажуємо капчу тільки коли форма з’явиться у в’юпорті
 	const [captchaEnabled, setCaptchaEnabled] = useState(false)
 	useEffect(() => {
 		const el = formRef.current
@@ -55,6 +57,8 @@ export const Form = ({ title }: Props) => {
 		return () => io.disconnect()
 	}, [])
 
+	// ВАЖЛИВО: лише один виклик хука reCAPTCHA
+	// (хук має підтримувати другий аргумент enabled; якщо ні — просто приберіть його)
 	const { ready: recaptchaReady, execute } = useRecaptchaV3(
 		RECAPTCHA_SITE_KEY,
 		captchaEnabled
@@ -133,7 +137,7 @@ export const Form = ({ title }: Props) => {
 			setLoading(true)
 
 			let captcha_token: string | undefined
-			if (RECAPTCHA_SITE_KEY && recaptchaReady) {
+			if (RECAPTCHA_SITE_KEY && captchaEnabled && recaptchaReady) {
 				try {
 					captcha_token = await execute('feedback')
 				} catch (err) {
@@ -164,6 +168,7 @@ export const Form = ({ title }: Props) => {
 			}
 
 			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
+			// очистити форму
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -175,13 +180,11 @@ export const Form = ({ title }: Props) => {
 			setMessage('')
 			setCheckbox(false)
 		} catch (err: any) {
-			const msg = err?.message?.includes('HTTP 5')
-				? t('Form.server_error') ||
-					'Сервер тимчасово недоступний. Спробуйте пізніше або напишіть нам на info@example.com.'
-				: err?.message ||
+			setFormError(
+				err?.message ||
 					t('Form.error_generic') ||
 					'Сталася помилка. Спробуйте ще раз.'
-			setFormError(msg)
+			)
 		} finally {
 			setLoading(false)
 		}
@@ -195,6 +198,7 @@ export const Form = ({ title }: Props) => {
 			noValidate
 		>
 			<Title title={formTitle} />
+
 			<div className='fields'>
 				<div className='fields-group'>
 					<Input
@@ -277,7 +281,7 @@ export const Form = ({ title }: Props) => {
 			<Button
 				type='submit'
 				loading={loading}
-				disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaReady)}
+				disabled={loading || (captchaEnabled && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
 
