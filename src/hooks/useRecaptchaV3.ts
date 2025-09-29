@@ -1,9 +1,6 @@
-// src/hooks/useRecaptchaV3.ts
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-
-// src/hooks/useRecaptchaV3.ts
 
 declare global {
 	interface Window {
@@ -14,10 +11,6 @@ declare global {
 	}
 }
 
-/**
- * Ледаче підвантаження reCAPTCHA v3: вантажимо лише якщо enabled=true (тобто є siteKey),
- * та лише на сторінці з формою.
- */
 export function useRecaptchaV3(siteKey?: string, enabled: boolean = true) {
 	const [ready, setReady] = useState(false)
 
@@ -25,28 +18,27 @@ export function useRecaptchaV3(siteKey?: string, enabled: boolean = true) {
 		if (typeof window === 'undefined') return
 		if (!enabled || !siteKey) return
 
-		// вже є
+		const markReady = () => window.grecaptcha?.ready(() => setReady(true))
+
 		if (window.grecaptcha) {
-			window.grecaptcha.ready(() => setReady(true))
+			markReady()
 			return
 		}
 
-		// скрипт ще не вставляли
-		const existing = document.querySelector(
-			`script[src="https://www.google.com/recaptcha/api.js?render=${siteKey}"]`
+		const src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
+		const existing = document.querySelector<HTMLScriptElement>(
+			`script[src="${src}"]`
 		)
 		if (existing) {
-			existing.addEventListener('load', () =>
-				window.grecaptcha?.ready(() => setReady(true))
-			)
+			existing.addEventListener('load', markReady)
 			return
 		}
 
 		const s = document.createElement('script')
-		s.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
+		s.src = src
 		s.async = true
 		s.defer = true
-		s.onload = () => window.grecaptcha?.ready(() => setReady(true))
+		s.onload = markReady
 		s.onerror = () => console.error('[reCAPTCHA] failed to load api.js')
 		document.head.appendChild(s)
 	}, [siteKey, enabled])

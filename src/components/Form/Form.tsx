@@ -16,14 +16,14 @@ interface Props {
 	title?: string
 }
 
-// БЕРЕМО ЛИШЕ З ПУБЛІЧНОГО ENV (щоб не хардкодити):
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as
+	| string
+	| undefined
 
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
 	const formRef = useRef<HTMLFormElement | null>(null)
 
-	// поля
 	const [name, setName] = useState('')
 	const [position, setPosition] = useState('')
 	const [phone, setPhone] = useState('')
@@ -35,17 +35,11 @@ export const Form = ({ title }: Props) => {
 	const [message, setMessage] = useState('')
 	const [checkbox, setCheckbox] = useState(false)
 
-	// soft-захист
-	const [hp, setHp] = useState('') // honeypot
-	const startedAt = useRef<number>(Date.now()) // мін. час
-	const keyLS = 'form_rate_cnt'
-	const maxPerMinute = 5
-
 	const [loading, setLoading] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [formOk, setFormOk] = useState<string | null>(null)
 
-	// капчу вмикаємо тільки коли форма у в'юпорті
+	// підвантажуємо капчу тільки коли форма з’явиться у в’юпорті
 	const [captchaEnabled, setCaptchaEnabled] = useState(false)
 	useEffect(() => {
 		const el = formRef.current
@@ -70,24 +64,40 @@ export const Form = ({ title }: Props) => {
 
 	const formTitle = (title ?? t('Form.fill_form')).replace('\\n', '\n')
 
-	const overLocalRate = () => {
-		try {
-			const now = Date.now()
-			const val = localStorage.getItem(keyLS)
-			const obj = val
-				? (JSON.parse(val) as { t: number; c: number })
-				: { t: now, c: 0 }
-			// обнуляємо лічильник щохвилини
-			if (now - obj.t > 60_000) {
-				obj.t = now
-				obj.c = 0
-			}
-			obj.c += 1
-			localStorage.setItem(keyLS, JSON.stringify(obj))
-			return obj.c > maxPerMinute
-		} catch {
-			return false
-		}
+	const getCookie = (name: string) => {
+		if (typeof document === 'undefined') return ''
+		const m = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'))
+		return m ? decodeURIComponent(m[2]) : ''
+	}
+
+	async function postJSON(url: string, payload: any) {
+		const csrftoken = getCookie('csrftoken')
+		return fetch(url, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
+			},
+			body: JSON.stringify(payload)
+		})
+	}
+
+	async function postFormData(url: string, payload: Record<string, any>) {
+		const csrftoken = getCookie('csrftoken')
+		const fd = new FormData()
+		Object.entries(payload).forEach(([k, v]) => {
+			if (v !== undefined && v !== null)
+				fd.append(k, typeof v === 'string' ? v : String(v))
+		})
+		return fetch(url, {
+			method: 'POST',
+			credentials: 'include',
+			headers: {
+				...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
+			},
+			body: fd
+		})
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -97,70 +107,61 @@ export const Form = ({ title }: Props) => {
 		setFormError(null)
 		setFormOk(null)
 
-		// soft-вихідні перевірки
-		if (hp) {
-			setFormError('Bot detected')
-			return
-		} // honeypot
-		if (Date.now() - startedAt.current < 1500) {
-			// мінімальний час
-			setFormError(t('Form.too_fast') || 'Занадто швидко. Спробуйте ще раз.')
-			return
-		}
-		if (overLocalRate()) {
-			setFormError(t('Form.rate_limit') || 'Забагато спроб. Спробуйте пізніше.')
-			return
-		}
-
 		const _name = name.trim()
 		const _email = email.trim()
 		const _message = message.trim()
 		if (!_name || !_email || !_message) {
 			setFormError(
-				t('Form.required_fields') || 'Заповніть Імʼя, Email та Повідомлення.'
+				t('Form.required_fields') ||
+					'Заповніть, будь ласка, Імʼя, Email і Повідомлення.'
 			)
 			return
+		}
+
+		const basePayload = {
+			name: _name,
+			position: position.trim(),
+			phone: phone.trim(),
+			email: _email,
+			address: address.trim(),
+			postal_code: postalCode.trim(),
+			city: city.trim(),
+			country: country.trim(),
+			message: _message,
+			i_am_company_representative: checkbox
 		}
 
 		try {
 			setLoading(true)
 
-			// токен беремо лише якщо реально можна виконати капчу
+			// 1) спроба з капчею, якщо вона доступна
 			let captcha_token: string | undefined
-			if (recaptchaReady && RECAPTCHA_SITE_KEY) {
+			if (RECAPTCHA_SITE_KEY && recaptchaReady) {
 				try {
 					captcha_token = await execute('feedback')
 				} catch (err) {
-					// якщо скрипт не завантажився / ключ не валідний — просто йдемо без токена
 					console.warn('[reCAPTCHA] execute failed:', err)
 				}
 			}
 
-			const payload = {
-				name: _name,
-				position: position.trim(),
-				phone: phone.trim(),
-				email: _email,
-				address: address.trim(),
-				postal_code: postalCode.trim(),
-				city: city.trim(),
-				country: country.trim(),
-				message: _message,
-				i_am_company_representative: checkbox,
-				captcha_token, // буде undefined, якщо капча недоступна
-				soft_proof: {
-					// передамо на бекенд (якщо він щось логить)
-					dwell_ms: Date.now() - startedAt.current,
-					had_honeypot: !!hp
-				}
+			const url = '/api/feedback/create/'
+			let res = await postJSON(url, { ...basePayload, captcha_token })
+
+			// 2) якщо бекенд впав — ще раз без капчі
+			if (res.status >= 500) {
+				console.warn(
+					'[feedback] 5xx with captcha, retrying without captcha_token (JSON)'
+				)
+				res = await postJSON(url, basePayload)
 			}
 
-			// ⚠️ ваш endpoint — не змінюю
-			const res = await fetch('/api/feedback/create/', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload)
-			})
+			// 3) якщо знову 5xx — пробуємо FormData (деякі бекенди чекають не JSON)
+			if (res.status >= 500) {
+				console.warn(
+					'[feedback] 5xx with JSON, retrying as FormData (no captcha)'
+				)
+				res = await postFormData(url, basePayload)
+			}
 
 			if (!res.ok) {
 				const txt = await res.text().catch(() => '')
@@ -168,7 +169,6 @@ export const Form = ({ title }: Props) => {
 			}
 
 			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
-			// очистка
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -179,13 +179,14 @@ export const Form = ({ title }: Props) => {
 			setCountry('')
 			setMessage('')
 			setCheckbox(false)
-			startedAt.current = Date.now()
 		} catch (err: any) {
-			setFormError(
-				err?.message ||
+			const msg = err?.message?.includes('HTTP 5')
+				? t('Form.server_error') ||
+					'Сервер тимчасово недоступний. Спробуйте пізніше або напишіть нам на info@example.com.'
+				: err?.message ||
 					t('Form.error_generic') ||
 					'Сталася помилка. Спробуйте ще раз.'
-			)
+			setFormError(msg)
 		} finally {
 			setLoading(false)
 		}
@@ -199,30 +200,6 @@ export const Form = ({ title }: Props) => {
 			noValidate
 		>
 			<Title title={formTitle} />
-
-			{/* honeypot — приховане поле */}
-			<div
-				style={{
-					position: 'absolute',
-					left: '-9999px',
-					width: 0,
-					height: 0,
-					overflow: 'hidden'
-				}}
-				aria-hidden
-			>
-				<label>
-					Website
-					<input
-						name='website'
-						autoComplete='off'
-						tabIndex={-1}
-						value={hp}
-						onChange={e => setHp(e.target.value)}
-					/>
-				</label>
-			</div>
-
 			<div className='fields'>
 				<div className='fields-group'>
 					<Input
@@ -305,11 +282,12 @@ export const Form = ({ title }: Props) => {
 			<Button
 				type='submit'
 				loading={loading}
-				disabled={loading || (RECAPTCHA_SITE_KEY ? !recaptchaReady : false)}
+				// якщо є site key — блокуємо доки рекапча не готова; якщо site key немає — не блокуємо
+				disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
 
-			{/* Disclosure для v3 (показуємо лише якщо є site key) */}
+			{/* Disclosure для v3 */}
 			{RECAPTCHA_SITE_KEY && (
 				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
 					This site is protected by reCAPTCHA and the Google{' '}
