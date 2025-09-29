@@ -1,23 +1,27 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { ProductCart } from './ProductCart'
 import { useBasket } from '@/context/BasketContext'
+import { getRefreshToken } from '@/helpers/auth'
 
 function formatPrice(num: number) {
-	return Number(num).toLocaleString('en-US').replace(',', ' ')
+	return Number(num).toLocaleString('en-US').replaceAll(',', ' ')
 }
 
 export const BasketList = () => {
 	const { t } = useTranslation('common')
+	const router = useRouter() // ⬅️ додали
 	const { basket, updateQuantity, discount, setDiscount, setPromoCode } =
 		useBasket()
 	const [promocode, setPromocode] = useState('')
 	const [error, setError] = useState<string | null>(null)
+	const [loading, setLoading] = useState(false)
 
 	const isEmpty = basket.length === 0
 
@@ -31,30 +35,92 @@ export const BasketList = () => {
 	)
 	const total = discount > 0 ? subtotal - (subtotal * discount) / 100 : subtotal
 
+	const PROMO_ENDPOINTS = [
+		'https://rpktask.sytes.net/api/promocodes/check',
+		'https://rpktask.sytes.net/api/promocodes/check/'
+	]
+
+	async function requestPromo(code: string) {
+		for (const base of PROMO_ENDPOINTS) {
+			try {
+				const url = `${base}?code=${encodeURIComponent(code)}`
+				const res = await fetch(url, { method: 'GET' })
+				let body: any = null
+				try {
+					body = await res.json()
+				} catch {}
+				return { url, status: res.status, ok: res.ok, body }
+			} catch {
+				continue
+			}
+		}
+		return { url: '', status: 0, ok: false, body: null as any }
+	}
+
 	const applyPromocode = async () => {
+		if (isEmpty) return
+		setError(null)
+		setLoading(true)
+
 		try {
-			setError(null)
-			if (!promocode.trim()) {
-				setError(t('basket.promo_code'))
+			const code = promocode.trim()
+			if (!code) {
+				setError(t('basket.enter_promo') || t('basket.promo_code'))
 				return
 			}
-			const res = await fetch(
-				`https://rpktask.sytes.net/api/promocodes/check/?code=${encodeURIComponent(promocode)}`,
-				{ method: 'GET' }
-			)
-			if (!res.ok) throw new Error('Invalid promocode')
-			const data = await res.json()
-			if (data.active) {
-				setDiscount(data.discount_percent)
-				setPromoCode(promocode)
+			const { status, ok, body } = await requestPromo(code)
+			if (!ok) {
+				if (status === 404) {
+					setDiscount(0)
+					setPromoCode(null)
+					setError(t('basket.promo_invalid') || 'Invalid promo code')
+					return
+				}
+				setDiscount(0)
+				setPromoCode(null)
+				setError(
+					body?.detail ||
+						body?.message ||
+						t('basket.promo_check_failed') ||
+						'Failed to validate promo code'
+				)
+				return
+			}
+			if (body?.active && typeof body?.discount_percent === 'number') {
+				setDiscount(body.discount_percent)
+				setPromoCode(code)
+				setError(null)
 			} else {
 				setDiscount(0)
 				setPromoCode(null)
+				setError(
+					t('basket.promo_inactive') || 'Promo code is inactive or expired'
+				)
 			}
 		} catch {
 			setDiscount(0)
 			setPromoCode(null)
+			setError(
+				t('basket.promo_check_failed') || 'Failed to validate promo code'
+			)
+		} finally {
+			setLoading(false)
 		}
+	}
+
+	// ⬇️ новий обробник "Оформить заказ"
+	const handleMakeOrder = () => {
+		if (isEmpty) return
+		const next = '/complete-contract'
+		// Вважаємо неавторизованим, якщо немає refresh токена
+		const refresh =
+			(typeof getRefreshToken === 'function' ? getRefreshToken() : null) ??
+			localStorage.getItem('refreshToken')
+		if (!refresh) {
+			router.push(`/login?next=${encodeURIComponent(next)}`)
+			return
+		}
+		router.push(next)
 	}
 
 	return (
@@ -104,23 +170,28 @@ export const BasketList = () => {
 						</p>
 					)}
 
-					{error && <p className='text-red-500 mb-[10px]'>{error}</p>}
+					{error && (
+						<p
+							className='text-red-500 mb-[10px]'
+							aria-live='polite'
+						>
+							{error}
+						</p>
+					)}
 
-					<div
-						className={`flex flex-row justify-between mb-[30px] rounded-[61px] h-[58px] items-center ${
+					{/* КНОПКА ОФОРМЛЕННЯ З ЗАХИСТОМ */}
+					<button
+						type='button'
+						onClick={handleMakeOrder}
+						disabled={isEmpty}
+						className={`w-full mb-[30px] rounded-[61px] h-[58px] font-bold text-[15px] text-center ${
 							isEmpty
-								? 'opacity-60 pointer-events-none bg-[#2a2a2a]'
-								: 'bg-[#4BC785]'
+								? 'opacity-60 pointer-events-none bg-[#2a2a2a] text-[#888]'
+								: 'bg-[#4BC785] text-black hover:opacity-90'
 						}`}
 					>
-						<Link
-							href={isEmpty ? '#' : '/complete-contract'}
-							aria-disabled={isEmpty}
-							className='w-[100%] font-bold text-[15px] text-center text-[#000000] cursor-pointer'
-						>
-							{t('Basket.make_order')}
-						</Link>
-					</div>
+						{t('Basket.make_order')}
+					</button>
 
 					<div className='flex flex-row justify-between'>
 						<div className='flex flex-col relative w-[60%]'>
@@ -131,6 +202,7 @@ export const BasketList = () => {
 								name='promocode'
 								type='text'
 								onChange={e => setPromocode(e.target.value)}
+								onKeyDown={e => e.key === 'Enter' && applyPromocode()}
 								disabled={isEmpty}
 							/>
 							<StyledLabel>{t('Basket.promo_code')}</StyledLabel>
@@ -138,14 +210,17 @@ export const BasketList = () => {
 
 						<button
 							onClick={applyPromocode}
-							disabled={isEmpty}
+							disabled={isEmpty || loading}
+							aria-busy={loading}
 							className={`w-[145px] h-[58px] text-bold rounded-[61px] text-[15px] text-center cursor-pointer border-[1px] ${
-								isEmpty
+								isEmpty || loading
 									? 'text-[#888] border-[#333] pointer-events-none'
 									: 'text-[#ffffff] border-[#4BC785] hover:bg-[#4BC785] hover:text-[#000]'
 							}`}
 						>
-							{t('Basket.add_promo_code')}
+							{loading
+								? t('basket.applying') || 'Applying...'
+								: t('Basket.add_promo_code')}
 						</button>
 					</div>
 				</div>

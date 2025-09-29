@@ -1,19 +1,43 @@
 'use client'
 
 import { useTranslation } from 'next-i18next'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import styled from 'styled-components'
 
 import { useBasket } from '@/context/BasketContext'
 import { useOrder } from '@/context/OrderContext'
+import { getRefreshToken } from '@/helpers/auth'
 
 export const Button = () => {
 	const { t } = useTranslation()
 	const router = useRouter()
+	const pathname = usePathname()
+	const searchParams = useSearchParams()
 	const { submitOrder, loading } = useOrder()
 	const { clearBasket } = useBasket()
 
+	const isAuthed = (): boolean => {
+		try {
+			const r =
+				(typeof getRefreshToken === 'function' ? getRefreshToken() : null) ??
+				(typeof window !== 'undefined'
+					? localStorage.getItem('refreshToken')
+					: null)
+			return !!r
+		} catch {
+			return false
+		}
+	}
+
 	const handleClick = async () => {
+		if (!isAuthed()) {
+			const next =
+				(pathname || '/complete-contract') +
+				(searchParams?.toString() ? `?${searchParams.toString()}` : '')
+			router.push(`/login?next=${encodeURIComponent(next)}`)
+			return
+		}
+
 		const formEl = document.getElementById(
 			'order-form'
 		) as HTMLFormElement | null

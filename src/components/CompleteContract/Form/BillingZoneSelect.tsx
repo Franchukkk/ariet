@@ -1,13 +1,17 @@
 'use client'
 
-// ← додали
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { useOrder } from '@/context/OrderContext'
 
-type Zone = { id: number; name: string; code: string; markup_percent: string }
+type Zone = {
+	id: number
+	name: string
+	code: string
+	markup_percent: string | number
+}
 
 export function BillingZoneSelect({
 	name,
@@ -17,18 +21,14 @@ export function BillingZoneSelect({
 	label: string
 }) {
 	const { t } = useTranslation('common')
-	const { billingZone, setBillingZone } = useOrder() // ← контекст
+	const { billingZone, setBillingZone } = useOrder()
 	const [zones, setZones] = useState<Zone[]>([])
 	const [open, setOpen] = useState(false)
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [value, setValue] = useState('')
 
-	// якщо зона вже вибрана — показати її в інпуті
-	useEffect(() => {
-		if (billingZone) setValue(billingZone.name)
-	}, [billingZone])
-
+	// Завантаження зон
 	useEffect(() => {
 		let alive = true
 		const token =
@@ -60,13 +60,20 @@ export function BillingZoneSelect({
 							id: z?.id,
 							name: String(z?.name ?? ''),
 							code: String(z?.code ?? ''),
-							markup_percent: String(z?.markup_percent ?? '')
+							markup_percent: z?.markup_percent ?? 0
 						}))
 					)
 					if (!json?.next) break
 					page++
 				}
-				if (alive) setZones(acc)
+				if (!alive) return
+				setZones(acc)
+
+				// Автовибір першого елемента, якщо в контексті нічого не вибрано
+				if (acc.length > 0 && !billingZone) {
+					setBillingZone(acc[0])
+					setValue(acc[0].name)
+				}
 			} catch (e: any) {
 				if (alive) setError(e?.message || 'Failed to load')
 			} finally {
@@ -77,24 +84,21 @@ export function BillingZoneSelect({
 		return () => {
 			alive = false
 		}
-	}, [])
+	}, []) // eslint-disable-line
 
-	const filtered = useMemo(() => {
-		if (!value.trim()) return zones
-		const q = value.toLowerCase()
-		return zones.filter(
-			z => z.name.toLowerCase().includes(q) || z.code.toLowerCase().includes(q)
-		)
-	}, [zones, value])
+	// Синхронізація відображеного значення з контекстом
+	useEffect(() => {
+		if (billingZone) setValue(billingZone.name)
+	}, [billingZone])
 
 	const picked = useMemo(
-		() => zones.find(z => z.name === value || z.code === value),
+		() => zones.find(z => z.name === value),
 		[zones, value]
 	)
 
 	const onPick = (z: Zone) => {
 		setValue(z.name)
-		setBillingZone(z) // ← запис у контекст
+		setBillingZone(z) // запис у контекст
 		setOpen(false)
 	}
 
@@ -112,20 +116,19 @@ export function BillingZoneSelect({
 					id={name}
 					name={name}
 					value={value}
-					onChange={e => {
-						setValue(e.target.value)
-						setOpen(true)
-					}}
+					readOnly
+					onClick={() => setOpen(v => !v)}
 					onFocus={() => setOpen(true)}
 					onBlur={() => setTimeout(() => setOpen(false), 120)}
 					placeholder={label}
 					autoComplete='off'
-					aria-autocomplete='list'
+					role='combobox'
+					aria-autocomplete='none'
 					aria-expanded={open}
 					aria-controls={`${name}-menu`}
 				/>
 
-				{/* якщо вам треба відправити саме id у форму разом з ім'ям */}
+				{/* якщо потрібно відправити id у форму */}
 				<input
 					type='hidden'
 					name={`${name}_id`}
@@ -151,11 +154,11 @@ export function BillingZoneSelect({
 						role='listbox'
 					>
 						{loading && <MenuEmpty>Loading…</MenuEmpty>}
-						{!loading && filtered.length === 0 && (
+						{!loading && zones.length === 0 && (
 							<MenuEmpty>{t('BillingZoneSelect.Nothing_found')}</MenuEmpty>
 						)}
 						{!loading &&
-							filtered.map(z => (
+							zones.map(z => (
 								<MenuItem
 									key={z.id}
 									role='option'
@@ -164,9 +167,6 @@ export function BillingZoneSelect({
 									onClick={() => onPick(z)}
 								>
 									<div className='title'>{z.name}</div>
-									<div className='meta'>
-										<span className='pill'>markup: {z.markup_percent}%</span>
-									</div>
 								</MenuItem>
 							))}
 					</Menu>
@@ -178,7 +178,7 @@ export function BillingZoneSelect({
 	)
 }
 
-/* стилі як у вас — без змін */
+/* стилі */
 
 const Field = styled.div`
 	display: flex;
@@ -211,6 +211,9 @@ const InputCore = styled.input`
 	border: 1px solid #333333;
 	border-radius: 8px;
 	outline: none;
+	cursor: pointer;
+	user-select: none;
+
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
@@ -269,19 +272,6 @@ const MenuItem = styled.li`
 		color: #fff;
 		font-size: 14px;
 		font-weight: 600;
-	}
-	.meta {
-		display: flex;
-		gap: 6px;
-		.pill {
-			font-size: 12px;
-			color: #d1d5db;
-			background: #0b0b0b;
-			border: 1px solid #333;
-			border-radius: 999px;
-			padding: 2px 8px;
-			white-space: nowrap;
-		}
 	}
 `
 

@@ -137,6 +137,7 @@
 		"other_models": "Other Models"
 	},
 	"list": {
+		"Nothing_found": "Nothing found",
 		"advantages": {
 			"peace_confidence": {
 				"title": "Calmness and Confidence",
@@ -709,6 +710,8 @@
 		"add_promo_code": "Add"
 	},
 	"basket": {
+		"promo_invalid": "Недействительный промокод",
+		"promo_inactive": "Promo code is inactive or expired",
 		"empty_text": "Your cart is empty. Add items to continue.",
 		"go_to_catalog": "Go to catalog.",
 		"basket_title": "Cart is empty.",

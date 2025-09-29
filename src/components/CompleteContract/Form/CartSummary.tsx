@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -20,54 +21,65 @@ export const CartSummary = () => {
 		}
 	}
 
-	// сума товарів
-	const subtotal = basket.reduce(
-		(acc, p) => acc + (p.price || 0) * (p.quantity || 1),
-		0
+	const zoneMarkupPct = useMemo(
+		() => Number(billingZone?.markup_percent ?? 0) || 0,
+		[billingZone?.markup_percent]
 	)
 
-	// знижка промокоду
+	// Перерахунок кожного айтема з урахуванням націнки (без доставки як окремої позиції)
+	const lines = useMemo(() => {
+		return basket.map(p => {
+			const qty = p.quantity || 1
+			const base = p.price || 0
+			const priceWithMarkup = base * (1 + zoneMarkupPct / 100)
+			const lineTotal = priceWithMarkup * qty
+			return {
+				id: p.id,
+				name: p.name,
+				description: p.description,
+				photo: typeof p.photo === 'string' ? p.photo : p.photo?.src,
+				qty,
+				unit: priceWithMarkup,
+				total: lineTotal
+			}
+		})
+	}, [basket, zoneMarkupPct])
+
+	const subtotal = useMemo(
+		() => lines.reduce((acc, l) => acc + l.total, 0),
+		[lines]
+	)
+
 	const discountPct = typeof discount === 'number' ? discount : 0
 	const discountAmount = discountPct > 0 ? (subtotal * discountPct) / 100 : 0
-	const discountedSubtotal = subtotal - discountAmount
-
-	// доставка = відсоток від (discountedSubtotal) згідно білінг-зони
-	const zoneMarkupPct = Number(billingZone?.markup_percent ?? 0) || 0
-
-	// якщо хочете від суми ДО знижки — підставте subtotal замість discountedSubtotal
-	const deliveryPriceRaw = discountedSubtotal * (zoneMarkupPct / 100)
-	const deliveryPrice = Math.max(0, Math.round(deliveryPriceRaw)) // без від’ємних, округлення
-
-	const finalTotal = discountedSubtotal + deliveryPrice
+	const finalTotal = subtotal - discountAmount
 
 	const fmt = (n: number) =>
 		n.toLocaleString(undefined, { maximumFractionDigits: 2 })
 
 	return (
 		<Container>
-			{basket.map(product => (
+			{lines.map(product => (
 				<div key={product.id}>
 					<ProductItem>
 						<ImageWrapper>
-							<Image
-								src={
-									typeof product.photo === 'string'
-										? product.photo
-										: product.photo?.src
-								}
-								alt={product.name}
-								width={70}
-								height={70}
-							/>
+							{product.photo ? (
+								<Image
+									src={product.photo}
+									alt={product.name}
+									width={70}
+									height={70}
+								/>
+							) : (
+								<div style={{ width: 70, height: 70 }} />
+							)}
 						</ImageWrapper>
 						<Details>
 							<Category>{product.description}</Category>
 							<Name>{product.name}</Name>
 							<Info>
-								<span>{product.quantity}x</span>
-								<Price>
-									{fmt((product.price || 0) * (product.quantity || 1))} $
-								</Price>
+								<span>{product.qty}x</span>
+								<Price>{fmt(product.total)} $</Price>
 							</Info>
 						</Details>
 					</ProductItem>
@@ -75,22 +87,12 @@ export const CartSummary = () => {
 				</div>
 			))}
 
-			{discountPct > 0 && (
+			{discountAmount > 0 && (
 				<Row>
 					<Label>{t('complete_contract.cart.discount') || 'Discount'}</Label>
-					<Value>
-						-{fmt(discountAmount)} $ ({discountPct}%)
-					</Value>
+					<Value>-{fmt(discountAmount)} $</Value>
 				</Row>
 			)}
-
-			<Row>
-				<Label>{t('complete_contract.cart.delivery')}</Label>
-				<Value>
-					{fmt(deliveryPrice)} ${' '}
-					{zoneMarkupPct > 0 ? `(+${zoneMarkupPct}%)` : ''}
-				</Value>
-			</Row>
 
 			<Row>
 				<Label>{t('complete_contract.cart.total')}</Label>
@@ -102,14 +104,13 @@ export const CartSummary = () => {
 	)
 }
 
-/* ===== styles ===== */
-
 const Container = styled.div`
 	background: #1b1919;
 	color: white;
 	padding: 20px;
 	border-radius: 10px;
 	width: 100%;
+	height: 50%;
 	max-width: 440px;
 	display: flex;
 	flex-direction: column;

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { ModelCard } from '@/components/ModelCard/ModelCard'
@@ -33,6 +34,7 @@ const toAbs = (url?: string) => {
 }
 
 export const List = ({ activeCategory }: { activeCategory: string }) => {
+	const { t } = useTranslation('common')
 	const [products, setProducts] = useState<Product[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
@@ -87,9 +89,8 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 
 	return (
 		<StyledList>
-			{loading && <p>Завантаження...</p>}
 			{!loading && !error && products.length === 0 && (
-				<Info>Нічого не знайдено</Info>
+				<Info>{t('list.Nothing_found')}</Info>
 			)}
 			{error && <p style={{ color: 'red' }}>{error}</p>}
 

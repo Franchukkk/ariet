@@ -33,7 +33,6 @@ function SpecificationsInner() {
 	const [items, setItems] = useState<KeyFeature[]>([])
 	const [loading, setLoading] = useState(true)
 
-	// синхронізуємо i18n під URL (як у ProductInformation)
 	useEffect(() => {
 		;(async () => {
 			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
@@ -51,7 +50,6 @@ function SpecificationsInner() {
 		}
 		setLoading(true)
 
-		// ⚠️ тягнемо через локальний proxу + мова з URL
 		fetch(
 			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
 			{

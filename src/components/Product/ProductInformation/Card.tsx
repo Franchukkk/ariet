@@ -3,9 +3,9 @@
 import type { StaticImageData } from 'next/image'
 import styled from 'styled-components'
 
-import { Slide } from './Slide'
-import { Subtitle } from './Subtitle'
-import { Title } from './Title'
+import { Slide } from '@/components/Product/Specifications/List/Card/Slide'
+import { Subtitle } from '@/components/Product/Specifications/List/Card/Subtitle'
+import { Title } from '@/components/Product/Specifications/List/Card/Title'
 
 type ImgLike = string | StaticImageData
 
@@ -39,14 +39,7 @@ const StyledCard = styled.div<{ $photo: string }>`
 	background: url(${({ $photo }) => $photo}) center/cover no-repeat;
 	border-radius: 8px;
 	overflow: hidden;
-	&::after {
-		content: '';
-		position: absolute;
-		inset: 0;
 
-		background: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0) 80%);
-		pointer-events: none;
-	}
 	> * {
 		position: relative;
 		z-index: 1;

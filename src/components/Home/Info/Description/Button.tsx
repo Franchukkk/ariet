@@ -11,17 +11,15 @@ export const Button = () => {
 		router.push('/about')
 	}
 	return (
-		<StyledButton>
-			<ArrowSvg
-				aria-label='icon'
-				onClick={handleClick}
-			/>{' '}
+		<StyledButton onClick={handleClick}>
+			<ArrowSvg aria-label='icon' />
 			{t('Button.more_about_us')}
 		</StyledButton>
 	)
 }
 
 const StyledButton = styled.button`
+	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;

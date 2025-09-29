@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -15,13 +15,12 @@ import { Title } from './Title'
 interface Props {
 	title?: string
 }
-
-// v3 site key
 const RECAPTCHA_SITE_KEY = '6LcaJdUrAAAAAKEZXglVmQDP92OLBTiSFZxp7USr'
-
 export const Form = ({ title }: Props) => {
 	const { t } = useTranslation('common')
+	const formRef = useRef<HTMLFormElement | null>(null)
 
+	// поля
 	const [name, setName] = useState('')
 	const [position, setPosition] = useState('')
 	const [phone, setPhone] = useState('')
@@ -33,11 +32,35 @@ export const Form = ({ title }: Props) => {
 	const [message, setMessage] = useState('')
 	const [checkbox, setCheckbox] = useState(false)
 
+	// стани
 	const [loading, setLoading] = useState(false)
 	const [formError, setFormError] = useState<string | null>(null)
 	const [formOk, setFormOk] = useState<string | null>(null)
 
-	const { ready: recaptchaReady, execute } = useRecaptchaV3(RECAPTCHA_SITE_KEY)
+	// ➜ керуємо, чи взагалі вантажити reCAPTCHA
+	const [captchaEnabled, setCaptchaEnabled] = useState(false)
+
+	// ввімкнемо капчу лише коли форма потрапить у зону видимості
+	useEffect(() => {
+		const el = formRef.current
+		if (!el) return
+		const io = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setCaptchaEnabled(true)
+					io.disconnect()
+				}
+			},
+			{ rootMargin: '200px' } // підгрузимо трішки завчасно
+		)
+		io.observe(el)
+		return () => io.disconnect()
+	}, [])
+
+	const { ready: recaptchaReady, execute } = useRecaptchaV3(
+		RECAPTCHA_SITE_KEY,
+		captchaEnabled
+	)
 
 	const formTitle = (title ?? t('Form.fill_form')).replace('\\n', '\n')
 
@@ -53,8 +76,7 @@ export const Form = ({ title }: Props) => {
 		const _message = message.trim()
 		if (!_name || !_email || !_message) {
 			setFormError(
-				t('Form.required_fields') ||
-					'Пожалуйста, заполните поля Имя, Электронная почта и Сообщение.'
+				t('Form.required_fields') || 'Заповніть Імʼя, Email та Повідомлення.'
 			)
 			return
 		}
@@ -62,7 +84,7 @@ export const Form = ({ title }: Props) => {
 		try {
 			setLoading(true)
 
-			// reCAPTCHA v3 токен
+			// отримаємо токен тільки тут, коли справді сабмітимось
 			const captcha_token = await execute('feedback')
 
 			const payload = {
@@ -84,15 +106,13 @@ export const Form = ({ title }: Props) => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			})
-
 			if (!res.ok) {
 				const txt = await res.text().catch(() => '')
 				throw new Error(txt || `HTTP ${res.status}`)
 			}
 
-			setFormOk(t('Form.success') || 'Ваш запрос успешно отправлен!')
-
-			// очистити форму
+			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
+			// очистка
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -107,7 +127,7 @@ export const Form = ({ title }: Props) => {
 			setFormError(
 				err?.message ||
 					t('Form.error_generic') ||
-					'Произошла ошибка. Попробуйте ещё раз.'
+					'Сталася помилка. Спробуйте ще раз.'
 			)
 		} finally {
 			setLoading(false)
@@ -117,6 +137,7 @@ export const Form = ({ title }: Props) => {
 	return (
 		<StyledForm
 			as='form'
+			ref={formRef}
 			onSubmit={handleSubmit}
 			noValidate
 		>
@@ -193,12 +214,11 @@ export const Form = ({ title }: Props) => {
 				onChange={() => setCheckbox(!checkbox)}
 			/>
 
-			{!recaptchaReady && (
+			{!captchaEnabled && (
 				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
 					{t('Form.loading_captcha') || 'Завантаження захисту…'}
 				</small>
 			)}
-
 			{formError && <ErrorMsg>{formError}</ErrorMsg>}
 			{formOk && <OkMsg>{formOk}</OkMsg>}
 
@@ -208,6 +228,26 @@ export const Form = ({ title }: Props) => {
 				disabled={!recaptchaReady || loading}
 				labelKey='Button.get_request'
 			/>
+			{/* Вимога Google: у місці, де працює reCAPTCHA, має бути disclosure */}
+			<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
+				This site is protected by reCAPTCHA and the Google{' '}
+				<a
+					href='https://policies.google.com/privacy'
+					target='_blank'
+					rel='noreferrer'
+				>
+					Privacy Policy
+				</a>{' '}
+				and{' '}
+				<a
+					href='https://policies.google.com/terms'
+					target='_blank'
+					rel='noreferrer'
+				>
+					Terms of Service
+				</a>{' '}
+				apply.
+			</small>
 		</StyledForm>
 	)
 }
@@ -234,13 +274,11 @@ const StyledForm = styled.div`
 		}
 	}
 `
-
 const ErrorMsg = styled.div`
 	color: #d12f2f;
 	margin-top: 12px;
 	font-size: 14px;
 `
-
 const OkMsg = styled.div`
 	color: #1dcf94;
 	margin-top: 12px;

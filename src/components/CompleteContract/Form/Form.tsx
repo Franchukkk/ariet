@@ -62,16 +62,13 @@ export const Form = () => {
 					label={t('complete_contract.form.Transport_company_address')}
 					required
 				/>
-				<div className='fields-group'>
-					<Input
-						name='TC_number'
-						label={t('complete_contract.form.TC_number')}
-					/>
-					<Input
-						name='Field_3'
-						label={t('complete_contract.form.Field_3')}
-					/>
-				</div>
+
+				<Input
+					name='TC_number'
+					label={t('complete_contract.form.TC_number')}
+					required
+				/>
+
 				<div className='fields-group'>
 					<Input
 						name='comment'

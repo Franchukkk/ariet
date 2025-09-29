@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import { Pagination } from 'swiper/modules'
@@ -12,8 +12,8 @@ import ProductBg from '@/assets/img/product-bg.png'
 import cardBorder from '@/assets/img/specification-border.png'
 
 import { Background } from '../Autonomy/Banner/Background'
-import { Card } from '../Specifications/List/Card/Card'
 
+import { Card } from './Card'
 import { useBasket } from '@/context/BasketContext'
 
 interface ProductInfo {
@@ -37,9 +37,9 @@ interface Variant {
 
 type Lng = 'en' | 'ru'
 
-function formatPrice(num: number) {
-	return Number(num).toLocaleString('en-US').replace(',', ' ')
-}
+const getVersionKey = (v: Variant) => (v.name?.trim() || v.sku).trim()
+const formatPrice = (n: number) =>
+	Number(n).toLocaleString('en-US').replace(',', ' ')
 
 export const ProductInformation = ({
 	setProductName
@@ -48,10 +48,19 @@ export const ProductInformation = ({
 }) => {
 	const [isLoading, setIsLoading] = useState(true)
 	const [productInfo, setProductInfo] = useState<ProductInfo | null>(null)
-	const [version, setVersion] = useState<string>('')
-	const [showDescription, setShowDescription] = useState(false)
+
+	// незалежні вибори
+	const [selectedVersionKey, setSelectedVersionKey] = useState<string | null>(
+		null
+	)
+	const [selectedSocketCode, setSelectedSocketCode] = useState<string | null>(
+		null
+	)
+
+	// опис відкритий за замовчуванням
+	const [showDescription, setShowDescription] = useState(true)
+
 	const [slidesData, setSlidesData] = useState<any[]>([])
-	const [price, setPrice] = useState<number>(0)
 	const [byLang, setByLang] = useState<Partial<Record<Lng, ProductInfo>>>({})
 
 	const { id } = useParams()
@@ -71,10 +80,10 @@ export const ProductInformation = ({
 
 	useEffect(() => {
 		setByLang({})
-		setVersion('')
+		setSelectedVersionKey(null)
+		setSelectedSocketCode(null)
 		setSlidesData([])
 		setProductInfo(null)
-		setPrice(0)
 	}, [id])
 
 	const computeSlides = (data: ProductInfo) =>
@@ -87,7 +96,6 @@ export const ProductInformation = ({
 			}))
 		)
 
-	// ✅ Тягнемо дані через локальний API-проксі, мова — з URL
 	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
 		const url = `/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
 		const res = await fetch(url, { cache: 'no-store' })
@@ -95,7 +103,6 @@ export const ProductInformation = ({
 		return res.json()
 	}
 
-	// Завантаження активної мови
 	useEffect(() => {
 		let cancelled = false
 		const ensure = async () => {
@@ -103,14 +110,17 @@ export const ProductInformation = ({
 			try {
 				const cached = byLang[currentLng]
 				const data = cached ?? (await loadProduct(currentLng))
-				if (!cancelled) {
-					if (!cached) setByLang(prev => ({ ...prev, [currentLng]: data }))
-					setProductInfo(data)
-					setProductName(data.name)
-					const vId = data.variants[0]?.id
-					setVersion(prev => (prev ? prev : `version-${vId}`))
-					setSlidesData(computeSlides(data))
-					setPrice(data.variants[0]?.price ?? 0)
+				if (cancelled) return
+
+				if (!cached) setByLang(prev => ({ ...prev, [currentLng]: data }))
+				setProductInfo(data)
+				setProductName(data.name)
+				setSlidesData(computeSlides(data))
+
+				const first = data.variants[0]
+				if (first) {
+					setSelectedVersionKey(getVersionKey(first))
+					setSelectedSocketCode(first.socket?.code ?? null)
 				}
 			} catch {
 				if (!cancelled) setProductInfo(null)
@@ -125,7 +135,6 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [id, currentLng])
 
-	// Прелоад другої мови (швидке перемикання)
 	useEffect(() => {
 		const other: Lng = currentLng === 'ru' ? 'en' : 'ru'
 		if (byLang[other]) return
@@ -135,257 +144,294 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng, id])
 
-	if (isLoading)
+	// безпечні значення (щоб не міняти порядок хуків)
+	const variants = productInfo?.variants ?? []
+	const separatedName = (productInfo?.name ?? '').split(' ').filter(Boolean)
+
+	// списки опцій
+	const uniqueVersions = useMemo(() => {
+		const map = new Map<string, { display: string }>()
+		for (const v of variants) {
+			const key = getVersionKey(v)
+			if (!map.has(key)) map.set(key, { display: key })
+		}
+		return Array.from(map, ([key, { display }]) => ({ key, display }))
+	}, [variants])
+
+	const uniqueSockets = useMemo(() => {
+		const map = new Map<string, string>()
+		for (const v of variants) {
+			if (v.socket?.code) map.set(v.socket.code, v.socket.name || v.socket.code)
+		}
+		return Array.from(map, ([code, display]) => ({ code, display }))
+	}, [variants])
+
+	// ВАРІАНТ для відображення (залежить тільки від версії)
+	const displayVariant = useMemo(() => {
+		if (!variants.length) return null
+		const vk = selectedVersionKey ?? getVersionKey(variants[0])
+		return variants.find(v => getVersionKey(v) === vk) ?? variants[0]
+	}, [variants, selectedVersionKey])
+
+	// КОМБІНАЦІЯ для покупки (версія + розетка)
+	const combinationVariant = useMemo(() => {
+		if (!displayVariant || !selectedSocketCode) return null
 		return (
-			<div className='mb-[100px] mt-[100px]'>
-				<h1 className='text-center text-[30px] font-semibold text-[#FFFFFF]'>
-					Loading...
-				</h1>
-			</div>
+			variants.find(
+				v =>
+					getVersionKey(v) === getVersionKey(displayVariant) &&
+					v.socket?.code === selectedSocketCode
+			) ?? null
 		)
+	}, [variants, displayVariant, selectedSocketCode])
 
-	if (productInfo === null)
-		return (
-			<div className='mb-[100px] mt-[100px]'>
-				<h1 className='text-center text-[30px] font-semibold text-[#FFFFFF]'>
-					{t('ProductItem.not_found') || 'Товара нет'}
-				</h1>
-			</div>
-		)
+	const canBuy = !!combinationVariant
 
-	const separatedName = productInfo.name.split(' ')
-	const activeVariant =
-		productInfo.variants.find(v => v.id === Number(version.split('-')[1])) ||
-		productInfo.variants[0]
-
-	const features = activeVariant.features || []
+	// характеристики/опис/ціна — від displayVariant (від обраної версії)
+	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)
 	const colRight = features.slice(mid)
 
 	return (
 		<>
-			<Wrapper
-				style={{ borderTopStyle: 'solid', borderBottomStyle: 'dashed' }}
-				className='pt-[35px] main-wrapper flex gap-[20px] mb-[96px]! border-t border-b border-[#313131]! customScreen:flex-col customScreen:gap-[0px]'
-			>
-				{/* LEFT */}
-				<WrapperContent className='overflow-hidden flex flex-col gap-[20px] w-[60%] relative'>
-					<Title className='text-[70px] font-[600]'>
-						{separatedName.map((item: string, index: number) =>
-							index === separatedName.length - 1 ? null : (
-								<span key={item}>{item + ' '}</span>
-							)
-						)}{' '}
-						<OutlineText className='text-[70px] font-bold'>
-							{separatedName[separatedName.length - 1]}
-						</OutlineText>
-					</Title>
+			{!isLoading && !productInfo && (
+				<div className='mb-[100px] mt-[100px]'>
+					<h1 className='text-center text-[30px] font-semibold text-[#FFFFFF]'>
+						{t('ProductItem.not_found') || 'Товара нет'}
+					</h1>
+				</div>
+			)}
 
-					<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
-						<span className='text-[#4BC785]'>{t('ProductItem.text1')}</span>{' '}
-						{t('ProductItem.text2')}
-					</p>
-
-					<StyledList
-						$cardBorder={cardBorder}
-						className='overflow-hidden'
+			{!isLoading && productInfo && (
+				<>
+					<Wrapper
+						style={{ borderTopStyle: 'solid', borderBottomStyle: 'dashed' }}
+						className='pt-[35px] main-wrapper flex gap-[20px] mb-[96px] border-t border-b !border-[#313131] customScreen:flex-col customScreen:gap-[0px]'
 					>
-						<Swiper
-							spaceBetween={25}
-							modules={[Pagination]}
-							pagination={{ clickable: true }}
-						>
-							<CanvasBlockOne>
-								<Background />
-							</CanvasBlockOne>
-							<CanvasBlockTwo>
-								<Background />
-							</CanvasBlockTwo>
-							<img
-								src={ProductBg.src}
-								alt='product-bg'
-								className='w-full h-full absolute top-0 left-0 z-[0]'
-							/>
+						{/* LEFT */}
+						<WrapperContent className='overflow-hidden flex flex-col gap-[20px] w-[60%] relative'>
+							<Title className='text-[70px] font-[600]'>
+								{separatedName.map((item, i) =>
+									i === separatedName.length - 1 ? null : (
+										<span key={item}>{item + ' '}</span>
+									)
+								)}{' '}
+								<OutlineText className='text-[70px] font-bold'>
+									{separatedName[separatedName.length - 1] || ''}
+								</OutlineText>
+							</Title>
 
-							<SwiperWrapper className='w-full h-full relative'>
-								{slidesData.map((slide: any, index: number) => (
-									<SwiperSlide key={index}>
-										<CardWrapper className='w-[50%] h-full relative left-[25%] z-[3] relative'>
-											<Card
-												title={slide.title}
-												subtitle={slide.subtitle}
-												slide={slide.slide}
-												totalSlides={slidesData.length}
-												photo={slide.photo}
-											/>
-										</CardWrapper>
-									</SwiperSlide>
-								))}
-							</SwiperWrapper>
-						</Swiper>
-					</StyledList>
-				</WrapperContent>
+							<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
+								<span className='text-[#4BC785]'>{t('ProductItem.text1')}</span>{' '}
+								{t('ProductItem.text2')}
+							</p>
 
-				{/* RIGHT */}
-				<SecondInfo className='border-l border-dashed border-[#313131]! w-[40%] pl-[20px]'>
-					<div className='flex flex-row justify-between mb-[7px]'>
-						<CenterText className='text-[18px] font-light text-[#FFFFFFA8]'>
-							{t('ProductItem.article')}: {activeVariant?.sku || '-'}
-						</CenterText>
-						<p className='text-[14px] font-light text-[#1DCF94]'>
-							{activeVariant.stock.length > 0
-								? t('ProductItem.availability')
-								: t('ProductItem.not_availability')}
-						</p>
-					</div>
-					<CenterText className='text-[30px] font-semibold leading-[50px] mb-[20px]'>
-						{formatPrice(Number(price))} $
-					</CenterText>
-					<BuyButton
-						onClick={() => {
-							addToBasket({
-								id: productInfo.id,
-								variantId: activeVariant.id,
-								name: productInfo.name,
-								price: activeVariant.price,
-								quantity: 1,
-								photo: activeVariant.images[0]?.image || '/img/placeholder.png'
-							})
-							router.push('/basket')
-						}}
-						className='cursor-pointer hover:bg-[#4BC785] mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid border-[#4BC785] bg-[transparent] text-[#ffffff] text-[15px] font-semibold rounded-[61px]'
-					>
-						{t('ProductItem.buy')}
-					</BuyButton>
-					{/* Versions */}
-					<div className='border-b border-dashed border-[#313131]! mb-[22px]' />
-					<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]'>
-						{t('ProductItem.version')}
-					</CenterText>
-
-					<VersionList>
-						{productInfo.variants.map(item => {
-							const display =
-								item.name && item.name.trim() ? item.name : item.sku
-							return (
-								<WrapperVersion
-									key={`version-${item.id}`}
-									className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
-									style={{
-										color:
-											version === `version-${item.id}` ? '#4BC785' : '#FFFFFF'
-									}}
-									htmlFor={`version-${item.id}`}
+							<StyledList
+								$cardBorder={cardBorder}
+								className='overflow-hidden'
+							>
+								<Swiper
+									spaceBetween={25}
+									modules={[Pagination]}
+									pagination={{ clickable: true }}
 								>
-									<input
-										type='radio'
-										id={`version-${item.id}`}
-										value={`version-${item.id}`}
-										name='version'
-										className='version-radio'
-										checked={version === `version-${item.id}`}
-										onChange={e => {
-											setVersion(e.target.value)
-											setPrice(item.price)
-										}}
+									<CanvasBlockOne>
+										<Background />
+									</CanvasBlockOne>
+									<CanvasBlockTwo>
+										<Background />
+									</CanvasBlockTwo>
+									<img
+										src={ProductBg.src}
+										alt='product-bg'
+										className='w-full h-full absolute top-0 left-0 z-[0]'
 									/>
-									<span className='truncate'>{display}</span>
-								</WrapperVersion>
-							)
-						})}
-					</VersionList>
-					{/* Socket */}
-					{productInfo.variants.some(v => v.socket !== null) && (
-						<>
-							<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px] mt-[22px]'>
-								{t('ProductItem.socket')}
+
+									<SwiperWrapper className='w-full h-full relative'>
+										{slidesData.map((slide: any, index: number) => (
+											<SwiperSlide key={index}>
+												<CardWrapper className='w-[50%] h-full relative left-[25%] z-[3] relative'>
+													<Card
+														title={slide.title}
+														subtitle={slide.subtitle}
+														slide={slide.slide}
+														totalSlides={slidesData.length}
+														photo={slide.photo}
+													/>
+												</CardWrapper>
+											</SwiperSlide>
+										))}
+									</SwiperWrapper>
+								</Swiper>
+							</StyledList>
+						</WrapperContent>
+
+						{/* RIGHT */}
+						<SecondInfo className='border-l border-dashed !border-[#313131] w-[40%] pl-[20px]'>
+							<div className='flex flex-row justify-between mb-[7px]'>
+								<CenterText className='text-[18px] font-light text-[#FFFFFFA8]'>
+									{t('ProductItem.article')}: {displayVariant?.sku || '-'}
+								</CenterText>
+								<p className='text-[14px] font-light text-[#1DCF94]'>
+									{displayVariant && displayVariant.stock.length > 0
+										? t('ProductItem.availability')
+										: t('ProductItem.not_availability')}
+								</p>
+							</div>
+
+							<CenterText className='text-[30px] font-semibold leading-[50px] mb-[20px]'>
+								{displayVariant
+									? `${formatPrice(displayVariant.price)} $`
+									: '—'}
 							</CenterText>
-							<SocketList>
-								{productInfo.variants
-									.filter(v => v.socket !== null)
-									.map(v => (
-										<WrapperVersion
-											key={`socket-${v.id}`}
-											className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
-											style={{
-												color:
-													version === `version-${v.id}` ? '#4BC785' : '#FFFFFF'
-											}}
-											htmlFor={`socket-${v.id}`}
-										>
-											<input
-												type='radio'
-												id={`socket-${v.id}`}
-												value={`version-${v.id}`}
-												name='socket'
-												className='version-radio'
-												checked={version === `version-${v.id}`}
-												onChange={e => {
-													setVersion(e.target.value)
-													setPrice(v.price)
-												}}
-											/>
-											<span className='truncate'>
-												{v.socket?.name || v.socket?.code}
-											</span>
-										</WrapperVersion>
-									))}
-							</SocketList>
-						</>
-					)}
-					{/* Description */}
-					<div
-						className='pb-[42px] relative'
-						onClick={() => setShowDescription(!showDescription)}
-					>
-						<DescriptionText className='flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-semibold text-[#FFFFFF] mb-[18px] mt-[22px]'>
-							{t('ProductItem.description')}
-							<ArrowUp
-								className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${
-									showDescription ? 'rotate-0' : 'rotate-180'
+
+							<BuyButton
+								type='button'
+								disabled={!canBuy}
+								aria-disabled={!canBuy}
+								onClick={() => {
+									if (!combinationVariant) return
+									addToBasket({
+										id: productInfo.id,
+										variantId: combinationVariant.id,
+										name: productInfo.name,
+										price: combinationVariant.price,
+										quantity: 1,
+										photo:
+											combinationVariant.images[0]?.image ||
+											'/img/placeholder.png'
+									})
+									router.push('/basket')
+								}}
+								className={`cursor-pointer mb-[40px] max-w-[270px] w-[100%] h-[58px] border border-solid rounded-[61px] text-[15px] font-semibold ${
+									canBuy
+										? 'hover:bg-[#4BC785] border-[#4BC785] bg-transparent text-white'
+										: 'opacity-50 cursor-not-allowed border-[#4BC785] bg-[#4BC7851a] text-white'
 								}`}
-								aria-label='arrow-down'
-							/>
-						</DescriptionText>
-						<p
-							className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${
-								showDescription ? 'max-h-[200px] overflow-y-auto' : 'max-h-0'
-							}`}
-						>
-							{productInfo.description}
-						</p>
-					</div>
-				</SecondInfo>
-			</Wrapper>
+							>
+								{t('ProductItem.buy')}
+							</BuyButton>
 
-			{/* TECH CHARACTERISTICS */}
-			{features.length > 0 && (
-				<TechBlock className='main-wrapper'>
-					<h3 className='title'>{t('ProductItem.characteristics')}</h3>
+							{/* Versions */}
+							<div className='border-b border-dashed !border-[#313131] mb-[22px]' />
+							<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px]'>
+								{t('ProductItem.version')}
+							</CenterText>
 
-					<TechColumns>
-						<TechCol>
-							{colLeft.map(f => (
-								<TechRow key={`l-${f.name}`}>
-									<span className='name'>{f.name}</span>
-									<span className='value'>{f.value}</span>
-								</TechRow>
-							))}
-						</TechCol>
+							<VersionList>
+								{uniqueVersions.map(({ key, display }) => (
+									<WrapperVersion
+										key={`version-${key}`}
+										className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
+										style={{
+											color: selectedVersionKey === key ? '#4BC785' : '#FFFFFF'
+										}}
+										htmlFor={`version-${key}`}
+									>
+										<input
+											type='radio'
+											id={`version-${key}`}
+											value={key}
+											name='version'
+											className='version-radio'
+											checked={selectedVersionKey === key}
+											onChange={e => setSelectedVersionKey(e.target.value)} // не чіпаємо розетку
+										/>
+										<span className='truncate'>{display}</span>
+									</WrapperVersion>
+								))}
+							</VersionList>
 
-						<Divider />
+							{/* Socket */}
+							{uniqueSockets.length > 0 && (
+								<>
+									<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px] mt-[22px]'>
+										{t('ProductItem.socket')}
+									</CenterText>
+									<SocketList>
+										{uniqueSockets.map(({ code, display }) => (
+											<WrapperVersion
+												key={`socket-${code}`}
+												className='flex items-center gap-[10px] pl-[25px] relative bg-[#0D0C0C] rounded-[8px] p-[10px] cursor-pointer'
+												style={{
+													color:
+														selectedSocketCode === code ? '#4BC785' : '#FFFFFF'
+												}}
+												htmlFor={`socket-${code}`}
+											>
+												<input
+													type='radio'
+													id={`socket-${code}`}
+													value={code}
+													name='socket'
+													className='version-radio'
+													checked={selectedSocketCode === code}
+													onChange={e => setSelectedSocketCode(e.target.value)} // версію не змінюємо
+												/>
+												<span className='truncate'>{display}</span>
+											</WrapperVersion>
+										))}
+									</SocketList>
+								</>
+							)}
 
-						<TechCol>
-							{colRight.map(f => (
-								<TechRow key={`r-${f.name}`}>
-									<span className='name'>{f.name}</span>
-									<span className='value'>{f.value}</span>
-								</TechRow>
-							))}
-						</TechCol>
-					</TechColumns>
-				</TechBlock>
+							{/* Опис (розгорнутий за замовчуванням) */}
+							<div
+								className='pb-[42px] relative'
+								onClick={() => setShowDescription(!showDescription)}
+							>
+								<DescriptionText className='flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-semibold text-[#FFFFFF] mb-[18px] mt-[22px]'>
+									{t('ProductItem.description')}
+									<ArrowUp
+										className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${
+											showDescription ? 'rotate-0' : 'rotate-180'
+										}`}
+										aria-label='arrow-down'
+									/>
+								</DescriptionText>
+								<p
+									className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${
+										showDescription
+											? 'max-h-[200px] overflow-y-auto'
+											: 'max-h-0'
+									}`}
+								>
+									{productInfo.description}
+								</p>
+							</div>
+						</SecondInfo>
+					</Wrapper>
+
+					{/* TECH CHARACTERISTICS */}
+					{features.length > 0 && (
+						<TechBlock className='main-wrapper'>
+							<h3 className='title'>{t('ProductItem.characteristics')}</h3>
+
+							<TechColumns>
+								<TechCol>
+									{colLeft.map(f => (
+										<TechRow key={`l-${f.name}`}>
+											<span className='name'>{f.name}</span>
+											<span className='value'>{f.value}</span>
+										</TechRow>
+									))}
+								</TechCol>
+
+								<Divider />
+
+								<TechCol>
+									{colRight.map(f => (
+										<TechRow key={`r-${f.name}`}>
+											<span className='name'>{f.name}</span>
+											<span className='value'>{f.value}</span>
+										</TechRow>
+									))}
+								</TechCol>
+							</TechColumns>
+						</TechBlock>
+					)}
+				</>
 			)}
 		</>
 	)
@@ -421,7 +467,6 @@ const Title = styled.h1`
 	font-style: DemiBold;
 	font-size: 70px;
 	line-height: 88px;
-	letter-spacing: 0%;
 	text-transform: uppercase;
 
 	@media (max-width: 1000px) {
@@ -619,7 +664,6 @@ const TechRow = styled.div`
 		font-weight: 300;
 		font-style: Light;
 		font-size: 14px;
-		leading-trim: NONE;
 		line-height: 18px;
 		letter-spacing: 1%;
 
@@ -633,7 +677,6 @@ const TechRow = styled.div`
 		font-weight: 500;
 		font-style: Medium;
 		font-size: 14px;
-		leading-trim: NONE;
 		line-height: 18px;
 		letter-spacing: 1%;
 

@@ -14,11 +14,15 @@ declare global {
 	}
 }
 
-export function useRecaptchaV3(siteKey: string) {
+/**
+ * Завантажує reCAPTCHA v3 тільки якщо enabled === true.
+ */
+export function useRecaptchaV3(siteKey: string, enabled: boolean = true) {
 	const [ready, setReady] = useState(false)
 
 	useEffect(() => {
 		if (typeof window === 'undefined') return
+		if (!enabled) return
 
 		const onLoad = () => window.grecaptcha?.ready(() => setReady(true))
 
@@ -34,12 +38,16 @@ export function useRecaptchaV3(siteKey: string) {
 		s.onload = onLoad
 		s.onerror = () => console.error('[reCAPTCHA] failed to load script')
 		document.head.appendChild(s)
-	}, [siteKey])
+
+		return () => {
+			// за бажанням можна чистити <script>, але зазвичай не потрібно
+		}
+	}, [siteKey, enabled])
 
 	const execute = useCallback(
 		async (action: string) => {
+			if (!enabled) throw new Error('reCAPTCHA disabled')
 			if (!window.grecaptcha) throw new Error('reCAPTCHA not ready')
-			// маленький retry на випадок мережевих збоїв
 			for (let i = 0; i < 2; i++) {
 				try {
 					const token = await window.grecaptcha.execute(siteKey, { action })
@@ -52,8 +60,8 @@ export function useRecaptchaV3(siteKey: string) {
 			}
 			throw new Error('captcha failed')
 		},
-		[siteKey]
+		[siteKey, enabled]
 	)
 
-	return { ready, execute }
+	return { ready: enabled && ready, execute }
 }
