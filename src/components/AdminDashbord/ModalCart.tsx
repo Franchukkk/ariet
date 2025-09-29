@@ -47,6 +47,10 @@ const STATUSES: ApiStatus[] = [
 	'CANCELLED'
 ]
 
+/* ——— client types (з випадайкою) ——— */
+type ClientType = 'INDIVIDUAL' | 'COMPANY'
+const CLIENT_TYPES: ClientType[] = ['INDIVIDUAL', 'COMPANY']
+
 /* ===== компонент ===== */
 export const ModalCart = ({
 	item,
@@ -77,15 +81,26 @@ export const ModalCart = ({
 		'idle' | 'saving' | 'saved' | 'error'
 	>('idle')
 
+	// ➕ РОЗШИРЕНО: додав усі потрібні поля у форму
 	const initialForm = useMemo(
 		() => ({
 			full_name: item?.full_name || item?.name || '',
 			phone: item?.phone || item?.tel || '',
 			email: item?.email || '',
+			// адреси
 			shipping_address: item?.shipping_address || item?.address || '',
 			billing_address: item?.billing_address || '',
+			// додаткові поля
+			client_type: (item?.client_type as ClientType) || 'INDIVIDUAL',
+			transport_company_address: item?.transport_company_address || '',
+			company_name: item?.company_name || '',
+			vat_number: item?.vat_number || '',
+			promo_code: item?.promo_code || '',
+			post_index: item?.post_index || '',
 			comment: item?.comment || '',
+			// статус
 			status: asApiStatus(item?.status || 'DRAFT') as ApiStatus,
+			// білінг-зона
 			billing_zone_id:
 				(typeof item?.billing_zone === 'number'
 					? item.billing_zone
@@ -153,7 +168,16 @@ export const ModalCart = ({
 					billing_address: data?.billing_address ?? prev.billing_address,
 					comment: data?.comment ?? prev.comment,
 					status: asApiStatus(data?.status ?? prev.status),
-					billing_zone_id: zoneId
+					billing_zone_id: zoneId,
+
+					// ➕ нові поля з API
+					client_type: (data?.client_type as ClientType) ?? prev.client_type,
+					transport_company_address:
+						data?.transport_company_address ?? prev.transport_company_address,
+					company_name: data?.company_name ?? prev.company_name,
+					vat_number: data?.vat_number ?? prev.vat_number,
+					promo_code: data?.promo_code ?? prev.promo_code,
+					post_index: data?.post_index ?? prev.post_index
 				}))
 			} catch (e: any) {
 				setErrorLoadOrder(e?.message || 'Failed to load order')
@@ -162,7 +186,7 @@ export const ModalCart = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [item?.id])
 
-	/* ---------- 2) довідник зон (НЕ ЧІПАЮ логіку) ---------- */
+	/* ---------- 2) довідник зон ---------- */
 	useEffect(() => {
 		let alive = true
 		const loadZones = async () => {
@@ -208,7 +232,7 @@ export const ModalCart = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [item?.id])
 
-	// синхронізація назви зони (НЕ ЧІПАЮ поведінку)
+	// синхронізація назви зони
 	useEffect(() => {
 		if (form.billing_zone_id == null || zones.length === 0) return
 		const found = zones.find(z => z.id === form.billing_zone_id)
@@ -234,7 +258,7 @@ export const ModalCart = ({
 		return r
 	}
 
-	// автозбереження ТІЛЬКИ статусу (без режиму редагування)
+	// автозбереження ТІЛЬКИ статусу
 	const changeStatus = async (newStatus: ApiStatus) => {
 		if (newStatus === form.status) return
 		setForm(prev => ({ ...prev, status: newStatus }))
@@ -253,7 +277,7 @@ export const ModalCart = ({
 		}
 	}
 
-	// зберегти інші поля лише кнопкою
+	// ➕ ЗБЕРЕЖЕННЯ ВСІХ РОЗШИРЕНИХ ПОЛІВ
 	const onSaveClick = async () => {
 		try {
 			setSaving(true)
@@ -264,8 +288,15 @@ export const ModalCart = ({
 				shipping_address: form.shipping_address,
 				billing_address: form.billing_address,
 				comment: form.comment,
-				// статус тут не чіпаємо — він уже міг автозберегтись вище
-				billing_zone: form.billing_zone_id ?? 0 // якщо 0 не валідний — приберіть поле
+				billing_zone: form.billing_zone_id ?? 0, // якщо 0 не валідний — приберіть поле
+
+				// нові поля
+				client_type: form.client_type,
+				transport_company_address: form.transport_company_address,
+				company_name: form.company_name,
+				vat_number: form.vat_number,
+				promo_code: form.promo_code,
+				post_index: form.post_index
 			})
 			setEditing(false)
 			onUpdated?.()
@@ -375,14 +406,16 @@ export const ModalCart = ({
 						)}
 
 						<div className='relative'>
+							{/* Номер замовлення з CODE (fall back на id) */}
 							<p className='mb-[6px] font-[600] leading-[18px] text-[18px] text-[#ffffff]'>
-								{t('AdminDashboard.order_id')} {item.id}
+								{t('AdminDashboard.order_id')}{' '}
+								{item?.code ? String(item.code) : String(item?.id ?? '')}
 							</p>
 							<p className='mb-[10px] font-[400] leading-[16px] text-[14px] text-[#7F7F7F]'>
 								{formatDate(item.date || item.created_at, i18n.language)}
 							</p>
 
-							{/* СТАТУС — завжди активний + АВТОСЕЙВ */}
+							{/* СТАТУС — автосейв */}
 							<StatusSelect
 								value={form.status}
 								onChange={changeStatus}
@@ -466,39 +499,93 @@ export const ModalCart = ({
 					))}
 				</div>
 
-				{/* дані + білінг-зона — без змін автосейву */}
+				{/* дані + білінг-зона */}
 				<div className='pl-[20px] pr-[20px]'>
 					{!editing ? (
-						<>
-							<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-								{form.full_name}
-							</p>
-							<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-								{t('AdminDashboard.tel')} {form.phone}
-							</p>
-							<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-								{t('AdminDashboard.email')} {form.email}
-							</p>
-							<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-								{form.shipping_address || form.billing_address}
-							</p>
-
+						// ===== READ-ONLY: показуємо ВСІ поля, які ти просив =====
+						<ReadonlyGrid>
+							<FieldRow
+								label='Client type'
+								value={form.client_type}
+							/>
+							<FieldRow
+								label={t('AdminDashboard.full_name') as string}
+								value={form.full_name}
+							/>
+							<FieldRow
+								label={t('AdminDashboard.tel') as string}
+								value={form.phone}
+							/>
+							<FieldRow
+								label={t('AdminDashboard.email') as string}
+								value={form.email}
+							/>
+							<FieldRow
+								label={t('AdminDashboard.shipping_address') as string}
+								value={form.shipping_address}
+							/>
+							<FieldRow
+								label={t('AdminDashboard.billing_address') as string}
+								value={form.billing_address}
+							/>
+							<FieldRow
+								label='Transport company address'
+								value={form.transport_company_address}
+							/>
+							<FieldRow
+								label='Company name'
+								value={form.company_name}
+							/>
+							<FieldRow
+								label='VAT number'
+								value={form.vat_number}
+							/>
+							<FieldRow
+								label='Promo code'
+								value={form.promo_code}
+							/>
+							<FieldRow
+								label='Post index'
+								value={form.post_index}
+							/>
 							{!!form.billing_zone_id && (
-								<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-									{(t('complete_contract.form.billing_zone') as string) ||
-										'Billing zone'}
-									: {form.billing_zone_name || `#${form.billing_zone_id}`}
-								</p>
+								<FieldRow
+									label={
+										(t('complete_contract.form.billing_zone') as string) ||
+										'Billing zone'
+									}
+									value={form.billing_zone_name || `#${form.billing_zone_id}`}
+								/>
 							)}
-
 							{form.comment && (
-								<p className='text-[16px] mb-[10px] leading-[18px] text-[#FFFFFFC9]'>
-									{form.comment}
-								</p>
+								<FieldRow
+									label={t('AdminDashboard.comment') as string}
+									value={form.comment}
+								/>
 							)}
-						</>
+						</ReadonlyGrid>
 					) : (
+						// ===== EDIT: інпути для всіх полів =====
 						<div className='flex flex-col gap-[10px] max-w-[520px]'>
+							<Select
+								value={form.client_type}
+								onChange={e =>
+									setForm(prev => ({
+										...prev,
+										client_type: e.target.value as ClientType
+									}))
+								}
+							>
+								{CLIENT_TYPES.map(ct => (
+									<option
+										key={ct}
+										value={ct}
+									>
+										{ct}
+									</option>
+								))}
+							</Select>
+
 							<Input
 								placeholder={t('AdminDashboard.full_name')}
 								value={form.full_name}
@@ -524,8 +611,32 @@ export const ModalCart = ({
 								value={form.billing_address}
 								onChange={onChangeField('billing_address')}
 							/>
+							<Input
+								placeholder='Transport company address'
+								value={form.transport_company_address}
+								onChange={onChangeField('transport_company_address' as any)}
+							/>
+							<Input
+								placeholder='Company name'
+								value={form.company_name}
+								onChange={onChangeField('company_name' as any)}
+							/>
+							<Input
+								placeholder='VAT number'
+								value={form.vat_number}
+								onChange={onChangeField('vat_number' as any)}
+							/>
+							<Input
+								placeholder='Promo code'
+								value={form.promo_code}
+								onChange={onChangeField('promo_code' as any)}
+							/>
+							<Input
+								placeholder='Post index'
+								value={form.post_index}
+								onChange={onChangeField('post_index' as any)}
+							/>
 
-							{/* БІЛІНГ ЗОНУ НЕ ЧІПАЮ */}
 							<div>
 								<BillingZoneInputLike
 									zones={zones}
@@ -546,6 +657,23 @@ export const ModalCart = ({
 				</div>
 			</Wrapper>
 		</div>
+	)
+}
+
+/* ---------- допоміжний рядок для read-only ---------- */
+function FieldRow({
+	label,
+	value
+}: {
+	label: string
+	value?: string | number | null
+}) {
+	if (value == null || String(value).trim() === '') return null
+	return (
+		<Row>
+			<span className='name'>{label}</span>
+			<span className='val'>{String(value)}</span>
+		</Row>
 	)
 }
 
@@ -582,7 +710,7 @@ function StatusSelect({
 
 	const pick = (s: ApiStatus) => {
 		setOpen(false)
-		onChange(s) // одразу викликає PATCH у батьківському компоненті
+		onChange(s)
 	}
 
 	return (
@@ -597,10 +725,6 @@ function StatusSelect({
 				aria-expanded={open}
 				title={busy ? 'Saving…' : saved ? 'Saved' : 'Change status'}
 			>
-				<span
-					className='dot'
-					data-status={value}
-				/>
 				<span className='label'>{value}</span>
 				{busy && <SmallBadge aria-live='polite'>…</SmallBadge>}
 				{saved && !busy && <SmallBadge aria-live='polite'>✓</SmallBadge>}
@@ -632,10 +756,6 @@ function StatusSelect({
 							data-active={s === value ? '1' : '0'}
 							onClick={() => pick(s)}
 						>
-							<span
-								className='dot'
-								data-status={s}
-							/>
 							<span className='text'>{s}</span>
 						</MenuItem>
 					))}
@@ -645,7 +765,7 @@ function StatusSelect({
 	)
 }
 
-/* ---------- інпут-лайк селектор білінг-зони (БЕЗ змін поведінки) ---------- */
+/* ---------- інпут-лайк селектор білінг-зони ---------- */
 function BillingZoneInputLike({
 	zones,
 	loading,
@@ -837,6 +957,17 @@ const Input = styled.input`
 	height: 36px;
 	outline: none;
 `
+const Select = styled.select`
+	text-align: left;
+	font-size: 14px;
+	color: #fff;
+	background: #0d0d0d;
+	border: 1px solid #333;
+	border-radius: 6px;
+	padding: 6px 10px;
+	height: 36px;
+	outline: none;
+`
 const Textarea = styled.textarea`
 	font-size: 16px;
 	line-height: 18px;
@@ -986,7 +1117,7 @@ const MenuItem = styled.li`
 	}
 `
 
-/* інпут-лайк для зони (без змін) */
+/* інпут-лайк для зони */
 const FieldLabel = styled.div`
 	color: #fff;
 	font-size: 14px;
@@ -1009,7 +1140,6 @@ const InputCore = styled.input`
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
-
 	&::placeholder {
 		color: #777;
 	}
@@ -1032,4 +1162,41 @@ const MenuEmpty = styled.div`
 const ErrorText = styled.div`
 	color: #ef4444;
 	font-size: 12px;
+`
+
+/* read-only сітка та рядок */
+const ReadonlyGrid = styled.div`
+	display: grid;
+	grid-template-columns: 220px 1fr;
+	gap: 8px 18px;
+	align-items: baseline;
+	margin-top: 8px;
+
+	@media (max-width: 620px) {
+		grid-template-columns: 1fr;
+	}
+`
+const Row = styled.div`
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: 220px 1fr;
+	gap: 12px;
+
+	.name {
+		color: #ffffffa8;
+		font-weight: 600;
+		font-size: 13px;
+	}
+	.val {
+		color: #ffffffde;
+		font-weight: 400;
+		font-size: 14px;
+	}
+
+	@media (max-width: 620px) {
+		grid-template-columns: 1fr;
+		.name {
+			opacity: 0.9;
+		}
+	}
 `

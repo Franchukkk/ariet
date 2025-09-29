@@ -10,14 +10,6 @@ import { ProtectedRoute } from '@/components/ProtectedRoute/ProtectedRoute'
 
 import { OrderData } from './OrderData'
 
-const ordersInfo = {
-	totalOrders: 1000,
-	newOrders: 10,
-	totalSum: 10000,
-	averageOrderPrice: 1000,
-	date: '2025-01-01'
-}
-
 export const ClientComponent = () => {
 	const [accessToken, setAccessToken] = useState<string | null>(null)
 	const [refreshToken, setRefreshToken] = useState<string | null>(null)
@@ -58,12 +50,13 @@ export const ClientComponent = () => {
 		<ProtectedRoute>
 			<MainWrapper className='main-wrapper !mb-[130px]'>
 				<TitleAdminDashboard />
-				<Wrapper className='flex flex-row justify-between items-start'>
+				<Wrapper>
 					<UserAdminInfo />
-					<div className='flex-1 min-w-0 max-w-full overflow-hidden'>
-						<OrderInfo orderInfo={ordersInfo} />
-					</div>
+					<RightCol>
+						<OrderInfo />
+					</RightCol>
 				</Wrapper>
+
 				<OrderDataWrapper>
 					<OrderData />
 				</OrderDataWrapper>
@@ -71,6 +64,30 @@ export const ClientComponent = () => {
 		</ProtectedRoute>
 	)
 }
+const Wrapper = styled.div`
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 20px;
+	align-items: center;
+
+	@media (max-width: 800px) {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 30px;
+	}
+
+	@media (max-width: 600px) {
+		align-items: center;
+	}
+`
+
+const RightCol = styled.div`
+	flex: 1;
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+`
 
 const MainWrapper = styled.div`
 	@media (max-width: 1000px) {
@@ -91,17 +108,5 @@ const OrderDataWrapper = styled.div`
 	@media (max-width: 1000px) {
 		margin-top: 30px;
 		padding-bottom: 10px;
-	}
-`
-
-const Wrapper = styled.div`
-	@media (max-width: 600px) {
-		align-items: center;
-		flex-direction: column;
-		gap: 30px;
-	}
-
-	@media (max-width: 800px) {
-		flex-direction: column;
 	}
 `

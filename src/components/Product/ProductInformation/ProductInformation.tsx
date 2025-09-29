@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -16,20 +17,29 @@ import { Background } from '../Autonomy/Banner/Background'
 import { Card } from './Card'
 import { useBasket } from '@/context/BasketContext'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 interface ProductInfo {
 	id: number
 	name: string
 	variants: Variant[]
 	description: string
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	technical_info: any[]
+	short_description?: string // може прийти з бекенда
+	// з урахуванням вашої схеми GET /api/catalog/products/{id}/
+	main_feature_description?: string
 }
 
 interface Variant {
 	id: number
 	name?: string
 	sku: string
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	stock: any[]
 	price: number
 	socket: { code: string; name: string } | null
@@ -43,6 +53,17 @@ const getVersionKey = (v: Variant) => (v.name?.trim() || v.sku).trim()
 const formatPrice = (n: number) =>
 	Number(n).toLocaleString('en-US').replace(',', ' ')
 
+// ——— helper: розбиває короткий опис на перше речення та решту
+const splitFirstSentence = (text: string) => {
+	if (!text) return { first: '', rest: '' }
+	const dot = text.indexOf('.')
+	if (dot === -1) return { first: text.trim(), rest: '' }
+	return {
+		first: text.slice(0, dot + 1).trim(),
+		rest: text.slice(dot + 1).trim()
+	}
+}
+
 export const ProductInformation = ({
 	setProductName
 }: {
@@ -51,6 +72,7 @@ export const ProductInformation = ({
 	const [isLoading, setIsLoading] = useState(true)
 	const [productInfo, setProductInfo] = useState<ProductInfo | null>(null)
 
+	// незалежні вибори
 	const [selectedVersionKey, setSelectedVersionKey] = useState<string | null>(
 		null
 	)
@@ -58,9 +80,9 @@ export const ProductInformation = ({
 		null
 	)
 
+	// опис відкритий за замовчуванням
 	const [showDescription, setShowDescription] = useState(true)
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const [slidesData, setSlidesData] = useState<any[]>([])
 	const [byLang, setByLang] = useState<Partial<Record<Lng, ProductInfo>>>({})
 
@@ -146,10 +168,23 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng, id])
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// безпечні значення
 	const variants = productInfo?.variants ?? []
 	const separatedName = (productInfo?.name ?? '').split(' ').filter(Boolean)
 
+	// короткий заголовок під назвою товару: беремо З ВІДПОВІДІ GET
+	// пріоритет: short_description -> main_feature_description -> description
+	const shortSource =
+		(productInfo?.short_description || '').trim() ||
+		(productInfo?.main_feature_description || '').trim() ||
+		(productInfo?.description || '').trim()
+
+	const { first: shortFirst, rest: shortRest } = useMemo(
+		() => splitFirstSentence(shortSource),
+		[shortSource]
+	)
+
+	// списки опцій
 	const uniqueVersions = useMemo(() => {
 		const map = new Map<string, { display: string }>()
 		for (const v of variants) {
@@ -159,12 +194,14 @@ export const ProductInformation = ({
 		return Array.from(map, ([key, { display }]) => ({ key, display }))
 	}, [variants])
 
+	// обрана версія (ключ)
 	const activeVersionKey = useMemo(
 		() =>
 			selectedVersionKey ?? (variants[0] ? getVersionKey(variants[0]) : null),
 		[selectedVersionKey, variants]
 	)
 
+	// розетки ТІЛЬКИ для обраної версії
 	const socketsForActiveVersion = useMemo(() => {
 		if (!activeVersionKey) return []
 		const map = new Map<string, string>()
@@ -175,6 +212,7 @@ export const ProductInformation = ({
 		return Array.from(map, ([code, display]) => ({ code, display }))
 	}, [variants, activeVersionKey])
 
+	// якщо при зміні версії поточна розетка недоступна — обрати першу доступну
 	useEffect(() => {
 		if (!socketsForActiveVersion.length) {
 			setSelectedSocketCode(null)
@@ -187,11 +225,13 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeVersionKey, socketsForActiveVersion])
 
+	// ВАРІАНТ для відображення (опис/характеристики/ціна)
 	const displayVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey) return null
 		return variants.find(v => getVersionKey(v) === activeVersionKey) ?? null
 	}, [variants, activeVersionKey])
 
+	// КОМБІНАЦІЯ для покупки (версія + розетка)
 	const combinationVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey || !selectedSocketCode)
 			return null
@@ -206,6 +246,7 @@ export const ProductInformation = ({
 
 	const canBuy = !!combinationVariant
 
+	// характеристики/опис/ціна — від displayVariant (залежно від версії)
 	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)
@@ -240,10 +281,20 @@ export const ProductInformation = ({
 								</OutlineText>
 							</Title>
 
-							<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
-								<span className='text-[#4BC785]'>{t('ProductItem.text1')}</span>{' '}
-								{t('ProductItem.text2')}
-							</p>
+							{/* короткий заголовок: перше речення зеленим */}
+							{shortSource ? (
+								<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
+									<span className='text-[#4BC785]'>{shortFirst}</span>
+									{shortRest ? ' ' + shortRest : ''}
+								</p>
+							) : (
+								<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
+									<span className='text-[#4BC785]'>
+										{t('ProductItem.text1')}
+									</span>{' '}
+									{t('ProductItem.text2')}
+								</p>
+							)}
 
 							<StyledList
 								$cardBorder={cardBorder}
@@ -354,7 +405,7 @@ export const ProductInformation = ({
 											name='version'
 											className='version-radio'
 											checked={selectedVersionKey === key}
-											onChange={e => setSelectedVersionKey(e.target.value)} // НЕ чіпаємо розетку напряму
+											onChange={e => setSelectedVersionKey(e.target.value)}
 										/>
 										<span className='truncate'>{display}</span>
 									</WrapperVersion>

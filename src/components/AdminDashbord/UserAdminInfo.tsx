@@ -7,7 +7,6 @@ import styled from 'styled-components'
 
 import cornerDown from '@/assets/img/corner2.png'
 import corner from '@/assets/img/corner.png'
-import edit from '@/assets/img/edit.png'
 import bg from '@/assets/img/user-bg.png'
 import userAdministrator from '@/assets/img/user_administrator.png'
 
@@ -74,11 +73,6 @@ export const UserAdminInfo = () => {
 					<img
 						src={userAdministrator.src}
 						alt='user-administrator'
-					/>
-					<img
-						className='w-[68px] h-[68px] absolute top-[30px] right-[40px]'
-						src={edit.src}
-						alt='edit'
 					/>
 				</ImgDiv>
 

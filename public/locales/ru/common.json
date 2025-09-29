@@ -621,7 +621,7 @@
 			"draft": "Черновик"
 		},
 		"summary": "Сума",
-		"currency": "грн",
+		"currency": "$",
 		"tel": "Телефон",
 		"declaration_number": "Номер декларации",
 		"total": "Общая сума заказа:",
@@ -720,6 +720,7 @@
 		}
 	},
 	"AdminDashboard": {
+		"orders_today": "Заказов сегодня",
 		"edit": "Редактировать",
 		"loading": "Загрузка",
 		"save": "Сохранить",
@@ -759,7 +760,7 @@
 		"sort": "Сортировать",
 		"change_status": "Сменить статус",
 		"delete": "Удалить",
-		"currency": "грн",
+		"currency": "$",
 		"email": "E-mail",
 		"tel": "Телефон"
 	},

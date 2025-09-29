@@ -658,6 +658,7 @@
 		}
 	},
 	"AdminDashboard": {
+		"orders_today": "Orders today",
 		"edit": "Edit",
 		"loading": "Loading",
 		"save": "Save",
@@ -697,7 +698,7 @@
 		"sort": "Sort",
 		"change_status": "Change status",
 		"delete": "Delete",
-		"currency": "UAH",
+		"currency": "$",
 		"email": "Email",
 		"tel": "Phone"
 	},
