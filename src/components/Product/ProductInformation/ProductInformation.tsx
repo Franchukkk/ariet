@@ -19,20 +19,13 @@ import { useBasket } from '@/context/BasketContext'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 interface ProductInfo {
 	id: number
 	name: string
 	variants: Variant[]
 	description: string
 	technical_info: any[]
-	short_description?: string // може прийти з бекенда
-	// з урахуванням вашої схеми GET /api/catalog/products/{id}/
+	short_description?: string
 	main_feature_description?: string
 }
 
@@ -53,7 +46,7 @@ const getVersionKey = (v: Variant) => (v.name?.trim() || v.sku).trim()
 const formatPrice = (n: number) =>
 	Number(n).toLocaleString('en-US').replace(',', ' ')
 
-// ——— helper: розбиває короткий опис на перше речення та решту
+// Розбити перше речення
 const splitFirstSentence = (text: string) => {
 	if (!text) return { first: '', rest: '' }
 	const dot = text.indexOf('.')
@@ -62,6 +55,26 @@ const splitFirstSentence = (text: string) => {
 		first: text.slice(0, dot + 1).trim(),
 		rest: text.slice(dot + 1).trim()
 	}
+}
+
+// ---- читання куки на клієнті
+const readCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null
+	const m = document.cookie.match(
+		new RegExp(
+			'(?:^|; )' + name.replace(/([$?*|{}\]\\^])/g, '\\$1') + '=([^;]*)'
+		)
+	)
+	return m ? decodeURIComponent(m[1]) : null
+}
+
+// ---- визначення мови: ?lng -> cookie -> 'ru'
+const resolveLng = (sp: URLSearchParams | null): Lng => {
+	const fromQuery = (sp?.get('lng') || '').split('-')[0].toLowerCase()
+	if (fromQuery === 'en' || fromQuery === 'ru') return fromQuery as Lng
+	const fromCookie = (readCookie('lng') || '').split('-')[0].toLowerCase()
+	if (fromCookie === 'en' || fromCookie === 'ru') return fromCookie as Lng
+	return 'ru'
 }
 
 export const ProductInformation = ({
@@ -92,15 +105,17 @@ export const ProductInformation = ({
 	const { addToBasket } = useBasket()
 	const { t, i18n } = useTranslation('common')
 
-	const urlLng = (searchParams?.get('lng') || 'ru').split('-')[0] as Lng
-	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
+	// ✅ визначаємо поточну мову (query → cookie)
+	const currentLng: Lng = resolveLng(searchParams)
 
+	// ✅ синхронізуємо i18n
 	useEffect(() => {
 		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
-		if (cur !== currentLng) i18n.changeLanguage(currentLng)
+		if (cur !== currentLng) void i18n.changeLanguage(currentLng)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
+	// ресет при зміні товару
 	useEffect(() => {
 		setByLang({})
 		setSelectedVersionKey(null)
@@ -119,13 +134,18 @@ export const ProductInformation = ({
 			}))
 		)
 
+	// ✅ клієнтський fetch з дублюванням Accept-Language
 	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
 		const url = `/api/catalog/products/${id}?lng=${lng}&_=${Date.now()}`
-		const res = await fetch(url, { cache: 'no-store' })
+		const res = await fetch(url, {
+			cache: 'no-store',
+			headers: { 'Accept-Language': lng.toUpperCase() }
+		})
 		if (!res.ok) throw new Error('Failed to load product')
 		return res.json()
 	}
 
+	// основне завантаження (залежить від мови)
 	useEffect(() => {
 		let cancelled = false
 		const ensure = async () => {
@@ -159,6 +179,7 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [id, currentLng])
 
+	// попереднє завантаження іншої мови
 	useEffect(() => {
 		const other: Lng = currentLng === 'ru' ? 'en' : 'ru'
 		if (byLang[other]) return
@@ -172,8 +193,7 @@ export const ProductInformation = ({
 	const variants = productInfo?.variants ?? []
 	const separatedName = (productInfo?.name ?? '').split(' ').filter(Boolean)
 
-	// короткий заголовок під назвою товару: беремо З ВІДПОВІДІ GET
-	// пріоритет: short_description -> main_feature_description -> description
+	// короткий заголовок
 	const shortSource =
 		(productInfo?.short_description || '').trim() ||
 		(productInfo?.main_feature_description || '').trim() ||
@@ -246,7 +266,7 @@ export const ProductInformation = ({
 
 	const canBuy = !!combinationVariant
 
-	// характеристики/опис/ціна — від displayVariant (залежно від версії)
+	// характеристики — від displayVariant
 	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
 	const colLeft = features.slice(0, mid)
@@ -281,7 +301,7 @@ export const ProductInformation = ({
 								</OutlineText>
 							</Title>
 
-							{/* короткий заголовок: перше речення зеленим */}
+							{/* короткий заголовок */}
 							{shortSource ? (
 								<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
 									<span className='text-[#4BC785]'>{shortFirst}</span>
@@ -362,9 +382,9 @@ export const ProductInformation = ({
 								onClick={() => {
 									if (!combinationVariant) return
 									addToBasket({
-										id: productInfo.id,
+										id: productInfo!.id,
 										variantId: combinationVariant.id,
-										name: productInfo.name,
+										name: productInfo!.name,
 										price: combinationVariant.price,
 										quantity: 1,
 										photo:
@@ -412,7 +432,7 @@ export const ProductInformation = ({
 								))}
 							</VersionList>
 
-							{/* Socket — тільки для обраної версії */}
+							{/* Socket */}
 							{socketsForActiveVersion.length > 0 && (
 								<>
 									<CenterText className='text-[23px] uppercase font-semibold text-[#FFFFFF] mb-[20px] mt-[22px]'>
@@ -445,7 +465,7 @@ export const ProductInformation = ({
 								</>
 							)}
 
-							{/* Опис (розгорнутий за замовчуванням) */}
+							{/* Опис */}
 							<div
 								className='pb-[42px] relative'
 								onClick={() => setShowDescription(!showDescription)}
@@ -453,18 +473,12 @@ export const ProductInformation = ({
 								<DescriptionText className='flex items-center justify-between gap-[10px] relative text-[23px] leading-[33px] uppercase font-semibold text-[#FFFFFF] mb-[18px] mt-[22px]'>
 									{t('ProductItem.description')}
 									<ArrowUp
-										className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${
-											showDescription ? 'rotate-0' : 'rotate-180'
-										}`}
+										className={`cursor-pointer w-[24px] h-[24px] transition-all duration-300 ${showDescription ? 'rotate-0' : 'rotate-180'}`}
 										aria-label='arrow-down'
 									/>
 								</DescriptionText>
 								<p
-									className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${
-										showDescription
-											? 'max-h-[200px] overflow-y-auto'
-											: 'max-h-0'
-									}`}
+									className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${showDescription ? 'max-h-[200px] overflow-y-auto' : 'max-h-0'}`}
 								>
 									{productInfo.description}
 								</p>
@@ -729,13 +743,11 @@ const TechRow = styled.div`
 
 	.name {
 		color: #ffffffa8;
-
 		font-weight: 300;
 		font-style: Light;
 		font-size: 14px;
 		line-height: 18px;
 		letter-spacing: 1%;
-
 		padding-bottom: 12px;
 		border-bottom: 1px dashed #ffffff42;
 	}
@@ -748,7 +760,6 @@ const TechRow = styled.div`
 		font-size: 14px;
 		line-height: 18px;
 		letter-spacing: 1%;
-
 		padding-bottom: 14px;
 		white-space: nowrap;
 		overflow: hidden;
