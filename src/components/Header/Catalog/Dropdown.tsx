@@ -13,13 +13,16 @@ export const Dropdown = () => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
+	// ru | en з i18n
 	const currentLng = useMemo<'ru' | 'en'>(() => {
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
 		return raw === 'en' ? 'en' : 'ru'
 	}, [i18n.language, i18n.resolvedLanguage])
 
 	useEffect(() => {
+		const controller = new AbortController()
 		let cancelled = false
+
 		;(async () => {
 			try {
 				setLoading(true)
@@ -27,26 +30,30 @@ export const Dropdown = () => {
 
 				const res = await fetch(
 					`/api/proxy/categories?lng=${currentLng}&_=${Date.now()}`,
-					{
-						cache: 'no-store'
-					}
+					{ cache: 'no-store', signal: controller.signal }
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 				const json = await res.json()
 				const arr = Array.isArray(json) ? json : (json?.results ?? [])
+
 				const list: Category[] = arr.map((c: any) => ({
 					id: c.id,
+					// якщо бек віддає name_en / name_ru — використаємо їх; інакше беремо name
 					name: c[`name_${currentLng}`] ?? c.name ?? ''
 				}))
+
 				if (!cancelled) setCategories(list)
 			} catch (err: any) {
-				if (!cancelled) setError(err?.message || 'Failed to load')
+				if (err?.name !== 'AbortError' && !cancelled)
+					setError(err?.message || 'Failed to load')
 			} finally {
 				if (!cancelled) setLoading(false)
 			}
 		})()
+
 		return () => {
 			cancelled = true
+			controller.abort()
 		}
 	}, [currentLng])
 
@@ -54,6 +61,8 @@ export const Dropdown = () => {
 		<StyledDropdown className='dropdown'>
 			<div>
 				<div className='flex flex-col gap-3'>
+					{loading && <span>Loading…</span>}
+					{error && <span style={{ color: '#ef4444' }}>{error}</span>}
 					{!loading &&
 						!error &&
 						categories.map(cat => (
