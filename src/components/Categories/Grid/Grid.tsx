@@ -28,9 +28,10 @@ export const Grid = () => {
 				setLoading(true)
 				setError(null)
 				const res = await fetch(
-					`/api/proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
-					{ cache: 'no-store', signal: controller.signal }
+					`/front-proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
+					{ cache: 'no-store' }
 				)
+
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 				const json = await res.json()
 				const arr = Array.isArray(json) ? json : (json?.results ?? [])

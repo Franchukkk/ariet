@@ -28,9 +28,10 @@ export const Dropdown = () => {
 				// КЛЮЧОВЕ: ВІДНОСНИЙ шлях до вашого Next API,
 				// без https://rpktask.sytes.net
 				const res = await fetch(
-					`/api/proxy/categories?lng=${currentLng}&page_size=99&_=${Date.now()}`,
+					`/front-proxy/categories?lng=${currentLng}&page_size=99&_=${Date.now()}`,
 					{ cache: 'no-store' }
 				)
+
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
 				const json = await res.json()

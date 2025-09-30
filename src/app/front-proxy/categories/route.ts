@@ -11,9 +11,10 @@ export async function GET(req: Request) {
 		const lng = (url.searchParams.get('lng') || 'ru').split('-')[0]
 
 		const upstreamUrl = new URL(UPSTREAM)
-		for (const [k, v] of url.searchParams.entries())
+		// прокинемо всі query далі (включно з page_size)
+		for (const [k, v] of url.searchParams.entries()) {
 			upstreamUrl.searchParams.set(k, v)
-		upstreamUrl.searchParams.set('lng', lng)
+		}
 
 		const res = await fetch(upstreamUrl.toString(), {
 			method: 'GET',
