@@ -355,13 +355,14 @@ export const ModalCart = ({
 			onClick={handleBackdropClose}
 			className='w-full h-full pt-[5%] px-[20px] fixed top-0 left-0 bg-[#00000080] z-[100] wraper'
 		>
-			<Wrapper className='relative pb-[47px] pt-[20px] pl-[0px] pr-[129px] w-full max-w-[888px] bg-[#292929] m-auto rounded-[10px]'>
-				<Cross
-					className='cursor-pointer absolute w-[24px] h-[24px] top-[20px] right-[20px]'
-					onClick={() => setIsOpen(false)}
-				/>
-
+			<Wrapper className='relative pb-[47px] pt-[20px] pl-[20px] pr-[20px] w-full max-w-[800px] bg-[#292929] m-auto rounded-[10px]'>
+				{/* ХРЕСТИК ТЕПЕР ВСЕРЕДИНІ ШАПКИ */}
 				<WrapperOrder className='relative mb-[30px] flex flex-row justify-between items-start'>
+					<Cross
+						className='cursor-pointer absolute w-[24px] h-[24px] top-[0px] right-[0px]'
+						onClick={() => setIsOpen(false)}
+					/>
+
 					<LeftHeader>
 						{editing && (
 							<BackBtn
@@ -536,9 +537,7 @@ export const ModalCart = ({
 							/>
 							{!!form.billing_zone_id && (
 								<FieldRow
-									label={
-										t('complete_contract.modelcard.billing_zone') as string
-									}
+									label={t('AdminDashboard.modelcard.billing_zone') as string}
 									value={form.billing_zone_name || `#${form.billing_zone_id}`}
 								/>
 							)}
@@ -567,7 +566,7 @@ export const ModalCart = ({
 											setForm(prev => ({ ...prev, client_type: ct }))
 										}
 									>
-										{ct === 'INDIVIDUAL' ? 'INDIVIDУAL' : 'COMPANY'}
+										{ct === 'INDIVIDUAL' ? 'INDIVIDUAL' : 'COMPANY'}
 									</SegmentBtn>
 								))}
 							</SegmentGroup>
@@ -872,17 +871,21 @@ function BillingZoneInputLike({
 /* ===================== styled ===================== */
 const WrapperOrder = styled.div`
 	position: relative;
-	padding-left: 8px;
-	&::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		bottom: -12px;
-		width: 100%;
-		height: 1px;
-		background-color: #ffffff26;
+
+	/* далі — внутрішні відступи: зліва — під текст, справа — під хрестик */
+	padding: 0 28px 12px 8px;
+
+	/* розділювальна полоска — частина шапки */
+	border-bottom: 1px solid #ffffff26;
+
+	/* щоб контент не вилітав за межі шапки */
+	overflow: visible;
+
+	@media (max-width: 764px) {
+		padding-right: 36px;
 	}
 `
+
 const Wrapper = styled.div`
 	/* було тільки на мобілці — тепер завжди: */
 	max-height: 85vh;

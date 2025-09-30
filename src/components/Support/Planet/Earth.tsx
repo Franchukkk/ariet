@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useRef } from 'react'
 import * as solar from 'solar-calculator'
 import styled from 'styled-components'
@@ -81,7 +83,11 @@ export const Earth = () => {
 	const frameRef = useRef<number | null>(null)
 
 	useEffect(() => {
-		const container = containerRef.current!
+		let alive = true // ✅ guard проти StrictMode/розмонтувань
+
+		const container = containerRef.current
+		if (!container) return
+
 		const width = 580
 		const height = 580
 
@@ -91,7 +97,7 @@ export const Earth = () => {
 
 		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
 		renderer.setSize(width, height)
-		renderer.setPixelRatio(window.devicePixelRatio)
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
 		container.appendChild(renderer.domElement)
 
 		const geometry = new THREE.SphereGeometry(1, 158, 158)
@@ -101,6 +107,15 @@ export const Earth = () => {
 			loader.loadAsync(toSrc(dayImg)),
 			loader.loadAsync(toSrc(nightImg))
 		]).then(([dayTex, nightTex]) => {
+			if (!alive) {
+				// компонент уже розмонтовано — приберемо ресурси й вийдемо
+				dayTex.dispose()
+				nightTex.dispose()
+				geometry.dispose()
+				renderer.dispose()
+				return
+			}
+
 			dayTexRef.current = dayTex
 			nightTexRef.current = nightTex
 
@@ -120,16 +135,24 @@ export const Earth = () => {
 			scene.add(sphere)
 
 			const animate = () => {
+				if (!alive) return
+
+				const mat = shaderMaterial.current
+				if (!mat || !mat.uniforms) {
+					frameRef.current = requestAnimationFrame(animate)
+					return
+				}
+
 				// +1 хвилина до часу на кожен кадр (для плавного руху «термінатора»)
 				dtRef.current += 60 * 1000
 
 				// обчислюємо позицію Сонця для поточного часу
 				const [sunLon, sunLat] = sunPosAt(dtRef.current)
-				shaderMaterial.current!.uniforms.sunPosition.value.set(sunLon, sunLat)
+				;(mat.uniforms.sunPosition.value as THREE.Vector2).set(sunLon, sunLat)
 
 				// повільне власне обертання глобуса (у градусах)
 				globeRotation.current.x += 0.1 // 0.1° за кадр
-				shaderMaterial.current!.uniforms.globeRotation.value.set(
+				;(mat.uniforms.globeRotation.value as THREE.Vector2).set(
 					globeRotation.current.x,
 					globeRotation.current.y
 				)
@@ -145,13 +168,18 @@ export const Earth = () => {
 		})
 
 		return () => {
+			alive = false
 			if (frameRef.current) cancelAnimationFrame(frameRef.current)
 			try {
-				container.removeChild(renderer.domElement)
+				if (container.contains(renderer.domElement)) {
+					container.removeChild(renderer.domElement)
+				}
 			} catch {}
 			renderer.dispose()
 			geometry.dispose()
-			if (shaderMaterial.current) shaderMaterial.current.dispose()
+			if (shaderMaterial.current) {
+				shaderMaterial.current.dispose()
+			}
 			dayTexRef.current?.dispose()
 			nightTexRef.current?.dispose()
 			sphereRef.current = null
