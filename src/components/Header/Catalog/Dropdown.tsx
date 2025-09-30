@@ -13,47 +13,53 @@ export const Dropdown = () => {
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	// ru | en з i18n
 	const currentLng = useMemo<'ru' | 'en'>(() => {
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
 		return raw === 'en' ? 'en' : 'ru'
 	}, [i18n.language, i18n.resolvedLanguage])
 
 	useEffect(() => {
-		const controller = new AbortController()
 		let cancelled = false
+		const load = async () => {
+			setLoading(true)
+			setError(null)
 
-		;(async () => {
+			const parse = (json: any, lng: 'ru' | 'en'): Category[] => {
+				const arr = Array.isArray(json) ? json : (json?.results ?? [])
+				return arr.map((c: any) => ({
+					id: c.id,
+					name: c[`name_${lng}`] ?? c.name ?? ''
+				}))
+			}
+
 			try {
-				setLoading(true)
-				setError(null)
-
-				const res = await fetch(
-					`/api/proxy/categories?lng=${currentLng}&_=${Date.now()}`,
-					{ cache: 'no-store', signal: controller.signal }
+				// 1) через локальний проксі (потрібен для Accept-Language)
+				let res = await fetch(
+					`/api/proxy/categories?lng=${currentLng}&page_size=99&_=${Date.now()}`,
+					{ cache: 'no-store' }
 				)
+
+				// 2) fallback напряму на бек, якщо проксі недоступний/404
+				if (res.status === 404) {
+					res = await fetch(
+						`https://rpktask.sytes.net/api/catalog/categories/?lng=${currentLng}&page_size=99&_=${Date.now()}`,
+						{ cache: 'no-store' }
+					)
+				}
+
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 				const json = await res.json()
-				const arr = Array.isArray(json) ? json : (json?.results ?? [])
-
-				const list: Category[] = arr.map((c: any) => ({
-					id: c.id,
-					// якщо бек віддає name_en / name_ru — використаємо їх; інакше беремо name
-					name: c[`name_${currentLng}`] ?? c.name ?? ''
-				}))
-
-				if (!cancelled) setCategories(list)
-			} catch (err: any) {
-				if (err?.name !== 'AbortError' && !cancelled)
-					setError(err?.message || 'Failed to load')
+				if (!cancelled) setCategories(parse(json, currentLng))
+			} catch (e: any) {
+				if (!cancelled) setError(e?.message || 'Failed to load categories')
 			} finally {
 				if (!cancelled) setLoading(false)
 			}
-		})()
+		}
 
+		load()
 		return () => {
 			cancelled = true
-			controller.abort()
 		}
 	}, [currentLng])
 
@@ -101,12 +107,6 @@ const StyledDropdown = styled.div`
 	visibility: hidden;
 	transition: all 0.3s;
 	z-index: 100;
-
-	.group-title {
-		margin-bottom: 10px;
-		font-size: 12px;
-		color: #ffffff70;
-	}
 	a:hover {
 		color: #4bc785;
 	}
