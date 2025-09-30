@@ -1,60 +1,68 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-interface Category {
-	id: number
-	name: string
-}
+type Category = { id: number; name: string }
 
 export const Dropdown = () => {
-	const { t } = useTranslation('common')
+	const { i18n } = useTranslation('common')
 	const [categories, setCategories] = useState<Category[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
+	const currentLng = useMemo<'ru' | 'en'>(() => {
+		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		return raw === 'en' ? 'en' : 'ru'
+	}, [i18n.language, i18n.resolvedLanguage])
+
 	useEffect(() => {
-		const loadCategories = async () => {
+		let cancelled = false
+		;(async () => {
 			try {
+				setLoading(true)
+				setError(null)
+
 				const res = await fetch(
-					'https://rpktask.sytes.net/api/catalog/categories/',
+					`/api/proxy/categories?lng=${currentLng}&_=${Date.now()}`,
 					{
-						method: 'GET',
-						credentials: 'include',
-						headers: { 'Content-Type': 'application/json' }
+						cache: 'no-store'
 					}
 				)
-
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-				const responseData = await res.json()
-				const data = responseData.results || []
-				setCategories(data)
-			} catch (err) {
-				console.error('Fetch error:', err)
-				setError('Failed to load')
+				const json = await res.json()
+				const arr = Array.isArray(json) ? json : (json?.results ?? [])
+				const list: Category[] = arr.map((c: any) => ({
+					id: c.id,
+					name: c[`name_${currentLng}`] ?? c.name ?? ''
+				}))
+				if (!cancelled) setCategories(list)
+			} catch (err: any) {
+				if (!cancelled) setError(err?.message || 'Failed to load')
 			} finally {
-				setLoading(false)
+				if (!cancelled) setLoading(false)
 			}
+		})()
+		return () => {
+			cancelled = true
 		}
-
-		loadCategories()
-	}, [])
+	}, [currentLng])
 
 	return (
 		<StyledDropdown className='dropdown'>
 			<div>
 				<div className='flex flex-col gap-3'>
-					{loading && <p>Loading...</p>}
-					{error && <p style={{ color: 'red' }}>{error}</p>}
 					{!loading &&
+						!error &&
 						categories.map(cat => (
 							<Link
 								key={cat.id}
-								href={{ pathname: '/products', query: { category: cat.id } }}
+								href={{
+									pathname: '/products',
+									query: { category: cat.id, lng: currentLng }
+								}}
 							>
 								{cat.name}
 							</Link>
@@ -90,7 +98,6 @@ const StyledDropdown = styled.div`
 		font-size: 12px;
 		color: #ffffff70;
 	}
-
 	a:hover {
 		color: #4bc785;
 	}

@@ -22,18 +22,26 @@ type MeResponse = {
 	promo_code?: string | null
 }
 
-const roleLabel = (r?: string) =>
-	r === 'ADMIN'
-		? 'Адміністратор'
-		: r === 'MANAGER'
-			? 'Менеджер'
-			: r === 'CLIENT'
-				? 'Клієнт'
-				: r || 'Користувач'
+/** повертає ключ перекладу для ролі */
+const roleKeyByCode = (r?: string) => {
+	const code = (r || '').toUpperCase()
+	if (code === 'ADMIN') return 'roles.admin'
+	if (code === 'MANAGER') return 'roles.manager'
+	if (code === 'CLIENT') return 'roles.client'
+	return 'roles.user'
+}
+
+/** локальний фолбек на випадок, якщо ключа немає в i18n */
+const roleFallbackByCode = (r?: string) => {
+	const code = (r || '').toUpperCase()
+	if (code === 'ADMIN') return 'Адміністратор'
+	if (code === 'MANAGER') return 'Менеджер'
+	if (code === 'CLIENT') return 'Клієнт'
+	return 'Користувач'
+}
 
 export const UserAdminInfo = () => {
 	const { t } = useTranslation('common')
-
 	const [me, setMe] = useState<MeResponse | null>(null)
 
 	useEffect(() => {
@@ -63,6 +71,10 @@ export const UserAdminInfo = () => {
 	const shownName =
 		lastName || firstName ? `${lastName} ${firstName}`.trim() : '—'
 
+	const roleText = t(roleKeyByCode(me?.role), {
+		defaultValue: roleFallbackByCode(me?.role)
+	})
+
 	return (
 		<UserWrapper
 			$bg={bg}
@@ -80,8 +92,8 @@ export const UserAdminInfo = () => {
 					{shownName}
 				</NamePerson>
 
-				<p className='mb-[10px] text-[#FFFFFF]  text-[18px] leading-[27px] font-[300]'>
-					{roleLabel(me?.role)}
+				<p className='mb-[10px] text-[#FFFFFF] text-[18px] leading-[27px] font-[300]'>
+					{roleText}
 				</p>
 			</WrapperDiv>
 

@@ -18,23 +18,59 @@ export const Input = ({
 }: Props) => {
 	const [focused, setFocused] = useState(false)
 
+	const handleInvalid = (
+		e: React.InvalidEvent<HTMLInputElement | HTMLTextAreaElement>
+	) => {
+		const el = e.currentTarget
+		let msg = ''
+
+		if (el.validity.valueMissing) {
+			msg = `Поле «${label}» є обов'язковим`
+		} else if (el instanceof HTMLInputElement) {
+			if (el.type === 'email' && el.validity.typeMismatch) {
+				msg = 'Введіть коректний email'
+			}
+			// якщо додасте pattern для телефону — отримаєте це повідомлення
+			if (el.type === 'tel' && el.validity.patternMismatch) {
+				msg = 'Введіть коректний номер телефону'
+			}
+		}
+
+		el.setCustomValidity(msg)
+	}
+
+	const clearValidity = (
+		e: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>
+	) => {
+		e.currentTarget.setCustomValidity('')
+	}
+
 	return (
 		<StyledInput className={`${focused && 'active'}`}>
 			<div className='label'>{label}</div>
+
 			{textarea ? (
 				<textarea
 					name={name}
 					required={required}
 					onFocus={() => setFocused(true)}
 					onBlur={() => setFocused(false)}
-				></textarea>
+					onInvalid={handleInvalid}
+					onInput={clearValidity}
+					aria-label={label}
+				/>
 			) : (
 				<input
 					type={type}
 					name={name}
 					required={required}
+					// опц.: вкажіть патерн для телефона (UA приклад):
+					// pattern="^\+?[\d\s\-\(\)]{7,}$"
 					onFocus={() => setFocused(true)}
 					onBlur={() => setFocused(false)}
+					onInvalid={handleInvalid}
+					onInput={clearValidity}
+					aria-label={label}
 				/>
 			)}
 		</StyledInput>

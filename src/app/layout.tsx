@@ -7,6 +7,8 @@ import { Header } from '@/components/Header/Header'
 
 import I18nProvider from '@/providers/I18nProvider'
 
+import '@/assets/fonts/fonts.css'
+
 import './globals.css'
 import { BasketProvider } from '@/context/BasketContext'
 

@@ -1,82 +1,74 @@
-@import "tailwindcss";
-
-@import url("/assets/fonts/fonts.css");
+@import 'tailwindcss';
+@import '../assets/fonts/fonts.css';
 
 body {
-  margin: 0;
-  font-family: "TT Firs Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #000000;
-  color: #ffffff;
+	margin: 0;
+	font-family: 'TT Firs Neue';
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	background: #000000;
+	color: #ffffff;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+	font-family:
+		source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .main-wrapper {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding-right: 54px !important;
-  padding-left: 54px !important;
+	max-width: 1440px;
+	margin: 0 auto;
+	padding-right: 54px !important;
+	padding-left: 54px !important;
 }
 
 .app-wrapper {
-  padding: 18px 0px 83px;
+	padding: 18px 0px 83px;
 }
 
 @media (max-width: 1000px) {
-  .main-wrapper {
-    padding-right: 20px !important;
-    padding-left: 20px !important;
-  }
+	.main-wrapper {
+		padding-right: 20px !important;
+		padding-left: 20px !important;
+	}
 
-  .app-wrapper {
-    padding: 20px 0;
-  }
+	.app-wrapper {
+		padding: 20px 0;
+	}
 }
 
 .swiper-pagination-bullet {
-  width: 56px !important;
-  height: 40px !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  opacity: 1 !important;
-  position: relative;
+	width: 56px !important;
+	height: 40px !important;
+	border-radius: 0 !important;
+	background: transparent !important;
+	opacity: 1 !important;
+	position: relative;
 
-  &::before {
-    content: "";
-    display: block;
-    width: 56px;
-    height: 5px;
-    background: #333333 !important;
-    position: absolute;
-    top: 50%;
-    left: 0;
-  }
+	&::before {
+		content: '';
+		display: block;
+		width: 56px;
+		height: 5px;
+		background: #333333 !important;
+		position: absolute;
+		top: 50%;
+		left: 0;
+	}
 }
 
 .swiper-pagination-bullet-active {
-  &::before {
-    background: #4bc785 !important;
-  }
+	&::before {
+		background: #4bc785 !important;
+	}
 }
 
 #support_basket h3 {
-  max-width: 724px;
-  margin: 0;
-  text-align: left;
-  margin-bottom: 53px;
+	max-width: 724px;
+	margin: 0;
+	text-align: left;
+	margin-bottom: 53px;
 }
-
-
-
-
-
-
-
 
 /* @import "tailwindcss";
 

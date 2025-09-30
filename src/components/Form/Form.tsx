@@ -158,7 +158,6 @@ export const Form = ({ title }: Props) => {
 				throw new Error(txt || `HTTP ${res.status}`)
 			}
 
-			setFormOk(t('Form.success') || 'Ваш запит успішно надіслано!')
 			setName('')
 			setPosition('')
 			setPhone('')
@@ -169,12 +168,6 @@ export const Form = ({ title }: Props) => {
 			setCountry('')
 			setMessage('')
 			setCheckbox(false)
-		} catch (err: any) {
-			setFormError(
-				err?.message ||
-					t('Form.error_generic') ||
-					'Сталася помилка. Спробуйте ще раз.'
-			)
 		} finally {
 			setLoading(false)
 		}
@@ -260,42 +253,12 @@ export const Form = ({ title }: Props) => {
 				onChange={() => setCheckbox(!checkbox)}
 			/>
 
-			{!captchaEnabled && (
-				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-					{t('Form.loading_captcha') || 'Завантаження захисту…'}
-				</small>
-			)}
-			{formError && <ErrorMsg>{formError}</ErrorMsg>}
-			{formOk && <OkMsg>{formOk}</OkMsg>}
-
 			<Button
 				type='submit'
 				loading={loading}
 				disabled={loading || (captchaEnabled && !recaptchaReady)}
 				labelKey='Button.get_request'
 			/>
-
-			{RECAPTCHA_SITE_KEY && (
-				<small style={{ display: 'block', marginTop: 8, opacity: 0.7 }}>
-					This site is protected by reCAPTCHA and the Google{' '}
-					<a
-						href='https://policies.google.com/privacy'
-						target='_blank'
-						rel='noreferrer'
-					>
-						Privacy Policy
-					</a>{' '}
-					and{' '}
-					<a
-						href='https://policies.google.com/terms'
-						target='_blank'
-						rel='noreferrer'
-					>
-						Terms of Service
-					</a>{' '}
-					apply.
-				</small>
-			)}
 		</StyledForm>
 	)
 }

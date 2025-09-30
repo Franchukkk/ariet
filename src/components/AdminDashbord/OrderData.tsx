@@ -137,7 +137,7 @@ export const OrderData = () => {
 		'none' | 'date_new' | 'date_old' | 'id_up' | 'id_down'
 	>('none')
 	const sortRef = useRef<HTMLDivElement>(null)
-	const { t, i18n } = useTranslation('common')
+	const { t } = useTranslation('common')
 
 	const token =
 		typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
@@ -159,7 +159,9 @@ export const OrderData = () => {
 				const list = Array.isArray(data) ? data : data?.results || []
 				const normalized = (list || []).map((o: any) => ({
 					...o,
-					date: o.created_at ?? o.date
+					date: o.created_at ?? o.date,
+					// попереднє значення для відображення: code або id
+					displayNumber: o.code ?? String(o.id)
 				}))
 				setOrders(normalized)
 				setGrouped(splitByStatuses(normalized))
@@ -245,9 +247,20 @@ export const OrderData = () => {
 		}
 	}
 
+	// пошук по code + id (і по displayNumber)
 	useEffect(() => {
-		const base = searchValue
-			? orders.filter(o => String(o.id).includes(searchValue))
+		const q = (searchValue || '').toLowerCase().trim()
+		const base = q
+			? orders.filter(o => {
+					const byId = String(o.id).toLowerCase().includes(q)
+					const byCode = String(o.code ?? '')
+						.toLowerCase()
+						.includes(q)
+					const byDisplay = String(o.displayNumber ?? '')
+						.toLowerCase()
+						.includes(q)
+					return byId || byCode || byDisplay
+				})
 			: orders
 		const sorted = applySort(base, sort)
 		setGrouped(splitByStatuses(sorted))
@@ -267,8 +280,17 @@ export const OrderData = () => {
 					headers: { ...authHeaders }
 				})
 				const full = await r.json()
+				// 1) оновлюємо selectOrder (для ModalCart)
 				setSelectOrder(prev =>
 					prev && prev.id === item.id ? { ...prev, ...full } : full
+				)
+				// 2) одразу підклеюємо code в список (для відображення на дошці)
+				setOrders(prev =>
+					prev.map(o =>
+						o.id === item.id
+							? { ...o, ...full, displayNumber: full.code ?? String(o.id) }
+							: o
+					)
 				)
 			} catch {}
 			setIsOpen(true)
@@ -370,6 +392,13 @@ export const OrderData = () => {
 		}
 	}
 
+	const decorateForCard = (item: any) => {
+		const display = item?.code ?? item?.displayNumber ?? String(item?.id)
+		// важливо: Draggable key/ids залишаються числовими з реального item.id
+		// а в сам OrderCard передаємо item з "id" заміненим для ПЛЯШКИ (відображення)
+		return { ...item, id: display } as any
+	}
+
 	return (
 		<div className='flex flex-col justify-between'>
 			<Filters className='flex flex-row justify-between w-full gap-[10px] items-center mb-[30px]'>
@@ -445,8 +474,8 @@ export const OrderData = () => {
 			</Filters>
 
 			<DragDropContext onDragEnd={onDragEnd}>
-				<div className='pt-[7px] overflow-x-hidden'>
-					<Lists className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[20px] w-full mb-[30px]'>
+				<div className='pt-[7px] '>
+					<Lists className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-[24px] w-full mb-[30px]'>
 						{/* DELETED (CANCELLED) */}
 						<Column
 							title={t('AdminDashboard.statuses.deleted') ?? 'Deleted'}
@@ -483,7 +512,7 @@ export const OrderData = () => {
 														onClick={e => handlerCardClick(item, e)}
 													>
 														<OrderCard
-															item={item}
+															item={decorateForCard(item)}
 															select={selectOrder?.id}
 														/>
 													</div>
@@ -495,6 +524,7 @@ export const OrderData = () => {
 								)}
 							</Droppable>
 						</Column>
+
 						{/* DRAFT */}
 						<Column
 							title={t('AdminDashboard.statuses.draft')}
@@ -531,7 +561,7 @@ export const OrderData = () => {
 														onClick={e => handlerCardClick(item, e)}
 													>
 														<OrderCard
-															item={item}
+															item={decorateForCard(item)}
 															select={selectOrder?.id}
 														/>
 													</div>
@@ -580,7 +610,7 @@ export const OrderData = () => {
 														onClick={e => handlerCardClick(item, e)}
 													>
 														<OrderCard
-															item={item}
+															item={decorateForCard(item)}
 															select={selectOrder?.id}
 														/>
 													</div>
@@ -629,7 +659,7 @@ export const OrderData = () => {
 														onClick={e => handlerCardClick(item, e)}
 													>
 														<OrderCard
-															item={item}
+															item={decorateForCard(item)}
 															select={selectOrder?.id}
 														/>
 													</div>
@@ -678,7 +708,7 @@ export const OrderData = () => {
 														onClick={e => handlerCardClick(item, e)}
 													>
 														<OrderCard
-															item={item}
+															item={decorateForCard(item)}
 															select={selectOrder?.id}
 														/>
 													</div>
@@ -718,7 +748,7 @@ const Column = ({
 	color: 'draft' | 'confirmed' | 'paid' | 'sent' | 'deleted'
 	children: React.ReactNode
 }) => (
-	<div className='flex flex-col gap-[20px] w-[235px]'>
+	<div className='flex flex-col gap-[20px] w-[260px]'>
 		<StatusWrapper
 			className='flex flex-row justify-between items-center'
 			$status={color}
@@ -787,20 +817,38 @@ const CountStatus = styled.p`
 	box-shadow: 0 4px 4px 0 #00000040 inset;
 `
 
-// зона скидання має мінімальну висоту, щоб приймати дроп навіть коли порожня
 const DropArea = styled.ul<{ $isOver?: boolean; $isEmpty?: boolean }>`
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	overflow-y: auto;
-	max-height: 480px;
 
-	/* ключове: */
-	min-height: 120px;
-	padding: 8px;
+	/* скрол всередині колонки */
+	overflow-y: auto;
+	max-height: 72vh; /* було 480px */
+	min-height: 160px; /* трохи більша "порожня" висота */
+	padding: 10px;
+
 	border: 1px dashed ${({ $isOver }) => ($isOver ? '#4BC785' : '#333')};
-	border-radius: 8px;
+	border-radius: 10px;
 	background: ${({ $isOver }) => ($isOver ? '#1b1b1b' : 'transparent')};
+
+	/* приємний скролбар (не обовʼязково) */
+	scrollbar-width: thin;
+	scrollbar-color: #555 transparent;
+	&::-webkit-scrollbar {
+		width: 8px;
+	}
+	&::-webkit-scrollbar-thumb {
+		background: #555;
+		border-radius: 6px;
+	}
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	@media (max-height: 700px) {
+		max-height: 60vh;
+	}
 `
 
 const EmptyHint = styled.div`

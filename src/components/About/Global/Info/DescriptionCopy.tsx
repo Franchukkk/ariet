@@ -5,17 +5,16 @@ interface Props {
 	className?: string
 }
 
-export const Description = ({ text, className }: Props) => (
+export const DescriptionCopy = ({ text, className }: Props) => (
 	<StyledDescription className={className}>{text}</StyledDescription>
 )
 
 const StyledDescription = styled.p`
-	font-family: TT Firs Neue;
 	font-weight: 300;
 	font-style: Light;
 	font-size: 14px;
 	leading-trim: NONE;
 	line-height: 18px;
 	letter-spacing: 1%;
-	color: #ffffffa8;
+	color: #ffffff;
 `

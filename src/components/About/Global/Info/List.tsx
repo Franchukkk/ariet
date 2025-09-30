@@ -1,40 +1,48 @@
-"use client";
+'use client'
 
-import IconSvg from "@/assets/img/pin.svg"
-import { useTranslation } from "react-i18next"
-import styled from "styled-components"
+import { useTranslation } from 'react-i18next'
+import styled from 'styled-components'
+
+import IconSvg from '@/assets/img/pin.svg'
 
 const KEYS = [
-  "list.barcelona_spain",
-  "list.izmir_turkey",
-  "list.shenzhen_china",
-] as const;
+	'list.barcelona_spain',
+	'list.izmir_turkey',
+	'list.shenzhen_china'
+] as const
 
 const ListItem = ({ text }: { text: string }) => (
-  <li className="flex items-center gap-2.5">
-    <IconSvg aria-label="icon" />
-    {text}
-  </li>
-);
+	<li className='flex items-center gap-2.5'>
+		<IconSvg aria-label='icon' />
+		{text}
+	</li>
+)
 
 export const List = () => {
-  const { t } = useTranslation("common");
+	const { t } = useTranslation('common')
 
-  return (
-    <StyledList>
-      {KEYS.map((key) => (
-        <ListItem key={key} text={t(key)} />
-      ))}
-    </StyledList>
-  );
-};
+	return (
+		<StyledList>
+			{KEYS.map(key => (
+				<ListItem
+					key={key}
+					text={t(key)}
+				/>
+			))}
+		</StyledList>
+	)
+}
 
 const StyledList = styled.ul`
-  margin: 25px 0 22px;
-  font-family: TT Firs Neue;
-  font-weight: 300;
-  font-size: 16px;
-  line-height: 33px;
-  letter-spacing: 0%;
-  text-transform: uppercase;
-`;
+	margin: 25px 0 22px;
+
+	font-weight: 400;
+	font-style: Regular;
+	font-size: 16px;
+	leading-trim: NONE;
+	line-height: 33px;
+	letter-spacing: 0%;
+	text-transform: uppercase;
+
+	color: #ffffff;
+`

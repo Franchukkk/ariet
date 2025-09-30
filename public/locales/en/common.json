@@ -724,5 +724,11 @@
 	"BillingZoneSelect": {
 		"Nothing_found": "Nothing found",
 		"billing_zone": "Delivery location"
+	},
+	"roles": {
+		"admin": "Administrator",
+		"manager": "Manager",
+		"client": "Client",
+		"user": "User"
 	}
 }

@@ -1,55 +1,63 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { Card } from './Card'
 
-type Category = {
-	id: number | string
-	name: string
-	image?: string | null
-}
+type Category = { id: number; name: string; image?: string | null }
 
 export const Grid = () => {
+	const { i18n } = useTranslation('common')
 	const [items, setItems] = useState<Category[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
+	const currentLng = useMemo<'ru' | 'en'>(() => {
+		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		return raw === 'en' ? 'en' : 'ru'
+	}, [i18n.language, i18n.resolvedLanguage])
+
 	useEffect(() => {
 		let mounted = true
+		const controller = new AbortController()
+
 		;(async () => {
 			try {
+				setLoading(true)
+				setError(null)
 				const res = await fetch(
-					'https://rpktask.sytes.net/api/catalog/categories/?page_size=5',
-					{
-						method: 'GET',
-						credentials: 'include',
-						headers: { 'Content-Type': 'application/json' },
-						cache: 'no-store'
-					}
+					`/api/proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
+					{ cache: 'no-store', signal: controller.signal }
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 				const json = await res.json()
-				const data: Category[] = (json?.results ?? []).map((c: any) => ({
+				const arr = Array.isArray(json) ? json : (json?.results ?? [])
+
+				const data = arr.slice(0, 5).map((c: any) => ({
 					id: c.id,
-					name: c.name,
+					name: c[`name_${currentLng}`] ?? c.name ?? '',
 					image: c.image ?? null
 				}))
-				if (mounted) setItems(data.slice(0, 5))
+
+				if (mounted) setItems(data)
 			} catch (e: any) {
-				setError(e?.message ?? 'Failed to load')
+				if (e?.name !== 'AbortError') setError(e?.message || 'Failed to load')
 			} finally {
 				if (mounted) setLoading(false)
 			}
 		})()
+
 		return () => {
 			mounted = false
+			controller.abort()
 		}
-	}, [])
+	}, [currentLng])
 
-	// фіксовані позиції, як у твоєму макеті
-	const LAYOUT: { className: string; showTop: boolean }[] = [
+	if (loading || error) return null
+
+	const LAYOUT = [
 		{ className: 'row-span-2', showTop: true },
 		{ className: 'row-span-2', showTop: true },
 		{ className: 'col-start-3 col-end-5', showTop: false },
@@ -60,8 +68,6 @@ export const Grid = () => {
 		{ className: 'col-start-5 col-end-8 row-span-2', showTop: false }
 	]
 
-	if (loading || error) return null
-
 	return (
 		<StyledGrid>
 			{items.map((cat, i) => {
@@ -70,11 +76,11 @@ export const Grid = () => {
 				return (
 					<Card
 						key={cat.id}
-						className={`card ${lay.className}`} // важливо: .card лишається → nth-child працює
+						className={`card ${lay.className}`}
 						topTitle={topTitle}
 						bottomTitle={cat.name}
-						photo={cat.image ?? undefined} // Card сам пропустить <Image>, якщо фото немає
-						href={`/products?category=${cat.id}`} // клік по всій картці
+						photo={cat.image ?? undefined}
+						href={`/products?category=${cat.id}&lng=${currentLng}`}
 					/>
 				)
 			})}
@@ -115,18 +121,14 @@ const StyledGrid = styled.div`
 			}
 			.card-product {
 				object-position: left top;
-			} /* → тримаємося лівого краю */
+			}
 		}
 
-		&:nth-child(3) {
-			.title {
-				max-width: 122px;
-			}
+		&:nth-child(3) .title {
+			max-width: 122px;
 		}
-		&:nth-child(4) {
-			.title {
-				margin-right: 74px;
-			}
+		&:nth-child(4) .title {
+			margin-right: 74px;
 		}
 
 		&:nth-child(5) {
@@ -138,7 +140,7 @@ const StyledGrid = styled.div`
 			}
 			.card-product {
 				object-position: left top;
-			} /* або left bottom, якщо треба нижче */
+			}
 		}
 	}
 
@@ -165,7 +167,7 @@ const StyledGrid = styled.div`
 			}
 			.card-product {
 				object-position: left top;
-			} /* стабільна прив’язка і на мобайлі */
+			}
 		}
 	}
 `

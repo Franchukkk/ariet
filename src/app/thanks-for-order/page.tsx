@@ -2,13 +2,14 @@ import { ClientComponent } from '@/components/thanks-for-order/client'
 
 export const dynamic = 'force-dynamic'
 
-export default function Page({
+export default async function Page({
 	searchParams
 }: {
-	searchParams: { order?: string }
+	// у нових версіях Next це Promise
+	searchParams: Promise<{ order?: string }>
 }) {
-	const raw = searchParams?.order ?? ''
-	const orderNumber = raw && raw.trim() ? raw : '—'
-
-	return <ClientComponent orderNumber={orderNumber} />
+	const sp = await searchParams
+	const rawParam = decodeURIComponent((sp?.order ?? '').trim())
+	// НІЧОГО тут не фетчимо, просто передаємо далі
+	return <ClientComponent initialOrderParam={rawParam} />
 }

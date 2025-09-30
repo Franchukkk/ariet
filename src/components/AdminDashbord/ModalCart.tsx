@@ -502,7 +502,7 @@ export const ModalCart = ({
 				{/* дані + білінг-зона */}
 				<div className='pl-[20px] pr-[20px]'>
 					{!editing ? (
-						// ===== READ-ONLY: показуємо ВСІ поля, які ти просив =====
+						// ===== READ-ONLY
 						<ReadonlyGrid>
 							<FieldRow
 								label='Client type'
@@ -565,26 +565,27 @@ export const ModalCart = ({
 							)}
 						</ReadonlyGrid>
 					) : (
-						// ===== EDIT: інпути для всіх полів =====
+						// ===== EDIT
 						<div className='flex flex-col gap-[10px] max-w-[520px]'>
-							<Select
-								value={form.client_type}
-								onChange={e =>
-									setForm(prev => ({
-										...prev,
-										client_type: e.target.value as ClientType
-									}))
-								}
+							<SegmentGroup
+								role='tablist'
+								aria-label='Client type'
 							>
 								{CLIENT_TYPES.map(ct => (
-									<option
+									<SegmentBtn
 										key={ct}
-										value={ct}
+										type='button'
+										role='tab'
+										aria-selected={form.client_type === ct}
+										data-active={form.client_type === ct ? '1' : '0'}
+										onClick={() =>
+											setForm(prev => ({ ...prev, client_type: ct }))
+										}
 									>
-										{ct}
-									</option>
+										{ct === 'INDIVIDUAL' ? 'INDIVIDУAL' : 'COMPANY'}
+									</SegmentBtn>
 								))}
-							</Select>
+							</SegmentGroup>
 
 							<Input
 								placeholder={t('AdminDashboard.full_name')}
@@ -861,10 +862,6 @@ function BillingZoneInputLike({
 
 			{open && (
 				<Menu role='listbox'>
-					{loading && <MenuEmpty>Loading…</MenuEmpty>}
-					{!loading && filtered.length === 0 && (
-						<MenuEmpty>Нічого не знайдено</MenuEmpty>
-					)}
 					{!loading &&
 						filtered.map(z => (
 							<MenuItem
@@ -902,10 +899,16 @@ const WrapperOrder = styled.div`
 	}
 `
 const Wrapper = styled.div`
+	/* було тільки на мобілці — тепер завжди: */
+	max-height: 85vh;
+	overflow-y: auto;
+
+	/* м'який скролбар */
+	scrollbar-width: thin;
+	scrollbar-color: #3a3a3a transparent;
+
 	@media (max-width: 764px) {
 		padding-top: 60px;
-		max-height: 90%;
-		overflow-y: auto;
 	}
 `
 const LeftHeader = styled.div`
@@ -945,6 +948,49 @@ const Thumb = styled.div`
 		display: block;
 	}
 `
+const FieldTitle = styled.div`
+	color: #ffffffde;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	margin-bottom: 6px;
+`
+/* сегментований слайдер */
+const SegmentGroup = styled.div`
+	display: inline-flex;
+	background: #0f0f0f;
+	border: 1px solid #2f2f2f;
+	border-radius: 10px;
+	padding: 4px;
+	gap: 4px;
+	margin-bottom: 8px;
+`
+const SegmentBtn = styled.button`
+	min-width: 120px;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 8px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: #d1d5db;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: all 0.15s;
+
+	&[aria-selected='true'],
+	&[data-active='1'] {
+		background: #1b1b1b;
+		color: #fff;
+		border-color: #3a3a3a;
+		box-shadow: 0 0 0 1px #2b2b2b inset;
+	}
+
+	&:hover {
+		background: #151515;
+	}
+`
+
 const Input = styled.input`
 	text-align: left;
 	font-size: 16px;
@@ -1140,6 +1186,7 @@ const InputCore = styled.input`
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
+
 	&::placeholder {
 		color: #777;
 	}
