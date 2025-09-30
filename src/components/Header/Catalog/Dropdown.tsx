@@ -20,44 +20,32 @@ export const Dropdown = () => {
 
 	useEffect(() => {
 		let cancelled = false
-		const load = async () => {
-			setLoading(true)
-			setError(null)
-
-			const parse = (json: any, lng: 'ru' | 'en'): Category[] => {
-				const arr = Array.isArray(json) ? json : (json?.results ?? [])
-				return arr.map((c: any) => ({
-					id: c.id,
-					name: c[`name_${lng}`] ?? c.name ?? ''
-				}))
-			}
-
+		;(async () => {
 			try {
-				// 1) через локальний проксі (потрібен для Accept-Language)
-				let res = await fetch(
+				setLoading(true)
+				setError(null)
+
+				// КЛЮЧОВЕ: ВІДНОСНИЙ шлях до вашого Next API,
+				// без https://rpktask.sytes.net
+				const res = await fetch(
 					`/api/proxy/categories?lng=${currentLng}&page_size=99&_=${Date.now()}`,
 					{ cache: 'no-store' }
 				)
-
-				// 2) fallback напряму на бек, якщо проксі недоступний/404
-				if (res.status === 404) {
-					res = await fetch(
-						`https://rpktask.sytes.net/api/catalog/categories/?lng=${currentLng}&page_size=99&_=${Date.now()}`,
-						{ cache: 'no-store' }
-					)
-				}
-
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
 				const json = await res.json()
-				if (!cancelled) setCategories(parse(json, currentLng))
-			} catch (e: any) {
-				if (!cancelled) setError(e?.message || 'Failed to load categories')
+				const arr = Array.isArray(json) ? json : (json?.results ?? [])
+				const list: Category[] = arr.map((c: any) => ({
+					id: c.id,
+					name: c[`name_${currentLng}`] ?? c.name ?? ''
+				}))
+				if (!cancelled) setCategories(list)
+			} catch (err: any) {
+				if (!cancelled) setError(err?.message || 'Failed to load')
 			} finally {
 				if (!cancelled) setLoading(false)
 			}
-		}
-
-		load()
+		})()
 		return () => {
 			cancelled = true
 		}
@@ -67,8 +55,8 @@ export const Dropdown = () => {
 		<StyledDropdown className='dropdown'>
 			<div>
 				<div className='flex flex-col gap-3'>
-					{loading && <span>Loading…</span>}
-					{error && <span style={{ color: '#ef4444' }}>{error}</span>}
+					{loading && <p>Loading...</p>}
+					{error && <p style={{ color: 'red' }}>{error}</p>}
 					{!loading &&
 						!error &&
 						categories.map(cat => (
@@ -107,6 +95,7 @@ const StyledDropdown = styled.div`
 	visibility: hidden;
 	transition: all 0.3s;
 	z-index: 100;
+
 	a:hover {
 		color: #4bc785;
 	}

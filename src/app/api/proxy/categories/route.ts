@@ -1,4 +1,3 @@
-// src/app/api/proxy/categories/route.ts
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -10,11 +9,14 @@ export async function GET(req: Request) {
 	try {
 		const url = new URL(req.url)
 		const lng = (url.searchParams.get('lng') || 'ru').split('-')[0]
+
 		const upstreamUrl = new URL(UPSTREAM)
-		for (const [k, v] of url.searchParams.entries()) {
-			if (k !== 'lng') upstreamUrl.searchParams.set(k, v)
-		}
+		for (const [k, v] of url.searchParams.entries())
+			upstreamUrl.searchParams.set(k, v)
+		upstreamUrl.searchParams.set('lng', lng)
+
 		const res = await fetch(upstreamUrl.toString(), {
+			method: 'GET',
 			headers: {
 				Accept: 'application/json',
 				'Accept-Language': lng,
@@ -22,8 +24,10 @@ export async function GET(req: Request) {
 				'Cache-Control': 'no-store',
 				Pragma: 'no-cache'
 			},
-			cache: 'no-store'
+			cache: 'no-store',
+			redirect: 'follow'
 		})
+
 		const body = await res.text()
 		return new NextResponse(body, {
 			status: res.status,
