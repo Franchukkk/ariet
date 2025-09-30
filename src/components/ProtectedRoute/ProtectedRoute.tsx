@@ -68,6 +68,8 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 						targetPath = '/ambassador'
 					} else if (userRole === 'ADMIN') {
 						targetPath = '/admin-dashboard'
+					} else if (userRole === 'DEALER') {
+						targetPath = '/my-account'
 					}
 
 					if (pathname !== targetPath) {

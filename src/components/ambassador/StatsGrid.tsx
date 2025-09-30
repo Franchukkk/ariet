@@ -1,22 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-// ПІДКОРИГУЙ під свій проєкт:
+// ваші хелпери авторизації
 import { getAccessToken, logout, refreshToken } from '@/helpers/auth'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const API_BASE = 'https://rpktask.sytes.net/api'
 
 /* -------------------- styled -------------------- */
-const Card = styled.div<{ $hidden?: boolean }>`
+const Card = styled.div`
 	background: #1a1a1a;
 	padding: 16px;
 	margin-left: 20px;
 	border-radius: 8px;
 	color: #fff;
-	display: ${({ $hidden }) => ($hidden ? 'none' : 'flex')};
+	display: flex;
 	justify-content: space-between;
 	align-items: flex-end;
 	flex: 1 1 280px;
@@ -75,29 +78,24 @@ const Bar = styled.div<{ height: number; shade: number }>`
 `
 
 /* -------------------- types & utils -------------------- */
-type StatsResponse = {
-	total_orders: number
-	total_sales_amount: string
-	total_items_sold: number
-	average_order_value: string
-	orders_today: number
+type UserMe = {
+	email?: string
+	role?: string
+	full_name?: string
+	phone?: string
+	promo_code?: string
+	promocode_discount_percent?: string
+	promocode_uses?: string
+	promocode_max_uses?: string
+	promocode_total_orders?: string
+	instagram?: string
+	youtube?: string
+	tiktok?: string
+	telegram?: string
+	avatar?: string
 }
 
-const normalizeStats = (raw: any): StatsResponse => ({
-	total_orders: Number(raw?.total_orders ?? 0),
-	total_sales_amount: String(raw?.total_sales_amount ?? '0'),
-	total_items_sold: Number(raw?.total_items_sold ?? 0),
-	average_order_value: String(raw?.average_order_value ?? '0'),
-	orders_today: Number(raw?.orders_today ?? 0)
-})
-
-const nf = new Intl.NumberFormat('uk-UA')
-const formatMoney = (v: string | number) => {
-	const n = typeof v === 'string' ? Number(v) : v
-	return nf.format(Number.isFinite(n) ? n : 0)
-}
-
-/** fetch з токеном, auto-refresh при 401, без нав’язаного Content-Type для GET */
+/** fetch з токеном, auto-refresh при 401 */
 const fetchWithAuth = async (url: string, init?: RequestInit) => {
 	let token = getAccessToken()
 	if (!token) {
@@ -109,7 +107,6 @@ const fetchWithAuth = async (url: string, init?: RequestInit) => {
 		Authorization: `Bearer ${token}`,
 		Accept: 'application/json'
 	}
-	// Не насилуємо Content-Type для GET/без body
 	if (init?.body || (init?.method && init.method !== 'GET')) {
 		headers['Content-Type'] = headers['Content-Type'] ?? 'application/json'
 	}
@@ -133,83 +130,20 @@ const fetchWithAuth = async (url: string, init?: RequestInit) => {
 	return res
 }
 
-/* ---- фолбек: рахуємо статистику по власних замовленнях /orders/ ---- */
-type OrderItem = { quantity: number; price?: string }
-type Order = { created_at?: string; items?: OrderItem[] }
-
-const parseNum = (v: any) => {
-	const n = Number(v)
-	return Number.isFinite(n) ? n : 0
-}
-
-const sumOrderAmount = (o: Order) =>
-	(o.items ?? []).reduce(
-		(acc, it) => acc + parseNum(it.price) * parseNum(it.quantity),
-		0
-	)
-
-const isToday = (iso?: string) => {
-	if (!iso) return false
-	const d = new Date(iso)
-	const now = new Date()
-	return (
-		d.getFullYear() === now.getFullYear() &&
-		d.getMonth() === now.getMonth() &&
-		d.getDate() === now.getDate()
-	)
-}
-
-async function loadStatsFallback(): Promise<StatsResponse> {
-	let nextUrl: string | null = `${API_BASE}/orders/?page=1&page_size=100`
-	let totalOrders = 0
-	let totalAmount = 0
-	let totalItems = 0
-	let ordersToday = 0
-
-	while (nextUrl) {
-		const res = await fetchWithAuth(nextUrl, { method: 'GET' })
-		if (!res.ok) throw new Error(`Orders fetch failed: ${res.status}`)
-		const json = await res.json()
-		const results: Order[] = Array.isArray(json) ? json : (json?.results ?? [])
-		for (const o of results) {
-			totalOrders += 1
-			totalAmount += sumOrderAmount(o)
-			totalItems += (o.items ?? []).reduce(
-				(a, it) => a + parseNum(it.quantity),
-				0
-			)
-			if (isToday(o.created_at)) ordersToday += 1
-		}
-		nextUrl = json?.next ?? null
-	}
-
-	const avg = totalOrders ? totalAmount / totalOrders : 0
-	return {
-		total_orders: totalOrders,
-		total_sales_amount: String(totalAmount),
-		total_items_sold: totalItems,
-		average_order_value: String(avg),
-		orders_today: ordersToday
-	}
-}
-
-/* -------------------- card -------------------- */
-type StatsCardProps = {
-	value: string
-	label: string
-	percent?: string
-	chartData: number[]
-	hidden?: boolean
-}
+/* -------------------- карточка -------------------- */
 function StatsCard({
 	value,
 	label,
 	percent = '—',
-	chartData,
-	hidden
-}: StatsCardProps) {
+	chartData
+}: {
+	value: string
+	label: string
+	percent?: string
+	chartData: number[]
+}) {
 	return (
-		<Card $hidden={hidden}>
+		<Card>
 			<Info>
 				<Value>{value}</Value>
 				<Label>{label}</Label>
@@ -228,83 +162,54 @@ function StatsCard({
 	)
 }
 
-/* -------------------- main component -------------------- */
-export default function DashboardStats() {
+/* -------------------- головний компонент -------------------- */
+export default function DashboardBonusesOnly() {
 	const { t } = useTranslation('common')
-	const [stats, setStats] = useState<StatsResponse | null>(null)
+
+	const [user, setUser] = useState<UserMe | null>(null)
 	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		let mounted = true
-		const load = async () => {
+		;(async () => {
 			try {
 				setLoading(true)
-				// 1) основний endpoint
-				const res = await fetchWithAuth(`${API_BASE}/orders/stats/`, {
+				const r = await fetchWithAuth(`${API_BASE}/users/me/`, {
 					method: 'GET'
 				})
-
-				if (res.ok) {
-					const json = await res.json()
-					if (mounted) setStats(normalizeStats(json))
-					return
-				}
-
-				// 2) якщо немає доступу — фолбек на /orders/ з підрахунком локально
-				if (res.status === 403 || res.status === 404) {
-					const fb = await loadStatsFallback()
-					if (mounted) setStats(fb)
-					return
-				}
-
-				// інші коди — кинемо помилку (побачимо її в консолі)
-				throw new Error(`Failed: ${res.status}`)
+				if (!r.ok) throw new Error(`HTTP ${r.status}`)
+				const data: UserMe = await r.json()
+				if (mounted) setUser(data)
 			} catch (e) {
 				console.error(e)
-				// щоб інтерфейс не “порожнів” — ставимо нулі
-				if (mounted)
-					setStats({
-						total_orders: 0,
-						total_sales_amount: '0',
-						total_items_sold: 0,
-						average_order_value: '0',
-						orders_today: 0
-					})
+				if (mounted) setUser(null)
 			} finally {
 				if (mounted) setLoading(false)
 			}
-		}
-		load()
+		})()
 		return () => {
 			mounted = false
 		}
 	}, [])
 
-	const valueBonuses = String(stats?.orders_today ?? 0)
-	const valueAmount = `${formatMoney(stats?.total_sales_amount ?? '0')} $`
-	const valueOrders = String(stats?.total_orders ?? 0)
+	// показуємо РЯДОК як є (fallback '0')
+	const valueBonuses =
+		(user?.promocode_total_orders ?? '').toString().trim() || '0'
+	// опційно — прогрес використань (якщо бек дає)
+	const uses = user?.promocode_uses ? Number(user.promocode_uses) : null
+	const maxUses = user?.promocode_max_uses
+		? Number(user.promocode_max_uses)
+		: null
+	const percentBonuses =
+		uses != null && maxUses != null && maxUses > 0 ? `${uses}/${maxUses}` : '—'
 
 	return (
 		<div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
 			<StatsCard
-				value={loading && !stats ? '…' : valueBonuses}
+				value={loading && user == null ? '…' : valueBonuses}
 				label={t('ambassador.label.bonuses')}
-				percent='—'
+				percent={percentBonuses}
 				chartData={[20, 25, 30, 40]}
-			/>
-			<StatsCard
-				value={loading && !stats ? '…' : valueAmount}
-				label={t('ambassador.label.amount')}
-				percent='—'
-				chartData={[15, 20, 18, 45]}
-				hidden
-			/>
-			<StatsCard
-				value={loading && !stats ? '…' : valueOrders}
-				label={t('ambassador.label.orders')}
-				percent='—'
-				chartData={[10, 15, 20, 35]}
-				hidden
 			/>
 		</div>
 	)

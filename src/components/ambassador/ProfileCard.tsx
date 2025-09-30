@@ -47,16 +47,16 @@ export default function ProfileCard() {
 					: null
 
 			const fd = new FormData()
-			fd.append('avatar', file) // важливо: ключ саме "avatar"
+			fd.append('avatar', file) // бек очікує ключ "avatar"
 
-			// Не ставимо Content-Type — браузер сам додасть boundary
+			// Не задаємо Content-Type — браузер сам додасть boundary
 			let r = await fetch(`${API_BASE}/users/me/`, {
 				method: 'PATCH',
 				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				body: fd
 			})
 
-			// fallback якщо PATCH не дозволений
+			// fallback, якщо PATCH не доступний
 			if (!r.ok && r.status === 405) {
 				r = await fetch(`${API_BASE}/users/me/`, {
 					method: 'PUT',
@@ -65,8 +65,12 @@ export default function ProfileCard() {
 				})
 			}
 
+			// локальний прев’ю
 			const localUrl = URL.createObjectURL(file)
 			setAvatarUrl(localUrl)
+			// refetch?.() // при потребі підтягнути оновлені дані користувача
+		} catch (e: any) {
+			setError(e?.message || 'Не вдалося завантажити аватар')
 		} finally {
 			setUploading(false)
 			if (fileRef.current) fileRef.current.value = ''
@@ -80,6 +84,23 @@ export default function ProfileCard() {
 		(me.promo_code || '').trim() ||
 		(t('AdminDashboard.no_promocode') as string) ||
 		'Промокод відсутній'
+
+	// знижка біля промокоду (якщо є)
+	const discountRaw = me.promocode_discount_percent ?? ''
+	const discountNum = Number(discountRaw)
+	const hasDiscount =
+		(typeof discountRaw === 'string' && discountRaw.trim() !== '') ||
+		Number.isFinite(discountNum)
+
+	// показуємо як рядок + символ %; якщо бек дає число 50 — буде "50%"
+	const discountLabel =
+		String(discountRaw ?? '')
+			.toString()
+			.trim() !== ''
+			? `${String(discountRaw).toString().trim()}%`
+			: Number.isFinite(discountNum)
+				? `${discountNum}%`
+				: ''
 
 	return (
 		<CardWrapper>
@@ -101,9 +122,8 @@ export default function ProfileCard() {
 					<AvatarImage
 						src={currentAvatar}
 						alt={me.full_name || 'avatar'}
-						width={231}
-						height={231}
-						priority
+						fill
+						sizes='(max-width:768px) 150px, 231px'
 					/>
 				</AvatarWrapper>
 
@@ -111,6 +131,8 @@ export default function ProfileCard() {
 					type='button'
 					disabled={uploading}
 					onClick={() => fileRef.current?.click()}
+					aria-label={t('AdminDashboard.edit') || 'Edit avatar'}
+					title={t('AdminDashboard.edit') || 'Edit avatar'}
 				>
 					<Pencil />
 				</EditButton>
@@ -124,11 +146,22 @@ export default function ProfileCard() {
 				/>
 			</AvatarContainer>
 
+			{uploading && <Uploading>Завантаження…</Uploading>}
+			{error && <ErrorText>{error}</ErrorText>}
+
 			<Name>{nameUpper}</Name>
 			<Role>{t('ambassador.role')}</Role>
 
 			<Label>{t('AdminDashboard.my_promocode')}</Label>
-			<PromoPill>{promoText}</PromoPill>
+
+			<PromoRow>
+				<PromoPill>{promoText}</PromoPill>
+				{hasDiscount && discountLabel && (
+					<DiscountBadge aria-label='Promo discount'>
+						−{discountLabel}
+					</DiscountBadge>
+				)}
+			</PromoRow>
 		</CardWrapper>
 	)
 }
@@ -185,22 +218,23 @@ const AvatarContainer = styled.div`
 `
 
 const AvatarWrapper = styled.div`
-	width: 331px;
-	height: 231px;
+	width: 231px;
+	aspect-ratio: 1 / 1; /* завжди квадрат */
 	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	overflow: hidden;
+	display: grid; /* зручно центрувати */
+	place-items: center;
+
 	@media (max-width: 768px) {
 		width: 150px;
-		height: 150px;
 	}
 `
 
 const AvatarImage = styled(Image)`
+	width: 100%;
+	height: 100%;
+	object-fit: cover; /* не спотворює пропорції */
 	border-radius: 50%;
-	object-fit: cover;
 `
 
 const EditButton = styled.button`
@@ -287,6 +321,12 @@ const Label = styled.p`
 	}
 `
 
+const PromoRow = styled.div`
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+`
+
 const PromoPill = styled.p`
 	padding: 10px 20px;
 	border: 1px solid #4bc785;
@@ -299,4 +339,15 @@ const PromoPill = styled.p`
 		margin-top: 6px;
 		margin-bottom: 6px;
 	}
+`
+
+const DiscountBadge = styled.span`
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: #1a1a1a;
+	border: 1px dashed #4bc785;
+	color: #4bc785;
+	font-weight: 700;
+	font-size: 14px;
+	line-height: 1;
 `
