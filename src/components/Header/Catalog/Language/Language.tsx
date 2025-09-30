@@ -55,7 +55,6 @@ export const Language = () => {
 			setIsOpen(false)
 			return
 		}
-
 		await ensureCommon(lng)
 		localStorage.setItem('lng', lng)
 		await i18n.changeLanguage(lng)
@@ -77,6 +76,7 @@ export const Language = () => {
 		<StyledLanguage
 			ref={langRef}
 			className={isOpen ? 'open' : ''}
+			data-no-close /* ⬅️ ключове! */
 		>
 			<button
 				type='button'

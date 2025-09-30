@@ -8,6 +8,7 @@ import { Basket } from './Basket/basket'
 import { Burger } from './Burger'
 import { Catalog } from './Catalog/Catalog'
 import { Contacts } from './Contacts/Contacts'
+// ⬅️ додано
 import { Logo } from './Logo'
 import { Navigation } from './Navigation'
 import { User } from './User/User'
@@ -28,12 +29,8 @@ export const Header = () => {
 	}
 
 	const handleToggleSidebar = () => {
-		if (open) {
-			// якщо було відкрите — повертаємо скрол
-			setBodyScroll(true)
-		} else {
-			setBodyScroll(false)
-		}
+		if (open) setBodyScroll(true)
+		else setBodyScroll(false)
 		setOpen(!open)
 	}
 
@@ -53,18 +50,22 @@ export const Header = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open])
 
-	// Закривати по кліку на будь-який інтерактив у шторці:
-	// <a>, <button>, [role="button"], [data-close-on-click]
+	// Закривати по кліку лише на посилання або елементи, які ТИ явно позначиш
 	useEffect(() => {
 		if (!open) return
 		const el = contentRef.current
 		if (!el) return
 
-		const selector = 'a, button, [role="button"], [data-close-on-click]'
+		const CLOSE_SELECTOR = 'a[href], [data-close-on-click]'
+
 		const onClick = (e: MouseEvent) => {
 			const target = e.target as HTMLElement | null
 			if (!target) return
-			const interactive = target.closest(selector)
+
+			// Не закривати, якщо клік всередині блоку, який не має закривати меню
+			if (target.closest('[data-no-close]')) return
+
+			const interactive = target.closest(CLOSE_SELECTOR)
 			if (interactive && el.contains(interactive)) {
 				// даємо роутинигу відпрацювати, потім схлопуємо
 				setTimeout(() => closeMenu(), 0)
@@ -90,6 +91,8 @@ export const Header = () => {
 				<Navigation />
 				<Contacts />
 				<Basket />
+				{/* ⬇️ ВАЖЛИВО: загортаємо перемикач у контейнер, який меню не закриває */}
+
 				<User />
 			</div>
 			<Burger

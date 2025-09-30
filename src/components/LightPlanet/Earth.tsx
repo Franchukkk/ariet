@@ -1,410 +1,167 @@
-'use client'
-
-// @ts-nocheck
 import { useEffect, useRef } from 'react'
+import * as solar from 'solar-calculator'
 import styled from 'styled-components'
 import * as THREE from 'three'
 
-import dayImg from '@/assets/img/world-day.jpg'
-import nightImg from '@/assets/img/world-night.jpg'
+import dayImg from '../../assets/img/world-day.jpg'
+import nightImg from '../../assets/img/world-night.jpg'
 
 const vertexShader = `
   varying vec2 vUv;
-  varying vec3 vWorldPos;
-  varying vec3 vWorldNormal;
+  varying vec3 vNormal;
   void main() {
     vUv = uv;
-    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-    vWorldPos = worldPos.xyz;
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
 
 const fragmentShader = `
-precision highp float;
-varying vec2 vUv;
-varying vec3 vWorldNormal;
-uniform sampler2D dayTexture;
-uniform sampler2D nightTexture;
-uniform vec3 sunDirection;
-vec3 srgbToLinear(vec3 c){ return pow(c, vec3(2.2)); }
-vec3 linearToSrgb(vec3 c){ return pow(max(c, 0.0), vec3(1.0/2.2)); }
-void main() {
-  vec2 uv = vec2(1.0 - vUv.x, vUv.y);
-  vec3 dayCol   = srgbToLinear(texture2D(dayTexture,   uv).rgb);
-  vec3 nightCol = srgbToLinear(texture2D(nightTexture, uv).rgb) * 1.15;
-  vec3 N = normalize(vWorldNormal);
-  vec3 L = normalize(sunDirection);
-  float ndl = max(dot(N, L), 0.0);
-  float dayFactor = smoothstep(0.05, 0.35, ndl);
-  vec3 colorLinear = mix(nightCol, dayCol, dayFactor);
-  gl_FragColor = vec4(linearToSrgb(colorLinear), 1.0);
-}
-`
+  uniform sampler2D dayTexture;
+  uniform sampler2D nightTexture;
+  uniform vec2 sunPosition;   // (lon, lat) сонця в градусах
+  uniform vec2 globeRotation; // (lon, lat) обертання глобуса в градусах
+  varying vec2 vUv;
+  varying vec3 vNormal;
 
-const atmoVertex = `
-  varying vec3 vWorldPos;
-  varying vec3 vWorldNormal;
+  #define PI 3.141592653589793
+
+  float toRad(float deg) { return deg * PI / 180.0; }
+
+  vec3 sunDir(vec2 sunPos, vec2 rotation) {
+    // компенсуємо обертання глобуса
+    float sunLon = toRad(sunPos.x - rotation.x);
+    float sunLat = toRad(sunPos.y - rotation.y);
+    float x = cos(sunLat) * cos(sunLon);
+    float y = sin(sunLat);
+    float z = cos(sunLat) * sin(sunLon);
+    return normalize(vec3(x, y, z));
+  }
+
   void main() {
-    vec4 worldPos = modelMatrix * vec4(position, 1.0);
-    vWorldPos = worldPos.xyz;
-    vWorldNormal = normalize(mat3(modelMatrix) * normal);
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
+    vec3 lightDir = sunDir(sunPosition, globeRotation);
+    float intensity = dot(normalize(vNormal), lightDir);
+    vec4 dayColor = texture2D(dayTexture, vUv);
+    vec4 nightColor = texture2D(nightTexture, vUv);
+    float blend = smoothstep(-0.2, 0.2, intensity);
+    gl_FragColor = mix(nightColor, dayColor, blend);
   }
 `
 
-const atmoFragment = `
-precision highp float;
-varying vec3 vWorldPos;
-varying vec3 vWorldNormal;
-void main() {
-  vec3 V = normalize(cameraPosition - vWorldPos);
-  float rim = 1.0 - max(dot(normalize(vWorldNormal), V), 0.0);
-  rim = pow(rim, 1.5);
-  vec3 glow = vec3(0.35, 0.55, 1.0) * rim;
-  gl_FragColor = vec4(glow, rim * 0.5);
+/** Позиція субсолярної точки (довгота, широта) у градусах для часу t (ms) */
+function sunPosAt(tms: number): [number, number] {
+	// Полудень UTC для стабільнішого досліду рівняння часу
+	const day = new Date(tms)
+	day.setUTCHours(0, 0, 0, 0)
+	const t = solar.century(tms)
+	// приблизно: кутова різниця з полуднем у градусах
+	const longitude = ((day.getTime() - tms) / 864e5) * 360 - 180
+	const lon = longitude - solar.equationOfTime(t) / 4
+	const lat = solar.declination(t)
+	return [lon, lat]
 }
-`
+
+/** Допоміжне: витягти url зі статичного імпорту/рядка */
+const toSrc = (m: any): string => (typeof m === 'string' ? m : m?.src || '')
 
 export const Earth = () => {
-	const containerRef = useRef<HTMLDivElement | null>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 
-	const rafRef = useRef<number | null>(null)
-	const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
-	const sceneRef = useRef<THREE.Scene | null>(null)
-	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
-	const groupRef = useRef<THREE.Group | null>(null)
-	const materialRef = useRef<THREE.ShaderMaterial | null>(null)
-	const atmoMatRef = useRef<THREE.ShaderMaterial | null>(null)
-	const geoRef = useRef<THREE.SphereGeometry | null>(null)
-	const atmoGeoRef = useRef<THREE.SphereGeometry | null>(null)
+	// поточний час (старт — зараз; якщо треба фіксовану дату — заміни на new Date('2025-05-22T00:00:00Z').getTime())
+	const dtRef = useRef<number>(Date.now())
+
+	// умовне «обертання глобуса» (у градусах)
+	const globeRotation = useRef(new THREE.Vector2(0, 0))
+
+	const shaderMaterial = useRef<THREE.ShaderMaterial | null>(null)
+	const sphereRef = useRef<THREE.Mesh | null>(null)
 	const dayTexRef = useRef<THREE.Texture | null>(null)
 	const nightTexRef = useRef<THREE.Texture | null>(null)
-	const roRef = useRef<ResizeObserver | null>(null)
-	const ioRef = useRef<IntersectionObserver | null>(null)
-	const inViewRef = useRef<boolean>(true)
+	const frameRef = useRef<number | null>(null)
 
 	useEffect(() => {
 		const container = containerRef.current!
-		while (container.firstChild) container.removeChild(container.firstChild)
+		const width = 580
+		const height = 580
 
-		const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(
-			navigator.userAgent
-		)
-		const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) <= 820
-		const mobile = isMobileUA || isSmallScreen
-		const prefersReduced =
-			window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
-
-		const showStaticFallback = () => {
-			const src = typeof dayImg === 'string' ? dayImg : dayImg?.src
-			if (src)
-				container.style.background = `radial-gradient(transparent 55%, rgba(0,0,0,0.25)), url("${src}") center/cover no-repeat`
-		}
-		const clearFallback = () => {
-			container.style.background = 'none'
-		}
-
-		const getSize = () => {
-			const rect = container.getBoundingClientRect()
-			const s = Math.min(rect.width || 580, rect.height || 580)
-			return { width: s, height: s }
-		}
-		const { width, height } = getSize()
-
-		// WebGL support
-		const testCanvas = document.createElement('canvas')
-		const canWebGL = !!(
-			testCanvas.getContext('webgl') ||
-			testCanvas.getContext('experimental-webgl')
-		)
-		if (!canWebGL) {
-			showStaticFallback()
-			return
-		}
-
-		// Scene / Camera
 		const scene = new THREE.Scene()
-		sceneRef.current = scene
-		const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
-		camera.position.set(0, 0, 2.3)
-		cameraRef.current = camera
+		const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000)
+		camera.position.z = 3
 
-		// Renderer (без WebGL1Renderer)
-		const renderer = new THREE.WebGLRenderer({
-			antialias: !mobile,
-			alpha: true,
-			powerPreference: mobile ? 'low-power' : 'high-performance',
-			premultipliedAlpha: true,
-			preserveDrawingBuffer: false,
-			failIfMajorPerformanceCaveat: false
-		})
-		;(renderer as any).outputColorSpace = THREE.SRGBColorSpace
-		renderer.toneMapping = THREE.NoToneMapping
-		renderer.toneMappingExposure = 1.0
-		renderer.setClearAlpha(0)
-		renderer.setPixelRatio(
-			Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
-		)
-		renderer.setSize(width, height, false)
+		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+		renderer.setSize(width, height)
+		renderer.setPixelRatio(window.devicePixelRatio)
 		container.appendChild(renderer.domElement)
-		rendererRef.current = renderer
 
-		const group = new THREE.Group()
-		scene.add(group)
-		groupRef.current = group
+		const geometry = new THREE.SphereGeometry(1, 158, 158)
 
-		const seg = mobile ? 48 : 128
-		const geometry = new THREE.SphereGeometry(1, seg, seg)
-		geoRef.current = geometry
-
-		// Textures
 		const loader = new THREE.TextureLoader()
-		const loadTextureSmart = (src: string) =>
-			new Promise<THREE.Texture>((resolve, reject) => {
-				if (!mobile) {
-					loader.load(src, t => resolve(t), undefined, reject)
-					return
+		Promise.all([
+			loader.loadAsync(toSrc(dayImg)),
+			loader.loadAsync(toSrc(nightImg))
+		]).then(([dayTex, nightTex]) => {
+			dayTexRef.current = dayTex
+			nightTexRef.current = nightTex
+
+			shaderMaterial.current = new THREE.ShaderMaterial({
+				vertexShader,
+				fragmentShader,
+				uniforms: {
+					dayTexture: { value: dayTex },
+					nightTexture: { value: nightTex },
+					sunPosition: { value: new THREE.Vector2() }, // (lon, lat)
+					globeRotation: { value: globeRotation.current } // (lon, lat)
 				}
-				const img = new Image()
-				img.onload = () => {
-					let w = img.naturalWidth,
-						h = img.naturalHeight
-					const gl = renderer.getContext()
-					const cap = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096
-					const limit = Math.min(2048, cap)
-					while (Math.max(w, h) > limit) {
-						w = Math.floor(w / 2)
-						h = Math.floor(h / 2)
-					}
-					const c = document.createElement('canvas')
-					c.width = w
-					c.height = h
-					const ctx = c.getContext('2d', { alpha: false })!
-					ctx.drawImage(img, 0, 0, w, h)
-					const tex = new THREE.CanvasTexture(c)
-					resolve(tex)
-				}
-				img.onerror = reject
-				img.decoding = 'async'
-				img.loading = 'eager'
-				img.src = src
 			})
 
-		const srcDay = typeof dayImg === 'string' ? dayImg : dayImg?.src
-		const srcNight = typeof nightImg === 'string' ? nightImg : nightImg?.src
-		if (!srcDay || !srcNight) {
-			showStaticFallback()
-			return
-		}
+			const sphere = new THREE.Mesh(geometry, shaderMaterial.current)
+			sphereRef.current = sphere
+			scene.add(sphere)
 
-		const prepTex = (tex: THREE.Texture) => {
-			;(tex as any).colorSpace = THREE.SRGBColorSpace
-			tex.generateMipmaps = true
-			tex.minFilter = THREE.LinearMipmapLinearFilter
-			tex.magFilter = THREE.LinearFilter
-			tex.anisotropy = mobile
-				? 2
-				: Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 1)
-			tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-		}
+			const animate = () => {
+				// +1 хвилина до часу на кожен кадр (для плавного руху «термінатора»)
+				dtRef.current += 60 * 1000
 
-		Promise.all([loadTextureSmart(srcDay), loadTextureSmart(srcNight)])
-			.then(([dayTex, nightTex]) => {
-				prepTex(dayTex)
-				prepTex(nightTex)
-				dayTexRef.current = dayTex
-				nightTexRef.current = nightTex
+				// обчислюємо позицію Сонця для поточного часу
+				const [sunLon, sunLat] = sunPosAt(dtRef.current)
+				shaderMaterial.current!.uniforms.sunPosition.value.set(sunLon, sunLat)
 
-				// precision fallback
-				const gl = renderer.getContext()
-				let frag = fragmentShader
-				let atmoFrag = atmoFragment
-				try {
-					const fmt = gl.getShaderPrecisionFormat(
-						gl.FRAGMENT_SHADER,
-						gl.HIGH_FLOAT
-					)
-					if (!(fmt && fmt.precision > 0)) {
-						frag = frag.replace(
-							'precision highp float;',
-							'precision mediump float;'
-						)
-						atmoFrag = atmoFrag.replace(
-							'precision highp float;',
-							'precision mediump float;'
-						)
-					}
-				} catch {
-					frag = frag.replace(
-						'precision highp float;',
-						'precision mediump float;'
-					)
-					atmoFrag = atmoFrag.replace(
-						'precision highp float;',
-						'precision mediump float;'
-					)
-				}
+				// повільне власне обертання глобуса (у градусах)
+				globeRotation.current.x += 0.1 // 0.1° за кадр
+				shaderMaterial.current!.uniforms.globeRotation.value.set(
+					globeRotation.current.x,
+					globeRotation.current.y
+				)
 
-				const sunDir = new THREE.Vector3(1, 0.2, 0).normalize()
+				// фізичне обертання меша (щоб UV не були статичні)
+				if (sphereRef.current) sphereRef.current.rotation.y += 0.0005
 
-				const material = new THREE.ShaderMaterial({
-					vertexShader,
-					fragmentShader: frag,
-					uniforms: {
-						dayTexture: { value: dayTex },
-						nightTexture: { value: nightTex },
-						sunDirection: { value: sunDir }
-					},
-					transparent: false
-				})
-				material.toneMapped = false
-				materialRef.current = material
-
-				const earth = new THREE.Mesh(geometry, material)
-				earth.rotation.z = THREE.MathUtils.degToRad(23.5)
-				group.add(earth)
-
-				if (!mobile || seg >= 48) {
-					const atmoMat = new THREE.ShaderMaterial({
-						vertexShader: atmoVertex,
-						fragmentShader: atmoFrag,
-						transparent: true,
-						blending: THREE.AdditiveBlending,
-						depthWrite: false,
-						side: THREE.BackSide
-					})
-					atmoMat.toneMapped = false
-					atmoMatRef.current = atmoMat
-					const atmoGeo = new THREE.SphereGeometry(1.03, seg, seg)
-					atmoGeoRef.current = atmoGeo
-					const atmo = new THREE.Mesh(atmoGeo, atmoMat)
-					atmo.rotation.copy(earth.rotation)
-					group.add(atmo)
-				}
-
-				// --- Animation ---
-				const targetFPS = mobile ? 30 : 60
-				const interval = prefersReduced ? 0 : 1000 / targetFPS
-				let prev = performance.now(),
-					acc = 0
-				const renderOnce = () => renderer.render(scene, camera)
-				const animate = (t: number) => {
-					if (document.hidden || !inViewRef.current) {
-						rafRef.current = requestAnimationFrame(animate)
-						return
-					}
-					if (interval === 0) {
-						renderOnce()
-						rafRef.current = requestAnimationFrame(animate)
-						return
-					}
-					const dt = t - prev
-					prev = t
-					acc += dt
-					if (acc >= interval) {
-						const steps = Math.max(1, Math.floor(acc / interval))
-						acc -= steps * interval
-						group.rotation.y += 0.0006 * steps * (interval / 16.67)
-						renderer.render(scene, camera)
-					}
-					rafRef.current = requestAnimationFrame(animate)
-				}
-				clearFallback()
-				rafRef.current = requestAnimationFrame(animate)
-
-				// WebGL context loss
-				const onLost = (e: Event) => {
-					e.preventDefault()
-					if (rafRef.current) cancelAnimationFrame(rafRef.current)
-					rafRef.current = null
-					showStaticFallback()
-				}
-				const canvasEl: HTMLCanvasElement = renderer.domElement
-				canvasEl.addEventListener('webglcontextlost', onLost, {
-					passive: false
-				})
-
-				// Resize / IO observers
-				const onResize = () => {
-					const { width: w, height: h } = getSize()
-					renderer.setPixelRatio(
-						Math.min(window.devicePixelRatio || 1, mobile ? 1.0 : 2)
-					)
-					renderer.setSize(w, h, false)
-					camera.aspect = w / h
-					camera.updateProjectionMatrix()
-				}
-				let ro: ResizeObserver | null = null
-				if ('ResizeObserver' in window) {
-					ro = new ResizeObserver(onResize)
-					ro.observe(container)
-					roRef.current = ro
-				} else {
-					window.addEventListener('resize', onResize)
-				}
-
-				let io: IntersectionObserver | null = null
-				if ('IntersectionObserver' in window) {
-					io = new IntersectionObserver(
-						entries => {
-							inViewRef.current = entries.some(e => e.isIntersecting)
-						},
-						{ root: null, threshold: 0.01 }
-					)
-					io.observe(container)
-					ioRef.current = io
-				}
-
-				// attach inner cleanup
-				const cleanup = () => {
-					canvasEl.removeEventListener('webglcontextlost', onLost)
-					if (ro) ro.disconnect()
-					if (io) io.disconnect()
-				}
-				;(cleanup as any).tag = 'textures-ready'
-				;(Earth as any)._innerCleanup = cleanup
-			})
-			.catch(() => {
-				showStaticFallback()
-			})
-
-		// Global cleanup
-		return () => {
-			if (rafRef.current) cancelAnimationFrame(rafRef.current)
-			const inner = (Earth as any)._innerCleanup as (() => void) | undefined
-			try {
-				inner?.()
-			} catch {}
-			ioRef.current?.disconnect?.()
-			roRef.current?.disconnect?.()
-
-			materialRef.current?.dispose()
-			atmoMatRef.current?.dispose()
-			geoRef.current?.dispose()
-			atmoGeoRef.current?.dispose()
-			dayTexRef.current?.dispose()
-			nightTexRef.current?.dispose()
-
-			if (rendererRef.current) {
-				rendererRef.current.dispose()
-				const c = rendererRef.current.domElement
-				c?.parentElement?.removeChild(c)
+				renderer.render(scene, camera)
+				frameRef.current = requestAnimationFrame(animate)
 			}
 
-			sceneRef.current = null
-			cameraRef.current = null
-			groupRef.current = null
-			rendererRef.current = null
-			rafRef.current = null
+			animate()
+		})
+
+		return () => {
+			if (frameRef.current) cancelAnimationFrame(frameRef.current)
+			try {
+				container.removeChild(renderer.domElement)
+			} catch {}
+			renderer.dispose()
+			geometry.dispose()
+			if (shaderMaterial.current) shaderMaterial.current.dispose()
+			dayTexRef.current?.dispose()
+			nightTexRef.current?.dispose()
+			sphereRef.current = null
+			shaderMaterial.current = null
 		}
 	}, [])
 
 	return (
 		<StyledEarth
 			ref={containerRef}
-			aria-label='Rotating Earth'
+			style={{ width: '580px', height: '580px' }}
 			className='planet-wrapper'
 		/>
 	)

@@ -26,40 +26,35 @@ export const CartSummary = () => {
 		[billingZone?.markup_percent]
 	)
 
-	// Перерахунок кожного айтема з урахуванням націнки
 	const lines = useMemo(() => {
 		return basket.map((p, idx) => {
 			const qty = p.quantity || 1
 			const base = p.price || 0
-			const priceWithMarkup = base * (1 + zoneMarkupPct / 100)
-			const lineTotal = priceWithMarkup * qty
-
-			// УНІКАЛЬНИЙ ключ для рендера
-			const lineKey = [
+			const unit = base * (1 + zoneMarkupPct / 100)
+			const total = unit * qty
+			const key = [
 				p.id,
 				(p as any).variantId ?? 'novar',
 				(p as any).socketCode ?? 'nosocket',
-				idx // страховка, якщо одна й та сама комбінація додана кілька разів
+				idx
 			].join('::')
-
 			return {
-				key: lineKey,
+				key,
 				id: p.id,
 				name: p.name,
 				description: (p as any).description || '',
 				photo: typeof p.photo === 'string' ? p.photo : p.photo?.src,
 				qty,
-				unit: priceWithMarkup,
-				total: lineTotal
+				unit,
+				total
 			}
 		})
 	}, [basket, zoneMarkupPct])
 
 	const subtotal = useMemo(
-		() => lines.reduce((acc, l) => acc + l.total, 0),
+		() => lines.reduce((a, l) => a + l.total, 0),
 		[lines]
 	)
-
 	const discountPct = typeof discount === 'number' ? discount : 0
 	const discountAmount = discountPct > 0 ? (subtotal * discountPct) / 100 : 0
 	const finalTotal = subtotal - discountAmount
@@ -84,11 +79,13 @@ export const CartSummary = () => {
 								<div style={{ width: 70, height: 70 }} />
 							)}
 						</ImageWrapper>
+
 						<Details>
 							<Category>{product.description}</Category>
 							<Name>{product.name}</Name>
+
 							<Info>
-								<span>{product.qty}x</span>
+								<Qty>{product.qty}x</Qty>
 								<Price>{fmt(product.total)} $</Price>
 							</Info>
 						</Details>
@@ -114,7 +111,11 @@ export const CartSummary = () => {
 	)
 }
 
+/* ---------- СТИЛІ: важливі правки позначені коментами ---------- */
+
 const Container = styled.div`
+	position: relative;
+	z-index: 201; /* вище за header overlay (100) */
 	background: #1b1919;
 	color: white;
 	padding: 20px;
@@ -134,6 +135,7 @@ const Container = styled.div`
 const ProductItem = styled.div`
 	display: flex;
 	gap: 20px;
+	min-width: 0; /* ⬅️ дозволяє дітям стискатись без обрізання тексту */
 `
 
 const ImageWrapper = styled.div`
@@ -141,12 +143,15 @@ const ImageWrapper = styled.div`
 	height: 70px;
 	border-radius: 8px;
 	overflow: hidden;
+	flex: 0 0 auto; /* ⬅️ картинка не тисне текст */
 `
 
 const Details = styled.div`
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	min-width: 0; /* ⬅️ критично для багатьох мобільних браузерів */
+	flex: 1 1 auto;
 `
 
 const Category = styled.span`
@@ -159,24 +164,45 @@ const Name = styled.h4`
 	font-size: 17px;
 	color: #fff;
 	margin: 0;
+	word-break: break-word;
 `
 
 const Info = styled.div`
 	display: flex;
 	align-items: center;
-	gap: 90px;
-	width: 200px;
+	justify-content: space-between;
+	gap: 12px;
+	width: 100%;
+	min-width: 0;
 
-	span {
-		font-size: 17px;
-		color: #ffffff;
+	@media (max-width: 480px) {
+		gap: 8px;
 	}
+`
+
+const Qty = styled.span`
+	font-size: 17px;
+	color: #ffffff;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums lining-nums;
+	font-feature-settings:
+		'tnum' 1,
+		'lnum' 1;
 `
 
 const Price = styled.span`
 	color: #fff;
 	font-weight: 600;
 	font-size: 17px;
+	white-space: nowrap;
+	direction: ltr; /* ⬅️ на випадок RTL/локалей, щоб символ $ не ламався */
+	display: inline-block;
+	flex: 0 0 auto; /* ⬅️ забороняємо стискання ціни */
+	font-variant-numeric: tabular-nums lining-nums;
+	font-feature-settings:
+		'tnum' 1,
+		'lnum' 1;
+	-webkit-font-smoothing: antialiased; /* ⬅️ покращує рендер цифр на iOS */
 `
 
 const Divider = styled.hr`

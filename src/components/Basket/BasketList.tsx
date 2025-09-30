@@ -108,7 +108,6 @@ export const BasketList = () => {
 		}
 	}
 
-	// "Оформить заказ" з редіректом на /login, якщо немає refresh токена
 	const handleMakeOrder = () => {
 		if (isEmpty) return
 		const next = '/complete-contract'
@@ -141,12 +140,11 @@ export const BasketList = () => {
 						</EmptyCard>
 					) : (
 						basket.map((product, index) => {
-							// УНІКАЛЬНИЙ КЛЮЧ: id + variantId + socketCode (із запасним index)
 							const key = [
 								product.id,
 								product.variantId ?? 'novar',
 								(product as any).socketCode ?? 'nosocket',
-								index // страховка, якщо бек дозволяє дублікати однієї комбінації
+								index
 							].join('::')
 
 							return (
@@ -238,40 +236,45 @@ export const BasketList = () => {
 	)
 }
 
+/* ---------- ТІЛЬКИ НАТИВНА СТРІЛКА ДЛЯ <select> ---------- */
 const GlobalFix = styled.div`
 	select {
-		background: #0d0c0c;
+		display: block;
+		height: 44px; /* iOS-friendly target */
+		min-height: 44px;
+		line-height: 1.2;
+		font-size: 16px; /* 16px — щоб iOS не зумів */
+		font-weight: 500;
 		color: #fff;
+		-webkit-text-fill-color: #fff;
+
+		background-color: #0d0c0c;
 		border: 1px solid #2a2a2a;
 		border-radius: 8px;
-		padding: 10px 50px 10px 12px;
-		appearance: none;
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		position: relative;
 
-		background-image: url("data:image/svg+xml;utf8,<svg fill='white' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5z'/></svg>");
+		/* ЖОДНОГО background-image — тільки нативна стрілка */
+		background-image: none;
 		background-repeat: no-repeat;
-		background-position: right 12px center;
-		background-size: 16px;
+
+		/* Компактні падинги (без місця під кастомну іконку) */
+		padding: 10px 12px;
 	}
 
-	select::-ms-expand {
-		display: none;
+	/* Уникаємо спадкування line-height:0 */
+	select,
+	select * {
+		line-height: normal;
+	}
+
+	select:focus {
+		outline: 2px solid #4bc785;
+		outline-offset: 2px;
 	}
 
 	option {
 		background: #0d0c0c;
 		color: #fff;
-	}
-
-	input[type='number']::-webkit-outer-spin-button,
-	input[type='number']::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-	input[type='number'] {
-		-moz-appearance: textfield;
+		font-size: 16px;
 	}
 `
 
@@ -327,6 +330,7 @@ const StyledLabel = styled.label`
 		font-size: 12px;
 	}
 `
+
 const EmptyCard = styled.li`
 	min-height: 240px;
 	padding: 28px 20px;

@@ -56,8 +56,6 @@ export const Dropdown = () => {
 		<StyledDropdown className='dropdown'>
 			<div>
 				<div className='flex flex-col gap-3'>
-					{loading && <p>Loading...</p>}
-					{error && <p style={{ color: 'red' }}>{error}</p>}
 					{!loading &&
 						!error &&
 						categories.map(cat => (
@@ -85,7 +83,7 @@ const StyledDropdown = styled.div`
 	left: 0;
 	padding: 20px;
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+
 	gap: 24px;
 	font-weight: 400;
 	font-size: 14px;

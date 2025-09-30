@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import ArrowUp from '@/assets/img/arrow-up.svg'
 import binIcon from '@/assets/img/bin.png'
 
 import { useBasket } from '@/context/BasketContext'
@@ -31,7 +30,7 @@ export const ProductCart = ({
 	onQuantityChange
 }: ProductCartProps) => {
 	const { t } = useTranslation('common')
-	const [isOpen, setIsOpen] = useState(false)
+	const [, /*isOpen*/ setIsOpen] = useState(false)
 	const { removeFromBasket } = useBasket()
 
 	const handleRemove = () => {
@@ -55,6 +54,7 @@ export const ProductCart = ({
 					}
 				/>
 			</div>
+
 			<WrapperDescription className='pr-[20px] relative'>
 				<p className='text-[14px] pl-[10px] font-medium text-[#7F7F7F] absolute top-[-20px] left-0'>
 					{product.description}
@@ -63,31 +63,28 @@ export const ProductCart = ({
 					{product.name}
 				</p>
 			</WrapperDescription>
+
 			<p className='text-[20px] font-semibold w-[100px] text-center'>
 				{formatPrice(product.price)} {t('Basket.currency')}
 			</p>
 
-			<label className='relative'>
-				<ArrowUp
-					aria-label='arrow'
-					className={`!absolute top-1/2 right-[5px] -translate-y-1/2 rotate-180 transition-all duration-300 ${isOpen ? 'rotate-0' : ''}`}
-				/>
-				<CustomSelect
-					value={quantity}
-					onChange={e =>
-						onQuantityChange(product.variantId, Number(e.target.value))
-					}
-				>
-					{Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
-						<option
-							key={num}
-							value={num}
-						>
-							{num}
-						</option>
-					))}
-				</CustomSelect>
-			</label>
+			{/* тільки нативна стрілка */}
+			<CustomSelect
+				value={quantity}
+				onChange={e =>
+					onQuantityChange(product.variantId, Number(e.target.value))
+				}
+				aria-label={t('Basket.quantity') || 'Quantity'}
+			>
+				{Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+					<option
+						key={num}
+						value={num}
+					>
+						{num}
+					</option>
+				))}
+			</CustomSelect>
 
 			<p className='text-[20px] font-semibold text-center'>
 				{formatPrice(product.price * quantity)} {t('Basket.currency')}
@@ -115,13 +112,25 @@ const StyledDeleteButton = styled.button`
 	}
 `
 
+/* нативна стрілка: appearance не чіпаємо, ніяких background-image */
 const CustomSelect = styled.select`
-	text-align-last: left;
-	padding-left: 20px;
+	display: block;
+	height: 44px;
+	min-height: 44px;
+	line-height: 1.2;
+	font-size: 16px; /* щоб iOS не зумів */
+	font-weight: 500;
+	color: #fff;
+	-webkit-text-fill-color: #fff;
 
+	background-color: #0d0c0c;
+	border: 1px solid #2a2a2a;
+	border-radius: 8px;
+	padding: 8px 8px;
+
+	text-align-last: left;
 	@media (max-width: 1000px) {
 		text-align-last: center;
-		padding-left: 0;
 	}
 `
 
@@ -137,7 +146,6 @@ const WrapperLi = styled.li<{ index: number }>`
 	& p {
 		margin: 0;
 	}
-
 	& img {
 		display: block;
 	}
@@ -151,10 +159,9 @@ const WrapperLi = styled.li<{ index: number }>`
 		p {
 			text-align: center;
 		}
-
 		select {
 			margin: 10px 0;
-			height: 30px;
+			height: 36px;
 		}
 	}
 `

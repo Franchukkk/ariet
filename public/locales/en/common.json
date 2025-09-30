@@ -560,7 +560,7 @@
 			"draft": "Draft"
 		},
 		"summary": "Summary",
-		"currency": "currency",
+		"currency": "$",
 		"tel": "Tel",
 		"declaration_number": "Declaration number",
 		"total": "Total:",
@@ -658,6 +658,15 @@
 		}
 	},
 	"AdminDashboard": {
+		"modelcard": {
+			"company_address": "Transport company address",
+			"Company_name": "Company name",
+			"VAT_number": "VAT number",
+			"Promo_code": "Promo code",
+			"Post_index": "Post index",
+			"billing_zone": "Billing Zone"
+		},
+
 		"orders_today": "Orders today",
 		"edit": "Edit",
 		"loading": "Loading",

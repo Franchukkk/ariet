@@ -720,6 +720,14 @@
 		}
 	},
 	"AdminDashboard": {
+		"modelcard": {
+			"company_address": "Адрес транспортной компании",
+			"Company_name": "Название компании",
+			"VAT_number": "Номер плательщика НДС",
+			"Promo_code": "Промокод",
+			"Post_index": "Почтовый индекс",
+			"billing_zone": "Зона тарификации"
+		},
 		"orders_today": "Заказов сегодня",
 		"edit": "Редактировать",
 		"loading": "Загрузка",

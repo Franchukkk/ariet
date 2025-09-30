@@ -17,7 +17,6 @@ type Zone = {
 	markup_percent?: string | number
 }
 
-/* ===== мапа статусів ===== */
 const UI_TO_API_STATUS: Record<string, ApiStatus> = {
 	Черновик: 'DRAFT',
 	Draft: 'DRAFT',
@@ -47,11 +46,9 @@ const STATUSES: ApiStatus[] = [
 	'CANCELLED'
 ]
 
-/* ——— client types (з випадайкою) ——— */
 type ClientType = 'INDIVIDUAL' | 'COMPANY'
 const CLIENT_TYPES: ClientType[] = ['INDIVIDUAL', 'COMPANY']
 
-/* ===== компонент ===== */
 export const ModalCart = ({
 	item,
 	setIsOpen,
@@ -68,29 +65,27 @@ export const ModalCart = ({
 		typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
 	const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
 
-	const [zones, setZones] = useState<Zone[]>([]) // для відображення імені з id
+	const [zones, setZones] = useState<Zone[]>([])
 	const [loadingZones, setLoadingZones] = useState(false)
 
-	const [editing, setEditing] = useState(false) // режим редагування для ІНШИХ полів
+	const [editing, setEditing] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const [deleting, setDeleting] = useState(false)
 	const [errorLoadOrder, setErrorLoadOrder] = useState<string | null>(null)
 
-	// індикатор автосейву СТАТУСУ
 	const [statusSaving, setStatusSaving] = useState<
 		'idle' | 'saving' | 'saved' | 'error'
 	>('idle')
 
-	// ➕ РОЗШИРЕНО: додав усі потрібні поля у форму
 	const initialForm = useMemo(
 		() => ({
 			full_name: item?.full_name || item?.name || '',
 			phone: item?.phone || item?.tel || '',
 			email: item?.email || '',
-			// адреси
+
 			shipping_address: item?.shipping_address || item?.address || '',
 			billing_address: item?.billing_address || '',
-			// додаткові поля
+
 			client_type: (item?.client_type as ClientType) || 'INDIVIDUAL',
 			transport_company_address: item?.transport_company_address || '',
 			company_name: item?.company_name || '',
@@ -170,7 +165,6 @@ export const ModalCart = ({
 					status: asApiStatus(data?.status ?? prev.status),
 					billing_zone_id: zoneId,
 
-					// ➕ нові поля з API
 					client_type: (data?.client_type as ClientType) ?? prev.client_type,
 					transport_company_address:
 						data?.transport_company_address ?? prev.transport_company_address,
@@ -268,16 +262,11 @@ export const ModalCart = ({
 			setStatusSaving('saved')
 			onUpdated?.()
 			setTimeout(() => setStatusSaving('idle'), 900)
-		} catch (e: any) {
-			setStatusSaving('error')
-			alert(
-				e?.message || t('AdminDashboard.error_status') || 'Failed to update'
-			)
+		} catch {
 			setTimeout(() => setStatusSaving('idle'), 1200)
 		}
 	}
 
-	// ➕ ЗБЕРЕЖЕННЯ ВСІХ РОЗШИРЕНИХ ПОЛІВ
 	const onSaveClick = async () => {
 		try {
 			setSaving(true)
@@ -300,10 +289,7 @@ export const ModalCart = ({
 			})
 			setEditing(false)
 			onUpdated?.()
-		} catch (e: any) {
-			alert(
-				e?.message || t('AdminDashboard.error_status') || 'Failed to update'
-			)
+		} catch {
 		} finally {
 			setSaving(false)
 		}
@@ -529,30 +515,29 @@ export const ModalCart = ({
 								value={form.billing_address}
 							/>
 							<FieldRow
-								label='Transport company address'
+								label={t('AdminDashboard.modelcard.company_address') as string}
 								value={form.transport_company_address}
 							/>
 							<FieldRow
-								label='Company name'
+								label={t('AdminDashboard.modelcard.Company_name') as string}
 								value={form.company_name}
 							/>
 							<FieldRow
-								label='VAT number'
+								label={t('AdminDashboard.modelcard.VAT_number') as string}
 								value={form.vat_number}
 							/>
 							<FieldRow
-								label='Promo code'
+								label={t('AdminDashboard.modelcard.Promo_code') as string}
 								value={form.promo_code}
 							/>
 							<FieldRow
-								label='Post index'
+								label={t('AdminDashboard.modelcard.Post_index') as string}
 								value={form.post_index}
 							/>
 							{!!form.billing_zone_id && (
 								<FieldRow
 									label={
-										(t('complete_contract.form.billing_zone') as string) ||
-										'Billing zone'
+										t('complete_contract.modelcard.billing_zone') as string
 									}
 									value={form.billing_zone_name || `#${form.billing_zone_id}`}
 								/>

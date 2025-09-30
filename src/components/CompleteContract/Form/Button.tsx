@@ -43,10 +43,23 @@ export const Button = () => {
 		) as HTMLFormElement | null
 		if (!formEl) return
 
-		const ok = formEl.reportValidity ? formEl.reportValidity() : true
-		if (!ok) return
-
 		const formData = new FormData(formEl)
+		const get = (name: string) => String(formData.get(name) || '').trim()
+
+		const requiredFields = [
+			'Name',
+			'Surname',
+			'Phone',
+			'Email',
+			'Address',
+			'Transport_company_address'
+		]
+		const missing = requiredFields.filter(n => !get(n))
+		if (missing.length > 0) {
+			formEl.reportValidity?.()
+			return
+		}
+
 		const res = await submitOrder(formData)
 
 		if (res.success) {
@@ -69,7 +82,11 @@ export const Button = () => {
 			disabled={loading}
 			aria-busy={loading}
 			aria-disabled={loading}
-		></StyledButton>
+		>
+			{loading
+				? t('complete_contract.cart.sending', 'Відправка...')
+				: t('complete_contract.cart.confirm', 'Підтвердити')}
+		</StyledButton>
 	)
 }
 
