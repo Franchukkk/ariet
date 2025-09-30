@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
@@ -9,6 +10,8 @@ import { List } from './List/List'
 import { Subtitle } from './Subtitle'
 import { Title } from './Title'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type Possibility = { name?: string | null; description?: string | null }
 type ProductDetail = {
 	id: number
@@ -19,34 +22,53 @@ type ProductDetail = {
 
 type Lng = 'ru' | 'en'
 
-export const Possibilities = () => (
-	<Suspense fallback={null}>
-		<PossibilitiesInner />
-	</Suspense>
-)
+/* ---------- helpers ---------- */
+const readCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null
+	const m = document.cookie.match(
+		new RegExp('(?:^|; )' + name.replace(/([$?*|{}\\^])/g, '\\$1') + '=([^;]*)')
+	)
+	return m ? decodeURIComponent(m[1]) : null
+}
 
-function PossibilitiesInner() {
+const resolveLng = (sp: URLSearchParams | null): Lng => {
+	const q = (sp?.get('lng') || '').split('-')[0].toLowerCase()
+	if (q === 'en' || q === 'ru') return q as Lng
+	const c = (readCookie('lng') || '').split('-')[0].toLowerCase()
+	if (c === 'en' || c === 'ru') return c as Lng
+	return 'ru'
+}
+
+/* ---------- public wrapper: примусовий ремоунт при зміні мови ---------- */
+export const Possibilities = () => {
+	const sp = useSearchParams()
+	const currentLng = resolveLng(sp)
+	return (
+		<Suspense fallback={null}>
+			<PossibilitiesInner
+				key={currentLng}
+				currentLng={currentLng}
+			/>
+		</Suspense>
+	)
+}
+
+function PossibilitiesInner({ currentLng }: { currentLng: Lng }) {
 	const params = useParams()
 	const sp = useSearchParams()
 	const pathId = (params?.id as string | undefined) ?? undefined
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
 
-	// ----- мова з URL
-	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
-	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
-
 	const { i18n, t } = useTranslation('common')
 
 	const [loading, setLoading] = useState(true)
 	const [product, setProduct] = useState<ProductDetail | null>(null)
 
-	// синхронізуємо i18n під URL
+	// sync i18n with URL/cookie language
 	useEffect(() => {
-		;(async () => {
-			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
-			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
-		})()
+		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		if (cur !== currentLng) void i18n.changeLanguage(currentLng)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
@@ -61,23 +83,18 @@ function PossibilitiesInner() {
 
 		setLoading(true)
 
-		// варіант через локальний проксі + параметр мови
 		fetch(
 			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
 			{
 				method: 'GET',
 				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept-Language': currentLng.toUpperCase()
+				},
 				cache: 'no-store'
 			}
 		)
-			// якщо без проксі — можна так:
-			// fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			//   method: 'GET',
-			//   credentials: 'include',
-			//   headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLng },
-			//   cache: 'no-store'
-			// })
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -108,10 +125,8 @@ function PossibilitiesInner() {
 	)
 	const hasPossibilities = (product?.possibilities?.length ?? 0) > 0
 
-	if (loading) return null
-	if (!productId) return null
-	if (!product) return null
-	if (!hasHeaderData || !hasPossibilities) return null
+	if (loading || !productId || !product || !hasHeaderData || !hasPossibilities)
+		return null
 
 	const i18nTitle = t('possibilities.title', {
 		name: product.name ?? '',
@@ -127,8 +142,10 @@ function PossibilitiesInner() {
 		<StyledPossibilities className='main-wrapper'>
 			<Title text={i18nTitle} />
 			<Subtitle text={subtitleText} />
-
-			<List productId={productId} /* lng={currentLng} */ />
+			<List
+				productId={productId}
+				lng={currentLng}
+			/>
 		</StyledPossibilities>
 	)
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useSearchParams } from 'next/navigation'
@@ -10,32 +11,47 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 
 import { Card } from './Card/Card'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type Possibility = { name: string; description?: string | null }
 type Lng = 'ru' | 'en'
 
+/* helpers */
+const readCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null
+	const m = document.cookie.match(
+		new RegExp('(?:^|; )' + name.replace(/([$?*|{}\\^])/g, '\\$1') + '=([^;]*)')
+	)
+	return m ? decodeURIComponent(m[1]) : null
+}
+const resolveLng = (sp: URLSearchParams | null, prop?: Lng): Lng => {
+	if (prop === 'en' || prop === 'ru') return prop
+	const q = (sp?.get('lng') || '').split('-')[0].toLowerCase()
+	if (q === 'en' || q === 'ru') return q as Lng
+	const c = (readCookie('lng') || '').split('-')[0].toLowerCase()
+	if (c === 'en' || c === 'ru') return c as Lng
+	return 'ru'
+}
+
 export const List = ({
 	productId,
-	lng // опціонально: якщо батьківський компонент знає мову — можна передавати сюди
+	lng
 }: {
 	productId: number | string | null | ''
 	lng?: Lng
 }) => {
 	const sp = useSearchParams()
-	// мова з пропа або з URL (?lng=ru|en)
-	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
-	const currentLng: Lng = (lng ?? urlLng) === 'en' ? 'en' : 'ru'
+	const currentLng: Lng = resolveLng(sp, lng)
 
 	const { i18n } = useTranslation('common')
 
 	const [possibilities, setPossibilities] = useState<Possibility[]>([])
 	const [loading, setLoading] = useState<boolean>(true)
 
-	// синхронізуємо i18n із мовою (для локалізованих підписів усередині List, якщо з’являться)
+	// sync i18n for any internal strings/icons
 	useEffect(() => {
-		;(async () => {
-			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
-			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
-		})()
+		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		if (cur !== currentLng) void i18n.changeLanguage(currentLng)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
@@ -50,23 +66,18 @@ export const List = ({
 
 		setLoading(true)
 
-		// ✅ через локальний проксі, щоб легко додати мову й куки
 		fetch(
 			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
 			{
 				method: 'GET',
 				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept-Language': currentLng.toUpperCase()
+				},
 				cache: 'no-store'
 			}
 		)
-			// ❗ альтернатива без проксі:
-			// fetch(`https://rpktask.sytes.net/api/catalog/products/${productId}/`, {
-			//   method: 'GET',
-			//   credentials: 'include',
-			//   headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLng },
-			//   cache: 'no-store',
-			// })
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()

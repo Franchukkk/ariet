@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
@@ -7,6 +8,8 @@ import styled from 'styled-components'
 
 import { Banner } from './Banner/Banner'
 import { Content } from './Content/Content'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type ProductDetail = {
 	id: number
@@ -20,34 +23,54 @@ type ProductDetail = {
 
 type Lng = 'ru' | 'en'
 
-export const Autonomy = () => (
-	<Suspense fallback={null}>
-		<AutonomyInner />
-	</Suspense>
-)
+/* ---------- helpers ---------- */
+const readCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null
+	const m = document.cookie.match(
+		new RegExp('(?:^|; )' + name.replace(/([$?*|{}\\^])/g, '\\$1') + '=([^;]*)')
+	)
+	return m ? decodeURIComponent(m[1]) : null
+}
 
-function AutonomyInner() {
+const resolveLng = (sp: URLSearchParams | null): Lng => {
+	const q = (sp?.get('lng') || '').split('-')[0].toLowerCase()
+	if (q === 'en' || q === 'ru') return q as Lng
+	const c = (readCookie('lng') || '').split('-')[0].toLowerCase()
+	if (c === 'en' || c === 'ru') return c as Lng
+	return 'ru'
+}
+
+/* ---------- public wrapper: даємо key для перемонту при зміні мови ---------- */
+export const Autonomy = () => {
+	const sp = useSearchParams()
+	const currentLng = resolveLng(sp)
+	return (
+		<Suspense fallback={null}>
+			<AutonomyInner
+				key={currentLng}
+				currentLng={currentLng}
+			/>
+		</Suspense>
+	)
+}
+
+/* ---------- inner component ---------- */
+function AutonomyInner({ currentLng }: { currentLng: Lng }) {
 	const params = useParams()
 	const sp = useSearchParams()
 	const pathId = (params?.id as string | undefined) ?? undefined
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
 
-	// --- мова з URL, як у Specifications ---
-	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
-	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
-
 	const { i18n } = useTranslation('common')
 
 	const [loading, setLoading] = useState(true)
 	const [product, setProduct] = useState<ProductDetail | null>(null)
 
-	// синхронізуємо i18n із мовою в URL
+	// sync i18n with currentLng
 	useEffect(() => {
-		;(async () => {
-			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
-			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
-		})()
+		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		if (cur !== currentLng) void i18n.changeLanguage(currentLng)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
@@ -62,13 +85,15 @@ function AutonomyInner() {
 
 		setLoading(true)
 
-		// ✅ варіант через локальний проксі з параметром мови
 		fetch(
 			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
 			{
 				method: 'GET',
-				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include', // дозволяє API-роуту оновити куку lng
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept-Language': currentLng.toUpperCase() // дублюємо сигнал мови
+				},
 				cache: 'no-store'
 			}
 		)
@@ -115,9 +140,7 @@ function AutonomyInner() {
 		points.length > 0
 	)
 
-	if (loading) return null
-	if (!productId) return null
-	if (!product || !hasAnyData) return null
+	if (loading || !productId || !product || !hasAnyData) return null
 
 	return (
 		<StyledAutonomy>

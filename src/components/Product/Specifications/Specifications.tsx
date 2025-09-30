@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
@@ -9,38 +10,65 @@ import { List } from '../Specifications/List/List'
 
 import { Header } from './Header/Header'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 type KeyFeature = { name?: string; description?: string; image?: string }
 type Lng = 'ru' | 'en'
 
-export const Specifications = () => (
-	<Suspense fallback={null}>
-		<SpecificationsInner />
-	</Suspense>
-)
+/* ---------- helpers ---------- */
+const readCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null
+	const m = document.cookie.match(
+		new RegExp('(?:^|; )' + name.replace(/([$?*|{}\\^])/g, '\\$1') + '=([^;]*)')
+	)
+	return m ? decodeURIComponent(m[1]) : null
+}
 
-function SpecificationsInner() {
+const resolveLng = (sp: URLSearchParams | null): Lng => {
+	const q = (sp?.get('lng') || '').split('-')[0].toLowerCase()
+	if (q === 'en' || q === 'ru') return q as Lng
+	const c = (readCookie('lng') || '').split('-')[0].toLowerCase()
+	if (c === 'en' || c === 'ru') return c as Lng
+	return 'ru'
+}
+
+/* ---------- public wrapper: даємо key для ремонту при зміні мови ---------- */
+export const Specifications = () => {
+	const sp = useSearchParams()
+	const currentLng = resolveLng(sp)
+
+	return (
+		<Suspense fallback={null}>
+			<SpecificationsInner
+				key={currentLng}
+				currentLng={currentLng}
+			/>
+		</Suspense>
+	)
+}
+
+/* ---------- inner component ---------- */
+function SpecificationsInner({ currentLng }: { currentLng: Lng }) {
 	const params = useParams()
 	const sp = useSearchParams()
+
 	const pathId = (params?.id as string | undefined) ?? undefined
 	const queryId = sp.get('id') ?? undefined
 	const productId = pathId ?? queryId ?? null
-
-	const urlLng = (sp?.get('lng') || 'ru').split('-')[0] as Lng
-	const currentLng: Lng = urlLng === 'en' ? 'en' : 'ru'
 
 	const { i18n } = useTranslation('common')
 
 	const [items, setItems] = useState<KeyFeature[]>([])
 	const [loading, setLoading] = useState(true)
 
+	/* sync i18n with currentLng */
 	useEffect(() => {
-		;(async () => {
-			const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
-			if (cur !== currentLng) await i18n.changeLanguage(currentLng)
-		})()
+		const cur = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		if (cur !== currentLng) void i18n.changeLanguage(currentLng)
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
+	/* load data (depends on id + lng) */
 	useEffect(() => {
 		let alive = true
 		if (!productId) {
@@ -48,14 +76,17 @@ function SpecificationsInner() {
 			setLoading(false)
 			return
 		}
-		setLoading(true)
 
+		setLoading(true)
 		fetch(
 			`/api/catalog/products/${productId}?lng=${currentLng}&_=${Date.now()}`,
 			{
 				method: 'GET',
-				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include', // отримуємо Set-Cookie lng=...
+				headers: {
+					'Content-Type': 'application/json',
+					'Accept-Language': currentLng.toUpperCase() // дублюємо сигнал мови
+				},
 				cache: 'no-store'
 			}
 		)
