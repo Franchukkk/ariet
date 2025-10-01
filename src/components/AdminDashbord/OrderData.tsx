@@ -233,9 +233,9 @@ export const OrderData = () => {
 		const byId = (o: any) => Number(o.id) || 0
 		const arr = [...list]
 		switch (key) {
-			case 'date_new':
+			case 'date_new': // новіші зверху (за спаданням дати)
 				return arr.sort((a, b) => byTime(b) - byTime(a))
-			case 'date_old':
+			case 'date_old': // старіші зверху (за зростанням дати)
 				return arr.sort((a, b) => byTime(a) - byTime(b))
 			case 'id_up':
 				return arr.sort((a, b) => byId(a) - byId(b))
@@ -296,13 +296,15 @@ export const OrderData = () => {
 
 	const canCancelSelected = !!selectOrder?.id
 
+	// Текст на кнопці сорту — показує вибраний варіант
 	const sortLabel = (() => {
-		if (sort === 'date_new') return t('AdminDashboard.sort_newest')
-		if (sort === 'date_old') return t('AdminDashboard.sort_oldest')
-		if (sort === 'id_up') return t('AdminDashboard.sort_id_up')
-		if (sort === 'id_down') return t('AdminDashboard.sort_id_down')
-		return t('AdminDashboard.sort_default')
+		if (sort === 'date_new') return 'По дате ⬇️' // новіші зверху
+		if (sort === 'date_old') return 'По дате ⬆️' // старіші зверху
+		if (sort === 'id_up') return 'ID ↑'
+		if (sort === 'id_down') return 'ID ↓'
+		return t('AdminDashboard.sort') || 'Сортування'
 	})()
+
 	const chooseSort = (v: typeof sort) => {
 		setSort(v)
 		setSortOpen(false)
@@ -414,7 +416,7 @@ export const OrderData = () => {
 						aria-haspopup='listbox'
 						aria-expanded={sortOpen}
 					>
-						<p>{t('AdminDashboard.sort')}</p>
+						<p>{sortLabel}</p>
 						<ArrowDown className={sortOpen ? '' : 'rotate-180'} />
 					</button>
 					{sortOpen && (
@@ -427,35 +429,35 @@ export const OrderData = () => {
 								className='px-[10px] py-[8px] rounded-[6px] hover:bg-[#1f1f1f] cursor-pointer'
 								onClick={() => chooseSort('none')}
 							>
-								{t('AdminDashboard.sort_default')}
+								{t('AdminDashboard.sort_default') || 'Скинути сортування'}
 							</li>
 							<li
 								role='option'
 								className='px-[10px] py-[8px] rounded-[6px] hover:bg-[#1f1f1f] cursor-pointer'
 								onClick={() => chooseSort('date_new')}
 							>
-								{t('AdminDashboard.sort_newest')}
+								{t('AdminDashboard.By_date')}
 							</li>
 							<li
 								role='option'
 								className='px-[10px] py-[8px] rounded-[6px] hover:bg-[#1f1f1f] cursor-pointer'
 								onClick={() => chooseSort('date_old')}
 							>
-								{t('AdminDashboard.sort_oldest')}
+								{t('AdminDashboard.date')}
 							</li>
 							<li
 								role='option'
 								className='px-[10px] py-[8px] rounded-[6px] hover:bg-[#1f1f1f] cursor-pointer'
 								onClick={() => chooseSort('id_up')}
 							>
-								{t('AdminDashboard.sort_id_up') || 'ID ↑'}
+								ID ↑
 							</li>
 							<li
 								role='option'
 								className='px-[10px] py-[8px] rounded-[6px] hover:bg-[#1f1f1f] cursor-pointer'
 								onClick={() => chooseSort('id_down')}
 							>
-								{t('AdminDashboard.sort_id_down')}
+								ID ↓
 							</li>
 						</ul>
 					)}

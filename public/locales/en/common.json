@@ -660,6 +660,8 @@
 		}
 	},
 	"AdminDashboard": {
+		"date": "By date ↑",
+		"By_date": "By date ↓",
 		"modelcard": {
 			"company_address": "Transport company address",
 			"Company_name": "Company name",
@@ -687,7 +689,7 @@
 		"shipping_address": "Shipping address",
 		"full_name": "Full name",
 		"edit_only_draft": "Only orders in the DRAFT status can be edited.",
-		"title": "Administrator Account",
+		"title": "Manager Office",
 		"my_promocode": "My promo code",
 		"no_promocode": "No promo code",
 		"add_order": "Add order",
