@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import styled from 'styled-components'
 
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { Autonomy } from '@/components/Product/Autonomy/Autonomy'
@@ -20,20 +21,30 @@ export default function ProductPage() {
 
 	return (
 		<PublicRoute>
-			<ProductVariant />
-			<div className='mb-[45px]!'>
-				<Breadcrumbs
-					path={['Главная', 'Продукция', productName]}
-					alias={['/', 'products', 'current']}
-				/>
-			</div>
-			<ProductInformation setProductName={setProductName} />
-			<Steps />
-			<Specifications />
-			<Autonomy />
-			<Possibilities />
-			<Models />
-			<Support />
+			<Stack as='main'>
+				<ProductVariant />
+
+				<div>
+					<Breadcrumbs
+						path={['Главная', 'Продукция', productName]}
+						alias={['/', 'products', 'current']}
+					/>
+				</div>
+
+				<ProductInformation setProductName={setProductName} />
+				<Steps />
+				<Specifications />
+				<Autonomy />
+				<Possibilities />
+				<Models />
+				<Support />
+			</Stack>
 		</PublicRoute>
 	)
 }
+
+const Stack = styled.div`
+	& > * + * {
+		margin-top: clamp(32px, 5vw, 80px);
+	}
+`
