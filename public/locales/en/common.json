@@ -538,6 +538,8 @@
 		"my_orders": "My orders"
 	},
 	"ProductItem": {
+		"dealer_price": "Dealer price",
+		"retail_price": "Retail price",
 		"choose_variant": "Select a product variant",
 		"main_page": "Main page",
 		"products": "Products",

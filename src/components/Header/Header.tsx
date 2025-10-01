@@ -91,7 +91,6 @@ export const Header = () => {
 				<Navigation />
 				<Contacts />
 				<Basket />
-				{/* ⬇️ ВАЖЛИВО: загортаємо перемикач у контейнер, який меню не закриває */}
 
 				<User />
 			</div>

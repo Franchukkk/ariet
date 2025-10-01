@@ -6,52 +6,55 @@ export const revalidate = 0
 type Lng = 'ru' | 'en'
 
 function pickLng(raw?: string | null): Lng | undefined {
-	const s = (raw || '').split('-')[0].toLowerCase()
-	if (s === 'en' || s === 'ru') return s
-	return undefined
+	if (!raw) return undefined
+	// 'en-US,en;q=0.9' -> 'en'
+	const s = String(raw).split(',')[0].split('-')[0].trim().toLowerCase()
+	return s === 'en' || s === 'ru' ? s : undefined
 }
 
 export async function GET(
 	req: NextRequest,
-	// ⬇️ ВАЖЛИВО: params як Promise, а нижче — await
-	{ params }: { params: Promise<{ id: string }> }
+	// У твоїй збірці Next params — це Promise. Потрібно await.
+	ctx: { params: Promise<{ id: string }> }
 ) {
-	const { id } = await params // ⬅️ виправлення помилки
+	const { id } = await ctx.params
 
 	const url = new URL(req.url)
 	const hintFromQuery = pickLng(url.searchParams.get('lng'))
+	const hintFromHeader = pickLng(req.headers.get('accept-language'))
 	const hintFromCookie = pickLng(req.cookies.get('lng')?.value)
-	const hint: Lng | undefined = hintFromQuery ?? hintFromCookie
 
-	const upstream = `https://rpktask.sytes.net/api/catalog/products/${id}?lng=${hint ?? ''}&_=${Date.now()}`
+	// ✅ пріоритет: query → header → cookie → 'ru'
+	const lng: Lng = hintFromQuery ?? hintFromHeader ?? hintFromCookie ?? 'ru'
+
+	const upstreamUrl = new URL(
+		`https://rpktask.sytes.net/api/catalog/products/${id}`
+	)
+	upstreamUrl.searchParams.set('lng', lng) // форсимо lng в апстрім
+	upstreamUrl.searchParams.set('_', String(Date.now())) // bust cache
 
 	try {
-		const upstreamRes = await fetch(upstream, {
+		const upstreamRes = await fetch(upstreamUrl.toString(), {
 			headers: {
-				...(hint ? { 'Accept-Language': hint } : {}),
-				...(hint ? { LANGUAGE_CODE: hint.toUpperCase() } : {})
+				Accept: 'application/json',
+				'Accept-Language': lng,
+				LANGUAGE_CODE: lng.toUpperCase()
 			},
 			cache: 'no-store',
 			next: { revalidate: 0 }
 		})
 
-		const data = await upstreamRes.json()
-
+		const data = await upstreamRes.json().catch(() => ({}))
 		const backendLang =
-			upstreamRes.headers
-				.get('content-language')
-				?.split('-')[0]
-				.toLowerCase() ||
-			hint ||
-			'ru'
+			pickLng(upstreamRes.headers.get('content-language')) ?? lng
 
 		const res = NextResponse.json(data, { status: upstreamRes.status })
 		res.headers.set('Content-Language', backendLang)
-		res.headers.set('X-Debug-Lang-Sent', (hint ?? '').toUpperCase())
+		res.headers.set('X-Debug-Lang-Sent', lng.toUpperCase())
 		res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
 		res.headers.set('Vary', 'Accept-Language, LANGUAGE_CODE, Cookie')
 
-		// зберігаємо вибір мови у куку (для наступних запитів)
+		// оновлюємо куку мови
 		res.cookies.set('lng', backendLang, {
 			path: '/',
 			maxAge: 60 * 60 * 24 * 365,
@@ -62,7 +65,10 @@ export async function GET(
 	} catch (err) {
 		return NextResponse.json(
 			{ error: 'Upstream fetch failed', detail: String(err) },
-			{ status: 502, headers: { 'Cache-Control': 'no-store' } }
+			{
+				status: 502,
+				headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+			}
 		)
 	}
 }

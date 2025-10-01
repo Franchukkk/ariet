@@ -585,6 +585,8 @@
 		"my_orders": "Мои заказы"
 	},
 	"ProductItem": {
+		"dealer_price": "ЦЕНА ДИЛЕРА",
+		"retail_price": "ЦЕНА РОЗНИЦА",
 		"characteristics": "Технические характеристики",
 		"choose_variant": "Выберите вариацию товара",
 		"main_page": "Главная",
@@ -750,7 +752,7 @@
 		"my_promocode": "Мой промокод",
 		"no_promocode": "Промокод отсутствует",
 		"add_order": "Добавить заказ",
-		"orders_count": "Общee количество заказов: з ",
+		"orders_count": "Общee количество заказов: с ",
 		"sold_sum": "Общая сума продаж",
 		"avr_order_price": "Средний чек",
 		"new_orders": "Новые/просроченные оплаты",

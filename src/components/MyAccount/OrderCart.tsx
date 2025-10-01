@@ -20,6 +20,7 @@ export interface Product {
 
 export interface OrderProps {
 	id: number
+	code: string
 	status: string
 	date: string
 	total: number
@@ -36,7 +37,8 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 	const { t, i18n } = useTranslation('common')
 	const [isOpen, setIsOpen] = useState(false)
 
-	// нормалізуємо бекенд-статуси під ключі для стилів
+	const orderNumber = (order.code ?? '').toString().trim() || String(order.id)
+
 	const statusKey = (() => {
 		const v = (order.status || '').toString().trim().toUpperCase()
 		if (v === 'PAID') return 'paid'
@@ -47,7 +49,6 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 		return 'draft'
 	})()
 
-	// безпечне джерело зображення
 	const imgSrc = (p: Product) =>
 		typeof p.photo === 'string'
 			? p.photo
@@ -55,30 +56,32 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 
 	return (
 		<li
-			key={order.id}
 			className={`relative border border-dashed transition-all duration-300 ${
 				isOpen
 					? 'border-[#4BC785] max-h-[2000px]'
-					: 'border-[#FFFFFF80] max-h-[95px]'
-			}  overflow-hidden`}
+					: 'border-[#FFFFFF80] max-h-[140px]' /* ↑ було 95px */
+			} overflow-hidden`}
 		>
-			<div className='absolute w-full pr-[67px] pl-[28px] top-[95px]'>
+			{/* горизонтальна лінія перенесена нижче під збільшений хедер */}
+			<div className='absolute w-full pr-[67px] pl-[28px] top-[138px]'>
+				{/* ↑ було 95px */}
 				<div className='h-[1px] w-full bg-[#FFFFFF33]'></div>
 			</div>
 
 			<StyledDiv
 				$status={statusKey}
-				className={`h-[90px] relative pl-[30px] pt-[18px] pb-[15px] pr-[67px] transition-all duration-300}`}
+				className={`h-[120px] relative pl-[30px] pt-[24px] pb-[20px] pr-[67px] transition-all duration-300}`} /* ↑ було h-[90px] */
 			>
-				<div className='flex flex-col gap-[10px]'>
-					<BigData className='text-[14px]  text-[#7F7F7F]'>
-						{t('MyAccount.order')} {order.id},{' '}
-						{formatDate(order.date, i18n.language)}
+				<div className='flex flex-col gap-[8px]'>
+					<BigData className='text-[15px]  text-[#7F7F7F]'>
+						{t('MyAccount.order')} {orderNumber}
 					</BigData>
-					<ShortData className='text-[14px]  text-[#7F7F7F]'>
+
+					<DateLine className='text-[14px] text-[#7F7F7F]'>
 						{formatDate(order.date, i18n.language)}
-					</ShortData>
-					<p className='text-[14px] text-[22px] leading-[22px] !font-[600] font-medium text-[#ffffff]'>
+					</DateLine>
+
+					<p className='text-[15px] text-[22px] leading-[22px] !font-[600] font-medium text-[#ffffff]'>
 						{order.status}
 					</p>
 				</div>
@@ -92,11 +95,11 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 					</p>
 				</TotalPrice>
 
-				<ImgBlock className='flex flex-row gap-[10px] w-[262px] select-none m-[auto]'>
+				<ImgBlock className='flex flex-row gap-[12px] w-[300px] select-none m-[auto]'>
 					{order.products.slice(0, 4).map((p, i) => (
 						<img
 							key={i}
-							className='h-[38px] w-auto'
+							className='h-[56px] w-auto'
 							src={imgSrc(p)}
 							alt={p.name}
 						/>
@@ -107,7 +110,7 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 					<StyledFor>+{order.products.length - 4}</StyledFor>
 				) : null}
 
-				<ArrowIcon
+				<StyledArrow
 					className={`cursor-pointer absolute top-1/2 right-[23px] translate-y-[-50%] transition-all duration-300 ${
 						isOpen ? 'rotate-0' : 'rotate-180'
 					}`}
@@ -117,59 +120,62 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 			</StyledDiv>
 
 			<MoreInfoBlock
-				className={`flex justify-between ${isOpen ? 'max-h-[2000px]' : 'max-h-[95px]'} overflow-hidden transition-all duration-300`}
+				className={`flex justify-between ${
+					isOpen ? 'max-h-[2000px]' : 'max-h-[140px]'
+				} overflow-hidden transition-all duration-300`}
 			>
-				<ul className='w-[70%] pl-[28px] pt-[20px] pb-[15px] pr-[67px] '>
+				<ul className='w-[70%] pl-[28px] pt-[22px] pb-[18px] pr-[67px] '>
 					{order.products.map((p, i) => (
 						<StyledLiMoreInfo
 							key={i}
-							className='flex flex-row gap-[10px] justify-between items-center pl-[14px] pt-[20px] pb-[20px] border-b border-solid border-[#FFFFFF33]'
+							className='flex flex-row gap-[12px] justify-between items-center pl-[14px] pt-[22px] pb-[22px] border-b border-solid border-[#FFFFFF33]'
 						>
 							<StyledImgProduct
-								height='48px !important'
-								width='48px !important'
+								height='56px !important'
+								width='56px !important'
 								src={imgSrc(p)}
 								alt={p.name}
 							/>
-							<div className='flex flex-auto flex-col gap-[11px] pl-[10px]'>
-								<p className='text-[13px] leading-[13px] text-regular text-[#7F7F7F]'>
+							<div className='flex flex-auto flex-col gap-[12px] pl-[12px]'>
+								<p className='text-[14px] leading-[14px] text-regular text-[#7F7F7F]'>
 									{p.name}
 								</p>
-								<p className='text-[17px] leading-[13px] text-[600] text-[#ffffff]'>
+								<p className='text-[18px] leading-[16px] text-[600] text-[#ffffff]'>
 									{p.description}
 								</p>
 							</div>
-							<p className='text-[17px] leading-[17px] font-[400] text-[#ffffff]'>
+							<p className='text-[18px] leading-[18px] font-[400] text-[#ffffff]'>
 								{p.quantity}x
 							</p>
-							<p className='text-[17px] leading-[17px] font-[600] text-[#ffffff]'>
+							<p className='text-[18px] leading-[18px] font-[600] text-[#ffffff]'>
 								{p.price * p.quantity} {t('MyAccount.currency')}
 							</p>
 						</StyledLiMoreInfo>
 					))}
 				</ul>
 
-				<div className='mr-[67px] pl-[20px] pr-[20px] pt-[28px] pb-[20px] bg-[#1B1919] mt-[25px] max-w-[350px] self-start rounded-[8px]'>
+				<div className='mr-[67px] pl-[22px] pr-[22px] pt-[30px] pb-[22px] bg-[#1B1919] mt-[25px] max-w-[380px] self-start rounded-[10px]'>
 					<div>
-						<p className='mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
+						<p className='mb-[12px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
 							{t('MyAccount.tel')} <a href={`tel:${order.tel}`}>{order.tel}</a>
 						</p>
-						<p className='mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
+						<p className='mb-[12px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
 							{order.address}
 						</p>
-						<p className='mb-[10px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
+						<p className='mb-[12px] text-[16px] leading-[20px] font-[500] text-[#FFFFFFC9]'>
 							{t('MyAccount.declaration_number')} {order.deliveyId}
 						</p>
 					</div>
 				</div>
 			</MoreInfoBlock>
 
-			<TotalPriceWraper className='pl-[30px] w-[400px]'>
-				<div className='flex flex-row justify-between mb-[30px]'>
-					<StyledPrice className='w-[45%] pb-[15px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
+			<TotalPriceWraper className='pl-[30px] w-[460px]'>
+				{/* ↑ було 400px */}
+				<div className='flex flex-row justify-between mb-[32px]'>
+					<StyledPrice className='w-[45%] pb-[18px] text-[#FFFFFFA8] border-b border-dashed border-[#ffffff42]'>
 						{t('MyAccount.total')}
 					</StyledPrice>
-					<p className='w-[45%] pb-[15px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold'>
+					<p className='w-[45%] pb-[18px] text-[#FFFFFFC9] relative inline-block text-[18px] leading[18px] font-bold'>
 						{formatPrice(order.total)} {t('MyAccount.currency')}
 						<span className='absolute left-0 bottom-0 w-full h-[1px] bg-gradient-to-r from-gray-300 to-transparent'></span>
 					</p>
@@ -179,12 +185,12 @@ const OrderCart = ({ order }: { order: OrderProps }) => {
 	)
 }
 
-/* styled-components — дизайн лишив як у тебе */
+/* styled-components */
 const StyledLi = styled.div`
 	display: grid;
-	grid-template-columns: 350px 300px 1fr;
+	grid-template-columns: 380px 320px 1fr; /* ↑ трохи ширші колонки */
 	@media (max-width: 1200px) {
-		grid-template-columns: 350px 300px;
+		grid-template-columns: 360px 300px;
 	}
 `
 
@@ -199,11 +205,11 @@ const StyledDiv = styled(StyledLi)<{ $status: string }>`
 		content: '';
 		position: absolute;
 		left: 11px;
-		top: 11px;
+		top: 18px; /* опущена кольорова смужка */
 		display: block;
 		width: 3px;
-		height: 80%;
-		max-height: 68px;
+		height: calc(100% - 28px); /* під нову висоту хедера */
+		max-height: 104px; /* ↑ було 68/100 */
 		background-color: ${({ $status }) =>
 			$status === 'delivered'
 				? '#4BC785'
@@ -217,6 +223,16 @@ const StyledDiv = styled(StyledLi)<{ $status: string }>`
 								? '#686868'
 								: '#686868'};
 	}
+`
+
+/* більша іконка-стрілка */
+const StyledArrow = styled(ArrowIcon)`
+	width: 36px;
+	height: 36px;
+`
+
+const DateLine = styled.p`
+	margin-top: 2px;
 `
 
 const StyledImgProduct = styled.img``
@@ -259,13 +275,6 @@ const BigData = styled.p`
 	}
 `
 
-const ShortData = styled.p`
-	display: none !important;
-	@media (max-width: 764px) {
-		display: block !important;
-	}
-`
-
 const MoreInfoBlock = styled.div`
 	@media (max-width: 1000px) {
 		display: block;
@@ -283,15 +292,15 @@ const MoreInfoBlock = styled.div`
 
 const StyledLiMoreInfo = styled.li`
 	@media (max-width: 764px) {
-		padding: 20px 0;
+		padding: 22px 0;
 		flex-direction: column;
 		align-items: center;
-		gap: 10px;
+		gap: 12px;
 		text-align: center;
 		border-bottom: none;
 		border-top: 1px solid #ffffff33;
-		margin-bottom: 20px;
-		margin-top: 20px;
+		margin-bottom: 22px;
+		margin-top: 22px;
 	}
 `
 

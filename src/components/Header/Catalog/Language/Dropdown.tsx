@@ -1,3 +1,5 @@
+'use client'
+
 import styled from 'styled-components'
 
 const LANGS = [
@@ -14,7 +16,6 @@ type Props = {
 
 export const Dropdown = ({ current, onSelect }: Props) => {
 	const options = LANGS.filter(l => l.code !== current)
-
 	if (options.length === 0) return null
 
 	return (

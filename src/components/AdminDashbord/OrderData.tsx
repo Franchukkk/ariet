@@ -160,7 +160,6 @@ export const OrderData = () => {
 				const normalized = (list || []).map((o: any) => ({
 					...o,
 					date: o.created_at ?? o.date,
-					// попереднє значення для відображення: code або id
 					displayNumber: o.code ?? String(o.id)
 				}))
 				setOrders(normalized)
@@ -280,11 +279,9 @@ export const OrderData = () => {
 					headers: { ...authHeaders }
 				})
 				const full = await r.json()
-				// 1) оновлюємо selectOrder (для ModalCart)
 				setSelectOrder(prev =>
 					prev && prev.id === item.id ? { ...prev, ...full } : full
 				)
-				// 2) одразу підклеюємо code в список (для відображення на дошці)
 				setOrders(prev =>
 					prev.map(o =>
 						o.id === item.id
@@ -313,14 +310,13 @@ export const OrderData = () => {
 
 	// --------- DnD persistence ----------
 	const persistStatus = async (orderId: number, newStatus: ApiStatus) => {
-		// спец. endpoint лише для SHIPPED; інші — PATCH update/
 		if (newStatus === 'SHIPPED') {
 			const r2 = await fetch(`${API_BASE}/orders/${orderId}/ship/`, {
 				method: 'POST',
 				headers: { ...authHeaders }
 			})
 			if (r2.ok) return
-			// fallback до PATCH нижче
+			// інакше — PATCH нижче
 		}
 		const r = await fetch(`${API_BASE}/orders/${orderId}/update/`, {
 			method: 'PATCH',
@@ -340,7 +336,11 @@ export const OrderData = () => {
 
 		const id = Number(draggableId)
 
-		// 1) поточні колонки
+		// 1) снапшот попереднього стану (ми його не мутуємо)
+		const prevOrders = orders
+		const prevGrouped = grouped
+
+		// 2) нові колонки без мутації елементів
 		const current = splitByStatuses(orders)
 		const srcList = [...current[fromCol]]
 		const dstList = fromCol === toCol ? srcList : [...current[toCol]]
@@ -348,12 +348,19 @@ export const OrderData = () => {
 		const [moved] = srcList.splice(source.index, 1)
 		if (!moved) return
 
-		if (fromCol !== toCol) moved.status = COL_TO_STATUS[toCol]
-		dstList.splice(destination.index, 0, moved)
+		// без мутації moved
+		const movedCopy =
+			fromCol !== toCol ? { ...moved, status: COL_TO_STATUS[toCol] } : moved
 
-		const updatedGrouped = { ...current, [fromCol]: srcList, [toCol]: dstList }
+		dstList.splice(destination.index, 0, movedCopy)
 
-		// 2) оновити загальний список (інші замовлення теж зберігаємо)
+		const updatedGrouped: Record<ColumnId, any[]> = {
+			...current,
+			[fromCol]: srcList,
+			[toCol]: dstList
+		}
+
+		// 3) плаский список
 		const keptIds = new Set<number>([
 			...updatedGrouped.draft.map(i => i.id),
 			...updatedGrouped.confirmed.map(i => i.id),
@@ -371,31 +378,26 @@ export const OrderData = () => {
 			...others
 		]
 
-		// 3) оптимістичний UI
-		const prevOrders = orders
-		const prevGrouped = grouped
+		// 4) оптимістично оновлюємо UI
 		setGrouped(updatedGrouped)
 		setCounts(countStatuses(updatedOrders))
 		setOrders(updatedOrders)
 
-		// 4) збереження статусу на беку (лише якщо змінилась колонка)
+		// 5) бек — лише якщо змінилась колонка
 		if (fromCol !== toCol) {
 			try {
 				await persistStatus(id, COL_TO_STATUS[toCol] as ApiStatus)
-			} catch (e: any) {
-				// відкотити
+			} catch {
+				// 🔄 тихий відкат без повідомлень
 				setOrders(prevOrders)
 				setGrouped(prevGrouped)
 				setCounts(countStatuses(prevOrders))
-				alert(e?.message || 'Failed to move order')
 			}
 		}
 	}
 
 	const decorateForCard = (item: any) => {
 		const display = item?.code ?? item?.displayNumber ?? String(item?.id)
-		// важливо: Draggable key/ids залишаються числовими з реального item.id
-		// а в сам OrderCard передаємо item з "id" заміненим для ПЛЯШКИ (відображення)
 		return { ...item, id: display } as any
 	}
 
@@ -418,7 +420,7 @@ export const OrderData = () => {
 					{sortOpen && (
 						<ul
 							role='listbox'
-							className='absolute mt-[8px] z-[5] min-w-[180px] w-max bg-[#0D0C0C] border border-[#333333] rounded-[8px] p-[8px]'
+							className='absolute mt-[8px] z-[5] min-w=[180px] w-max bg-[#0D0C0C] border border-[#333333] rounded-[8px] p-[8px]'
 						>
 							<li
 								role='option'
@@ -824,15 +826,14 @@ const DropArea = styled.ul<{ $isOver?: boolean; $isEmpty?: boolean }>`
 
 	/* скрол всередині колонки */
 	overflow-y: auto;
-	max-height: 72vh; /* було 480px */
-	min-height: 160px; /* трохи більша "порожня" висота */
+	max-height: 72vh;
+	min-height: 160px;
 	padding: 10px;
 
 	border: 1px dashed ${({ $isOver }) => ($isOver ? '#4BC785' : '#333')};
 	border-radius: 10px;
 	background: ${({ $isOver }) => ($isOver ? '#1b1b1b' : 'transparent')};
 
-	/* приємний скролбар (не обовʼязково) */
 	scrollbar-width: thin;
 	scrollbar-color: #555 transparent;
 	&::-webkit-scrollbar {

@@ -86,27 +86,35 @@ export const ModalCart = ({
 			shipping_address: item?.shipping_address || item?.address || '',
 			billing_address: item?.billing_address || '',
 
+			// НЕ чіпаю логіку client_type
 			client_type: (item?.client_type as ClientType) || 'INDIVIDUAL',
+
+			// НОВЕ: user_type — лише відображення
+			user_type: (item?.user_type ?? '') as string,
+
 			transport_company_address: item?.transport_company_address || '',
 			company_name: item?.company_name || '',
 			vat_number: item?.vat_number || '',
 			promo_code: item?.promo_code || '',
 			post_index: item?.post_index || '',
 			comment: item?.comment || '',
+
 			// статус
 			status: asApiStatus(item?.status || 'DRAFT') as ApiStatus,
+
 			// білінг-зона
 			billing_zone_id:
 				(typeof item?.billing_zone === 'number'
 					? item.billing_zone
 					: item?.billing_zone?.id) ?? null,
-			billing_zone_name:
-				typeof item?.billing_zone === 'object' && item?.billing_zone?.name
-					? String(item.billing_zone.name)
-					: ''
+			billing_zone_name: (typeof item?.billing_zone === 'object' &&
+			item?.billing_zone?.name
+				? String(item.billing_zone.name)
+				: '') as string
 		}),
 		[item]
 	)
+
 	const [form, setForm] = useState(initialForm)
 
 	/* ---------- helpers ---------- */
@@ -166,6 +174,10 @@ export const ModalCart = ({
 					billing_zone_id: zoneId,
 
 					client_type: (data?.client_type as ClientType) ?? prev.client_type,
+
+					// оновлюємо user_type, але НЕ редагуємо його в UI
+					user_type: (data?.user_type ?? prev.user_type) as string,
+
 					transport_company_address:
 						data?.transport_company_address ?? prev.transport_company_address,
 					company_name: data?.company_name ?? prev.company_name,
@@ -277,9 +289,9 @@ export const ModalCart = ({
 				shipping_address: form.shipping_address,
 				billing_address: form.billing_address,
 				comment: form.comment,
-				billing_zone: form.billing_zone_id ?? 0, // якщо 0 не валідний — приберіть поле
+				billing_zone: form.billing_zone_id ?? 0,
 
-				// нові поля
+				// НЕ надсилаємо user_type (він лише для перегляду)
 				client_type: form.client_type,
 				transport_company_address: form.transport_company_address,
 				company_name: form.company_name,
@@ -491,6 +503,12 @@ export const ModalCart = ({
 					{!editing ? (
 						// ===== READ-ONLY
 						<ReadonlyGrid>
+							{/* НОВЕ: User type */}
+							<FieldRow
+								label='User type'
+								value={form.user_type}
+							/>
+
 							<FieldRow
 								label='Client type'
 								value={form.client_type}
@@ -549,7 +567,7 @@ export const ModalCart = ({
 							)}
 						</ReadonlyGrid>
 					) : (
-						// ===== EDIT
+						// ===== EDIT (user_type НЕ редагується)
 						<div className='flex flex-col gap-[10px] max-w-[520px]'>
 							<SegmentGroup
 								role='tablist'
@@ -570,6 +588,13 @@ export const ModalCart = ({
 									</SegmentBtn>
 								))}
 							</SegmentGroup>
+
+							{/* read-only відображення user_type у режимі редагування */}
+							<Input
+								readOnly
+								value={form.user_type || ''}
+								placeholder='User type'
+							/>
 
 							<Input
 								placeholder={t('AdminDashboard.full_name')}
@@ -871,14 +896,8 @@ function BillingZoneInputLike({
 /* ===================== styled ===================== */
 const WrapperOrder = styled.div`
 	position: relative;
-
-	/* далі — внутрішні відступи: зліва — під текст, справа — під хрестик */
 	padding: 0 28px 12px 8px;
-
-	/* розділювальна полоска — частина шапки */
 	border-bottom: 1px solid #ffffff26;
-
-	/* щоб контент не вилітав за межі шапки */
 	overflow: visible;
 
 	@media (max-width: 764px) {
@@ -887,11 +906,8 @@ const WrapperOrder = styled.div`
 `
 
 const Wrapper = styled.div`
-	/* було тільки на мобілці — тепер завжди: */
 	max-height: 85vh;
 	overflow-y: auto;
-
-	/* м'який скролбар */
 	scrollbar-width: thin;
 	scrollbar-color: #3a3a3a transparent;
 
@@ -943,7 +959,7 @@ const FieldTitle = styled.div`
 	letter-spacing: 0.2px;
 	margin-bottom: 6px;
 `
-/* сегментований слайдер */
+
 const SegmentGroup = styled.div`
 	display: inline-flex;
 	background: #0f0f0f;
@@ -1084,7 +1100,6 @@ const DeleteBtn = styled.button`
 	}
 `
 
-/* select (статус) */
 const SelectWrap = styled.div`
 	position: relative;
 	display: inline-block;
@@ -1151,7 +1166,6 @@ const MenuItem = styled.li`
 	}
 `
 
-/* інпут-лайк для зони */
 const FieldLabel = styled.div`
 	color: #fff;
 	font-size: 14px;
@@ -1174,7 +1188,6 @@ const InputCore = styled.input`
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
-
 	&::placeholder {
 		color: #777;
 	}
@@ -1199,7 +1212,6 @@ const ErrorText = styled.div`
 	font-size: 12px;
 `
 
-/* read-only сітка та рядок */
 const ReadonlyGrid = styled.div`
 	display: grid;
 	grid-template-columns: 220px 1fr;

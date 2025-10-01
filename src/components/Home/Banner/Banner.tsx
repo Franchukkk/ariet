@@ -1,115 +1,235 @@
-"use client";
+'use client'
 
-import bg from "@/assets/img/home-bg-1.png"
-import { useRef, useState } from "react"
-import styled from "styled-components"
-import type { Swiper as SwiperType } from "swiper"
-import { Navigation } from "swiper/modules"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Card } from "./Card/Card"
-import { Footer } from "./Footer"
-import { Navigations } from "./Navigations"
-import { Slides } from "./Slides"
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import styled from 'styled-components'
+import type { Swiper as SwiperType } from 'swiper'
+import { Navigation } from 'swiper/modules'
+import { Swiper, SwiperSlide } from 'swiper/react'
 
-const SLIDES = [
-  { title: "Inverter", photo: bg },
-  { title: "UPS", photo: bg },
-  { title: "Voltage Regulator", photo: bg },
-  { title: "MDC", photo: bg },
-  { title: "Batteries", photo: bg },
-];
+import decorBgUrl from '@/assets/img/Banner.svg?url'
+import bg from '@/assets/img/home-bg-1.png'
+
+import { Card } from './Card/Card'
+import { Footer } from './Footer'
+import { Navigations } from './Navigations'
+import { Slides } from './Slides'
+
+type Category = {
+	id: number
+	name?: string
+	name_ru?: string
+	name_en?: string
+	image?: string | { url?: string } | null
+	photo?: string | { url?: string } | null
+	banner?: string | { url?: string } | null
+}
 
 export const Banner = () => {
-  const swiperRef = useRef<SwiperType | null>(null);
-  const [activeSlide, setActiveSlide] = useState(0);
+	const { i18n } = useTranslation('common')
 
-  const handleNavigation = (isNext?: boolean) => {
-    if (swiperRef.current) {
-      isNext ? swiperRef.current.slideNext() : swiperRef.current.slidePrev();
-      setActiveSlide(swiperRef.current.activeIndex);
-    }
-  };
+	const swiperRef = useRef<SwiperType | null>(null)
+	const [activeSlide, setActiveSlide] = useState(0)
+	const [slides, setSlides] = useState<{ title: string; photo: any }[]>([])
 
-  const handleNavigateToSlide = (index: number) => {
-    if (swiperRef.current) {
-      swiperRef.current.slideTo(index);
-      setActiveSlide(swiperRef.current.activeIndex);
-    }
-  };
+	const currentLng = useMemo<'ru' | 'en'>(() => {
+		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
+		return raw === 'en' ? 'en' : 'ru'
+	}, [i18n.language, i18n.resolvedLanguage])
 
-  return (
-    <StyledBanner className="main-wrapper">
-      <div className="relative">
-        <Slides
-          slides={SLIDES.map((s) => s.title)}
-          active={activeSlide}
-          onNavigate={handleNavigateToSlide}
-        />
-        <Navigations onNavigate={handleNavigation} />
-        <Swiper
-          modules={[Navigation]}
-          slidesPerView={1}
-          loop={false}
-          navigation={false}
-          onBeforeInit={(swiper: SwiperType) => {
-            swiperRef.current = swiper;
-          }}
-        >
-          {SLIDES.map(({ title, photo }, i) => (
-            <SwiperSlide key={i}>
-              <Card title={title} photo={photo} />
-            </SwiperSlide>
-          ))}
-        </Swiper>{" "}
-        <Footer
-          active={activeSlide}
-          total={SLIDES.length}
-          nextSlide={
-            SLIDES[activeSlide === SLIDES.length - 1 ? 0 : 1 + activeSlide]
-              ?.title
-          }
-        />  
-      </div>
-    </StyledBanner>
-  );
-};
+	useEffect(() => {
+		let cancelled = false
+
+		;(async () => {
+			try {
+				const res = await fetch(
+					`/front-proxy/categories?lng=${currentLng}&page_size=20&_=${Date.now()}`,
+					{ cache: 'no-store' }
+				)
+				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+				const json = await res.json()
+				const arr: Category[] = Array.isArray(json)
+					? json
+					: (json?.results ?? [])
+
+				const next = arr.map(c => {
+					const title =
+						(currentLng === 'en' ? c.name_en : c.name_ru) ?? c.name ?? ''
+					const rawImg: any = c.image ?? c.photo ?? c.banner ?? null
+					const src = (typeof rawImg === 'string' ? rawImg : rawImg?.url) || bg
+					return { title: title || '—', photo: src }
+				})
+
+				if (!cancelled && next.length) {
+					setSlides(next)
+					setActiveSlide(0)
+					if (swiperRef.current) swiperRef.current.slideTo(0, 0)
+				} else if (!cancelled) {
+					setSlides([{ title: '—', photo: bg }])
+				}
+			} catch {
+				if (!cancelled) {
+					setSlides([{ title: '—', photo: bg }])
+				}
+			}
+		})()
+
+		return () => {
+			cancelled = true
+		}
+	}, [currentLng])
+
+	const handleNavigation = (isNext?: boolean) => {
+		if (!swiperRef.current) return
+		isNext ? swiperRef.current.slideNext() : swiperRef.current.slidePrev()
+		setActiveSlide(swiperRef.current.activeIndex)
+	}
+
+	const handleNavigateToSlide = (index: number) => {
+		if (!swiperRef.current) return
+		swiperRef.current.slideTo(index)
+		setActiveSlide(swiperRef.current.activeIndex)
+	}
+
+	return (
+		<StyledBanner className='main-wrapper'>
+			<div className='relative'>
+				<Slides
+					slides={slides.map(s => s.title)}
+					active={activeSlide}
+					onNavigate={handleNavigateToSlide}
+				/>
+				<Navigations onNavigate={handleNavigation} />
+
+				<Swiper
+					modules={[Navigation]}
+					slidesPerView={1}
+					loop={false}
+					navigation={false}
+					onBeforeInit={(swiper: SwiperType) => {
+						swiperRef.current = swiper
+					}}
+					onSlideChange={sw => setActiveSlide(sw.activeIndex)}
+				>
+					{slides.map(({ title, photo }, i) => (
+						<SwiperSlide key={i}>
+							<ImgClamp>
+								<Card
+									title={title}
+									photo={photo}
+								/>
+								{/* 	<Image
+									src={photo}
+									alt={title}
+									width={400}
+									height={350}
+									sizes='(max-width: 1000px) 90vw, 600px'
+									priority={i === 0}
+								/>*/}
+							</ImgClamp>
+						</SwiperSlide>
+					))}
+				</Swiper>
+
+				<Footer
+					active={activeSlide}
+					total={slides.length}
+					nextSlide={
+						slides[activeSlide === slides.length - 1 ? 0 : activeSlide + 1]
+							?.title
+					}
+				/>
+			</div>
+		</StyledBanner>
+	)
+}
 
 const StyledBanner = styled.div`
-  position: relative;
-  margin-bottom: 120px;
-  .navigation-btns {
-    position: absolute;
-    top: 50%;
-    right: 28px;
-    left: 0;
-    transform: translateY(-50%);
-    z-index: 3;
-    button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 43px;
-      height: 43px;
-      border: 1px dashed #ffffff80;
-      border-radius: 4px;
-      path {
-        transition: all 0.3s;
-      }
-      &.next {
-        svg {
-          transform: rotate(180deg);
-        }
-      }
-      &:hover {
-        background: #4bc785;
-        border: 1px solid #4bc785;
-        path {
-          fill: #000;
-        }
-      }
-    }
-  }
-  @media (max-width: 1000px) {
-    margin-bottom: 40px;
-  }
-`;
+	position: relative;
+	margin-bottom: 120px;
+	.navigation-btns {
+		position: absolute;
+		top: 50%;
+		right: 28px;
+		left: 0;
+		transform: translateY(-50%);
+		z-index: 3;
+		button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 43px;
+			height: 43px;
+			border: 1px dashed #ffffff80;
+			border-radius: 4px;
+			path {
+				transition: all 0.3s;
+			}
+			&.next {
+				svg {
+					transform: rotate(180deg);
+				}
+			}
+			&:hover {
+				background: #4bc785;
+				border: 1px solid #4bc785;
+				path {
+					fill: #000;
+				}
+			}
+		}
+	}
+	@media (max-width: 1000px) {
+		margin-bottom: 40px;
+	}
+`
+
+/* чорний фон + ваш SVG, маленькі зображення не розтягуємо */
+const ImgClamp = styled.div`
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	background-color: #000;
+	background-image: url(${decorBgUrl});
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+
+	min-height: 700px;
+
+	/* працює і для <img>, і для <picture> > img, і для next/image всередині Card */
+	img,
+	picture img {
+		width: auto;
+		height: auto;
+		max-height: 420px; /* ← підкручуй тут, якщо треба менше/більше */
+		max-width: 60vw;
+		object-fit: contain;
+		image-rendering: auto;
+	}
+
+	@media (max-width: 1200px) {
+		min-height: 520px;
+		img,
+		picture img {
+			max-height: 380px;
+		}
+	}
+	@media (max-width: 1000px) {
+		min-height: 460px;
+		img,
+		picture img {
+			max-height: 340px;
+		}
+	}
+	@media (max-width: 700px) {
+		min-height: 380px;
+		img,
+		picture img {
+			max-height: 300px;
+		}
+	}
+`

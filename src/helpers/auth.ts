@@ -5,7 +5,6 @@ export const getAccessToken = (): string | null => {
 	if (typeof localStorage !== 'undefined') {
 		return localStorage.getItem('accessToken')
 	}
-
 	return null
 }
 
@@ -13,38 +12,30 @@ export const getRefreshToken = (): string | null => {
 	if (typeof localStorage !== 'undefined') {
 		return localStorage.getItem('refreshToken')
 	}
-
 	return null
 }
 
 export const refreshToken = async (): Promise<boolean> => {
 	const refreshTokenValue = getRefreshToken()
-
-	if (!refreshTokenValue) {
-		return false
-	}
+	if (!refreshTokenValue) return false
 
 	try {
 		const response = await fetch(
 			'https://rpktask.sytes.net/api/token/refresh/',
 			{
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ refresh: refreshTokenValue })
 			}
 		)
 
 		if (response.ok) {
 			const data = await response.json()
-			// Зберігаємо в localStorage
 			if (typeof localStorage !== 'undefined') {
 				localStorage.setItem('accessToken', data.access)
 			}
 			return true
 		} else {
-			// Refresh token невалідний, очищаємо все
 			if (typeof localStorage !== 'undefined') {
 				localStorage.removeItem('accessToken')
 				localStorage.removeItem('refreshToken')
