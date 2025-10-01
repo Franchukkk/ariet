@@ -40,20 +40,22 @@ const DATA_KEYS = [
 ]
 
 export const Grid = () => {
-	const { t } = useTranslation('common')
+	const { t, ready } = useTranslation('common')
 
 	return (
 		<StyledGrid>
-			<LogoCard />
-			{DATA_KEYS.map(({ titleKey, icon, className }, i) => (
-				<Card
-					key={i}
-					position={1 + i}
-					title={t(titleKey)}
-					icon={icon}
-					className={className}
-				/>
-			))}
+			<LogoCard loading={!ready} />
+			{ready
+				? DATA_KEYS.map(({ titleKey, icon, className }, i) => (
+						<Card
+							key={i}
+							position={1 + i}
+							title={t(titleKey)}
+							icon={icon}
+							className={className}
+						/>
+					))
+				: Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
 			<Banner />
 		</StyledGrid>
 	)
@@ -68,7 +70,15 @@ const StyledGrid = styled.div`
 		grid-template-columns: repeat(2, 1fr);
 	}
 	@media (max-width: 700px) {
-		grid-template-columns: repeat(1, 1fr);
+		grid-template-columns: 1fr;
 		grid-auto-rows: 200px;
 	}
+`
+
+/* Скелет карточки, щоб зайняти місце поки немає перекладу/даних */
+const CardSkeleton = styled.div`
+	width: 100%;
+	height: 100%;
+	border-radius: 16px;
+	background: rgba(255, 255, 255, 0.06);
 `
