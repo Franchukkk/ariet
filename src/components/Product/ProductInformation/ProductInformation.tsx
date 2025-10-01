@@ -446,7 +446,14 @@ export const ProductInformation = ({
 		)
 	}, [variants, activeVersionKey, selectedSocketCode])
 
-	const canBuy = !!combinationVariant
+	// ===== покупка незалежно від «розетки» (fallback-логіка)
+	const variantForBasket = useMemo(() => {
+		if (combinationVariant) return combinationVariant
+		if (displayVariant) return displayVariant
+		return variants[0] ?? null
+	}, [combinationVariant, displayVariant, variants])
+
+	const canBuy = !!variantForBasket
 
 	const features = displayVariant?.features ?? []
 	const mid = Math.ceil(features.length / 2)
@@ -455,20 +462,19 @@ export const ProductInformation = ({
 
 	/* ===================== pricing ===================== */
 
-	// публічна роздрібна для не-дилерів
+	// публічна роздрібна для не-дилерів (для відображення праворуч)
 	const retailPriceDisplay = displayVariant?.price ?? 0
 
-	// дилерська
+	// дилерська (для відображення праворуч)
 	const dealerPriceDisplay = displayVariant?.dealer_price ?? null
 
 	// "Розница" у дилерській картці: project_price -> fallback на звичайну price
 	const retailForDealerCard =
 		displayVariant?.project_price ?? retailPriceDisplay
 
-	// розрахунок ціни до оплати
-	const retailPriceToPay = combinationVariant?.price ?? retailPriceDisplay
-	const dealerPriceToPay =
-		combinationVariant?.dealer_price ?? dealerPriceDisplay
+	// розрахунок ціни до оплати (для кошика) — від вибраного або fallback-варіанту
+	const retailPriceToPay = variantForBasket?.price ?? retailPriceDisplay
+	const dealerPriceToPay = variantForBasket?.dealer_price ?? dealerPriceDisplay
 	const effectivePrice = isDealer
 		? (dealerPriceToPay ?? retailPriceToPay)
 		: retailPriceToPay
@@ -614,15 +620,15 @@ export const ProductInformation = ({
 								disabled={!canBuy}
 								aria-disabled={!canBuy}
 								onClick={() => {
-									if (!combinationVariant) return
+									if (!variantForBasket || !productInfo) return
 									addToBasket({
-										id: productInfo!.id,
-										variantId: combinationVariant.id,
-										name: productInfo!.name,
+										id: productInfo.id,
+										variantId: variantForBasket.id,
+										name: productInfo.name,
 										price: effectivePrice,
 										quantity: 1,
 										photo:
-											combinationVariant.images[0]?.image ||
+											variantForBasket.images[0]?.image ||
 											'/img/placeholder.png'
 									})
 									router.push('/basket')
@@ -713,11 +719,11 @@ export const ProductInformation = ({
 										aria-label='arrow-down'
 									/>
 								</DescriptionText>
+
+								{/* БЕЗ ВНУТРІШНЬОГО СКРОЛУ: просто розкривається вниз */}
 								<p
 									className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${
-										showDescription
-											? 'max-h-[200px] overflow-y-auto'
-											: 'max-h-0'
+										showDescription ? 'max-h-[9999px]' : 'max-h-0'
 									}`}
 								>
 									{productInfo.description}
@@ -921,7 +927,7 @@ const CanvasBlockTwo = styled(CanvasBlockOne)`
 const VersionList = styled.div`
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 10px 12px;
+	gап: 10px 12px;
 	padding-bottom: 30px;
 	border-bottom: 1px dashed #313131;
 
@@ -1055,7 +1061,6 @@ const DealerRow = styled.div`
 	gap: 14px;
 `
 
-// транзієнтний проп $dim — не потрапляє в DOM
 const Badge = styled.span<{ $dim?: boolean }>`
 	font-size: 11px;
 	line-height: 1;
