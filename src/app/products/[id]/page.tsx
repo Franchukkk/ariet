@@ -21,16 +21,15 @@ export default function ProductPage() {
 
 	return (
 		<PublicRoute>
+			<ProductVariant />
+
+			<div>
+				<Breadcrumbs
+					path={['Главная', 'Продукция', productName]}
+					alias={['/', 'products', 'current']}
+				/>
+			</div>
 			<Stack as='main'>
-				<ProductVariant />
-
-				<div>
-					<Breadcrumbs
-						path={['Главная', 'Продукция', productName]}
-						alias={['/', 'products', 'current']}
-					/>
-				</div>
-
 				<ProductInformation setProductName={setProductName} />
 				<Steps />
 				<Specifications />
