@@ -25,12 +25,16 @@ type Category = {
 	banner?: string | { url?: string } | null
 }
 
+const MAX_SLIDES = 6
+
+type SlideItem = { id: number; title: string; photo: any }
+
 export const Banner = () => {
 	const { i18n } = useTranslation('common')
 
 	const swiperRef = useRef<SwiperType | null>(null)
 	const [activeSlide, setActiveSlide] = useState(0)
-	const [slides, setSlides] = useState<{ title: string; photo: any }[]>([])
+	const [slides, setSlides] = useState<SlideItem[]>([])
 
 	const currentLng = useMemo<'ru' | 'en'>(() => {
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
@@ -43,7 +47,7 @@ export const Banner = () => {
 		;(async () => {
 			try {
 				const res = await fetch(
-					`/front-proxy/categories?lng=${currentLng}&page_size=20&_=${Date.now()}`,
+					`/front-proxy/categories?lng=${currentLng}&page_size=${MAX_SLIDES}&_=${Date.now()}`,
 					{ cache: 'no-store' }
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -53,24 +57,26 @@ export const Banner = () => {
 					? json
 					: (json?.results ?? [])
 
-				const next = arr.map(c => {
+				const mapped: SlideItem[] = arr.map(c => {
 					const title =
 						(currentLng === 'en' ? c.name_en : c.name_ru) ?? c.name ?? ''
 					const rawImg: any = c.image ?? c.photo ?? c.banner ?? null
 					const src = (typeof rawImg === 'string' ? rawImg : rawImg?.url) || bg
-					return { title: title || '—', photo: src }
+					return { id: c.id, title: title || '—', photo: src }
 				})
+
+				const next = mapped.slice(0, MAX_SLIDES)
 
 				if (!cancelled && next.length) {
 					setSlides(next)
 					setActiveSlide(0)
 					if (swiperRef.current) swiperRef.current.slideTo(0, 0)
 				} else if (!cancelled) {
-					setSlides([{ title: '—', photo: bg }])
+					setSlides([{ id: 0, title: '—', photo: bg }])
 				}
 			} catch {
 				if (!cancelled) {
-					setSlides([{ title: '—', photo: bg }])
+					setSlides([{ id: 0, title: '—', photo: bg }])
 				}
 			}
 		})()
@@ -88,7 +94,8 @@ export const Banner = () => {
 
 	const handleNavigateToSlide = (index: number) => {
 		if (!swiperRef.current) return
-		swiperRef.current.slideTo(index)
+		const bounded = Math.max(0, Math.min(index, Math.max(0, slides.length - 1)))
+		swiperRef.current.slideTo(bounded)
 		setActiveSlide(swiperRef.current.activeIndex)
 	}
 
@@ -112,21 +119,15 @@ export const Banner = () => {
 					}}
 					onSlideChange={sw => setActiveSlide(sw.activeIndex)}
 				>
-					{slides.map(({ title, photo }, i) => (
-						<SwiperSlide key={i}>
+					{slides.map(({ id, title, photo }, i) => (
+						<SwiperSlide key={id ?? i}>
 							<ImgClamp>
 								<Card
 									title={title}
 									photo={photo}
+									categoryId={id}
+									lng={currentLng}
 								/>
-								{/* 	<Image
-									src={photo}
-									alt={title}
-									width={400}
-									height={350}
-									sizes='(max-width: 1000px) 90vw, 600px'
-									priority={i === 0}
-								/>*/}
 							</ImgClamp>
 						</SwiperSlide>
 					))}
@@ -185,7 +186,6 @@ const StyledBanner = styled.div`
 	}
 `
 
-/* чорний фон + ваш SVG, маленькі зображення не розтягуємо */
 const ImgClamp = styled.div`
 	position: relative;
 	display: flex;
@@ -200,12 +200,11 @@ const ImgClamp = styled.div`
 
 	min-height: 700px;
 
-	/* працює і для <img>, і для <picture> > img, і для next/image всередині Card */
 	img,
 	picture img {
 		width: auto;
 		height: auto;
-		max-height: 420px; /* ← підкручуй тут, якщо треба менше/більше */
+		max-height: 420px;
 		max-width: 60vw;
 		object-fit: contain;
 		image-rendering: auto;

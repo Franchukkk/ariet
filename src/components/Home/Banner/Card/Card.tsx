@@ -1,3 +1,5 @@
+'use client'
+
 import type { StaticImageData } from 'next/image'
 import styled from 'styled-components'
 
@@ -9,15 +11,20 @@ type ImgLike = string | StaticImageData
 interface Props {
 	title: string
 	photo: ImgLike
+	categoryId?: number
+	lng?: 'ru' | 'en'
 }
 
-export const Card = ({ title, photo }: Props) => (
+export const Card = ({ title, photo, categoryId, lng }: Props) => (
 	<StyledCard
 		className='flex flex-col justify-end'
 		$photo={photo}
 	>
 		<Title title={title} />
-		<HomeLink />
+		<HomeLink
+			categoryId={categoryId}
+			lng={lng}
+		/>
 	</StyledCard>
 )
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useSearchParams } from 'next/navigation'
@@ -10,8 +9,6 @@ import { Autoplay, Pagination as SwiperPagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import { Card } from './Card/Card'
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type Possibility = { name: string; description?: string | null }
 type Lng = 'ru' | 'en'
@@ -98,12 +95,13 @@ export const List = ({
 		}
 	}, [productId, currentLng])
 
+	// ТУТ головна зміна: підставляємо subtitle з description
 	const slides = useMemo(() => {
 		const n = possibilities.length
 		if (!n) return []
 		return possibilities.map((p, i) => ({
 			title: p.name || '',
-			subtitle: undefined,
+			subtitle: p.description ?? '', // ← було undefined
 			progress: Math.round(((i + 1) / n) * 100)
 		}))
 	}, [possibilities])

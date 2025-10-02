@@ -4,9 +4,20 @@ import Link from 'next/link'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-export const HomeLink = () => {
+interface Props {
+	categoryId?: number | string
+	lng?: 'ru' | 'en'
+}
+
+export const HomeLink = ({ categoryId, lng }: Props) => {
 	const { t } = useTranslation('common')
-	return <StyledLink href='/products'>{t('HomeLink.to_catalog')}</StyledLink>
+
+	const href =
+		categoryId != null
+			? `/products?category=${categoryId}${lng ? `&lng=${lng}` : ''}`
+			: '/products'
+
+	return <StyledLink href={href}>{t('HomeLink.to_catalog')}</StyledLink>
 }
 
 const StyledLink = styled(Link)`
@@ -29,10 +40,6 @@ const StyledLink = styled(Link)`
 	bottom: 120px;
 	right: 28%;
 	@media (max-width: 700px) {
-		/* width: 100px;
-    height: 100px;
-    bottom: 40px;
-    right: 20%; */
 		display: none;
 	}
 `

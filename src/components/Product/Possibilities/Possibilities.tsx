@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
@@ -7,10 +6,7 @@ import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import { List } from './List/List'
-import { Subtitle } from './Subtitle'
 import { Title } from './Title'
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 type Possibility = { name?: string | null; description?: string | null }
 type ProductDetail = {
@@ -141,7 +137,7 @@ function PossibilitiesInner({ currentLng }: { currentLng: Lng }) {
 	return (
 		<StyledPossibilities className='main-wrapper'>
 			<Title text={i18nTitle} />
-			<Subtitle text={subtitleText} />
+
 			<List
 				productId={productId}
 				lng={currentLng}
