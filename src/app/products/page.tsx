@@ -12,7 +12,10 @@ export default function Page() {
 	return (
 		<PublicRoute>
 			<StyledProducts>
-				<Content />
+				<div className='content-root'>
+					<Content />
+				</div>
+
 				<Categories />
 			</StyledProducts>
 		</PublicRoute>
@@ -21,4 +24,15 @@ export default function Page() {
 
 const StyledProducts = styled.div`
 	padding-top: 81px;
+
+	@media (max-width: 1000px) {
+		.content-root h1,
+		.content-root h2,
+		.content-root h3,
+		.content-root .page-title,
+		.content-root .title {
+			text-align: center;
+			line-height: 1.3;
+		}
+	}
 `
