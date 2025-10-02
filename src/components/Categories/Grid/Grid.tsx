@@ -28,8 +28,8 @@ export const Grid = () => {
 				setLoading(true)
 				setError(null)
 				const res = await fetch(
-					`/front-proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
-					{ cache: 'no-store' }
+					`https://rpktask.sytes.net/front-proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
+					{ cache: 'no-store', signal: controller.signal }
 				)
 
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)

@@ -71,13 +71,12 @@ function ContentInner() {
 	const [error, setError] = useState<string | null>(null)
 
 	const [activeFilters, setActiveFilters] = useState<string[]>([])
-	const [pagination, setPagination] = useState({
-		currentPage: 1,
-		totalPages: 1
-	})
+	const [currentPage, setCurrentPage] = useState(1)
+	const [totalPages, setTotalPages] = useState(1)
 	const [showFilters, setShowFilters] = useState(false)
 	const [query, setQuery] = useState('')
 
+	// завантаження категорій
 	useEffect(() => {
 		let alive = true
 		fetch('https://rpktask.sytes.net/api/catalog/categories/', {
@@ -96,100 +95,33 @@ function ContentInner() {
 		}
 	}, [])
 
+	// синхронізація фільтра з ?category=ID у URL
 	useEffect(() => {
 		if (categoryQuery) setActiveFilters([categoryQuery])
 		else setActiveFilters([])
-
-		setPagination(p => ({ ...p, currentPage: 1 }))
+		// при зміні категорії/URL — перезавантажуємо першу сторінку
 	}, [categoryQuery])
 
-	useEffect(() => {
-		let alive = true
-		const controller = new AbortController()
+	// універсальний фетчер (replace | append)
+	const fetchProducts = async (page: number, mode: 'replace' | 'append') => {
 		setLoading(true)
 		setError(null)
-
-		const params = new URLSearchParams()
-		params.set('page', String(pagination.currentPage))
-		params.set('page_size', String(PAGE_SIZE))
-		if (query.trim()) params.set('search', query.trim())
-
-		fetch(
-			`https://rpktask.sytes.net/api/catalog/products/?${params.toString()}`,
-			{
-				method: 'GET',
-				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
-				cache: 'no-store',
-				signal: controller.signal
-			}
-		)
-			.then(async r => {
-				if (!r.ok) throw new Error(`HTTP ${r.status}`)
-				const json = await r.json()
-				if (!alive) return
-				const results: IProduct[] = json?.results ?? []
-				const count: number = json?.count ?? results.length
-				setProductData(results)
-				setPagination(p => ({
-					...p,
-					totalPages: Math.max(1, Math.ceil(count / PAGE_SIZE))
-				}))
-			})
-			.catch(e => {
-				if (alive) setError(e?.message ?? 'Failed to load')
-			})
-			.finally(() => {
-				if (alive) setLoading(false)
-			})
-
-		return () => {
-			alive = false
-			controller.abort()
-		}
-	}, [pagination.currentPage, query])
-
-	const filteredData = useMemo(() => {
-		const byCategory =
-			activeFilters.length === 0
-				? productData
-				: productData.filter(p =>
-						activeFilters.includes(p.category.id.toString())
-					)
-
-		if (!query.trim()) return byCategory
-		const q = query.toLowerCase()
-		return byCategory.filter(
-			p =>
-				p.name.toLowerCase().includes(q) ||
-				p.category.name.toLowerCase().includes(q)
-		)
-	}, [query, productData, activeFilters])
-
-	const handlePaginationChange = (page: number) =>
-		setPagination(prev => ({ ...prev, currentPage: page }))
-
-	const handleFilterChange = (filter: string, isReset?: boolean) => {
-		setActiveFilters(prev =>
-			isReset
-				? []
-				: prev.includes(filter)
-					? prev.filter(f => f !== filter)
-					: [...prev, filter]
-		)
-		setPagination(p => ({ ...p, currentPage: 1 }))
-	}
-
-	const handleLoadMore = async () => {
-		const nextPage = pagination.currentPage + 1
-		if (nextPage > pagination.totalPages) return
-
-		const params = new URLSearchParams()
-		params.set('page', String(nextPage))
-		params.set('page_size', String(PAGE_SIZE))
-		if (query.trim()) params.set('search', query.trim())
-
 		try {
+			const params = new URLSearchParams()
+			params.set('page', String(page))
+			params.set('page_size', String(PAGE_SIZE))
+			if (query.trim()) params.set('search', query.trim())
+
+			const selectedCats = activeFilters.filter(Boolean)
+			if (selectedCats.length === 1) {
+				params.set('category', selectedCats[0]) // ?category=1
+			} else if (selectedCats.length > 1) {
+				// якщо бекенд підтримує IN-фільтр:
+				params.set('category__in', selectedCats.join(',')) // ?category__in=1,2,3
+				// або повторюваний параметр:
+				// selectedCats.forEach(id => params.append('category', id))
+			}
+
 			const r = await fetch(
 				`https://rpktask.sytes.net/api/catalog/products/?${params.toString()}`,
 				{
@@ -201,13 +133,62 @@ function ContentInner() {
 			)
 			if (!r.ok) throw new Error(`HTTP ${r.status}`)
 			const json = await r.json()
-			const more: IProduct[] = json?.results ?? []
-			setProductData(prev => [...prev, ...more])
-			setPagination(p => ({ ...p, currentPage: nextPage }))
-		} catch {}
+			const results: IProduct[] = json?.results ?? []
+			const count: number = json?.count ?? results.length
+
+			if (mode === 'replace') setProductData(results)
+			else setProductData(prev => [...prev, ...results])
+
+			setTotalPages(Math.max(1, Math.ceil(count / PAGE_SIZE)))
+		} catch (e: any) {
+			setError(e?.message ?? 'Failed to load')
+		} finally {
+			setLoading(false)
+		}
 	}
 
-	const handleToggleFilters = () => setShowFilters(!showFilters)
+	// перше завантаження + реакція на зміну фільтрів/пошуку
+	useEffect(() => {
+		setCurrentPage(1)
+		fetchProducts(1, 'replace')
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [query, activeFilters.join(',')]) // join щоб ефект стабільно тригерився при зміні набору
+
+	const handlePaginationChange = (page: number) => {
+		setCurrentPage(page)
+		fetchProducts(page, 'replace') // при переході на сторінку — замінюємо, не додаємо
+	}
+
+	const handleFilterChange = (filter: string, isReset?: boolean) => {
+		setActiveFilters(prev =>
+			isReset
+				? []
+				: prev.includes(filter)
+					? prev.filter(f => f !== filter)
+					: [...prev, filter]
+		)
+		// fetch відбудеться вище (ефект на activeFilters)
+	}
+
+	const handleLoadMore = async () => {
+		const nextPage = currentPage + 1
+		if (nextPage > totalPages) return
+		await fetchProducts(nextPage, 'append') // ДОБАВЛЯЄМО до списку
+		setCurrentPage(nextPage) // оновлюємо лічильник сторінки без перезаміни даних
+	}
+
+	const handleToggleShowFilters = () => setShowFilters(prev => !prev)
+
+	// локальний пошук по вже (можливо) дозавантаженому списку
+	const filteredData = useMemo(() => {
+		if (!query.trim()) return productData
+		const q = query.toLowerCase()
+		return productData.filter(
+			p =>
+				p.name.toLowerCase().includes(q) ||
+				p.category.name.toLowerCase().includes(q)
+		)
+	}, [query, productData])
 
 	return (
 		<StyledContent className='main-wrapper'>
@@ -223,7 +204,7 @@ function ContentInner() {
 					activeFilters={activeFilters}
 					onChangeFilter={handleFilterChange}
 					showFilters={showFilters}
-					onToggleShowFilters={handleToggleFilters}
+					onToggleShowFilters={handleToggleShowFilters}
 					categories={categories}
 				/>
 
@@ -232,10 +213,7 @@ function ContentInner() {
 						type='text'
 						placeholder={t('search.placeholder')}
 						value={query}
-						onChange={e => {
-							setQuery(e.target.value)
-							setPagination(p => ({ ...p, currentPage: 1 }))
-						}}
+						onChange={e => setQuery(e.target.value)}
 					/>
 					<SearchIcon />
 				</SearchWrapper>
@@ -245,13 +223,11 @@ function ContentInner() {
 					<>
 						<List data={filteredData} />
 
-						{pagination.currentPage < pagination.totalPages && (
-							<ShowMore onClick={handleLoadMore} />
-						)}
+						{currentPage < totalPages && <ShowMore onClick={handleLoadMore} />}
 
 						<Pagination
-							currentPage={pagination.currentPage}
-							totalPages={pagination.totalPages}
+							currentPage={currentPage}
+							totalPages={totalPages}
 							onPageChange={handlePaginationChange}
 						/>
 					</>
