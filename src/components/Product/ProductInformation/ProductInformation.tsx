@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -113,6 +114,15 @@ const useDealer = () => {
 
 	useEffect(() => {
 		let cancelled = false
+
+		const runIdle = (cb: () => void) => {
+			// @ts-ignore
+			const ric = typeof window !== 'undefined' && window.requestIdleCallback
+			return ric
+				? (window as any).requestIdleCallback(cb, { timeout: 1500 })
+				: setTimeout(cb, 0)
+		}
+
 		const check = async () => {
 			let token = getAccessToken()
 			let claims: any = token ? decodeJwtPayload(token) : null
@@ -151,9 +161,13 @@ const useDealer = () => {
 
 			if (!cancelled) setIsDealer(dealer)
 		}
-		void check()
+
+		const id = runIdle(() => void check())
 		return () => {
 			cancelled = true
+			if (typeof id === 'number') clearTimeout(id as any)
+			// @ts-ignore
+			else if (window.cancelIdleCallback) (window as any).cancelIdleCallback(id)
 		}
 	}, [])
 
@@ -224,7 +238,7 @@ interface Variant {
 	price: number
 	dealer_price?: number | null
 	project_price?: number | null
-	/** ТЕПЕР масив сокетів (backward-сумісно нормалізується з одиночного об’єкта) */
+	/** масив сокетів */
 	sockets: { code: string; name: string }[]
 	images: { image: string; alt_text: string | null }[]
 	features: { name: string; value: string }[]
@@ -287,7 +301,7 @@ export const ProductInformation = ({
 			}))
 		)
 
-	// нормалізація сокетів: дозволяє [obj], obj або []
+	// нормалізація сокетів
 	const normalizeSockets = (raw: any): { code: string; name: string }[] => {
 		if (!raw) return []
 		const arr = Array.isArray(raw) ? raw : [raw]
@@ -314,7 +328,6 @@ export const ProductInformation = ({
 			price: toNum(v?.price) ?? 0,
 			dealer_price: toNum(v?.dealer_price),
 			project_price: toNum(v?.project_price),
-			// приймаємо і v.socket (array|object), і v.sockets (array)
 			sockets: normalizeSockets(v?.sockets ?? v?.socket),
 			images: (v?.images ?? []).map((im: any) => ({
 				image: String(im?.image ?? ''),
@@ -384,13 +397,26 @@ export const ProductInformation = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [id, currentLng])
 
-	/* preload other lang */
+	/* preload other lang (у простої, щоб не заважати LCP) */
 	useEffect(() => {
 		const other: Lng = currentLng === 'ru' ? 'en' : 'ru'
 		if (byLang[other]) return
-		loadProduct(other)
-			.then(data => setByLang(prev => ({ ...prev, [other]: data })))
-			.catch(() => {})
+		// @ts-ignore
+		const ric = typeof window !== 'undefined' && window.requestIdleCallback
+		const run = () => {
+			loadProduct(other)
+				.then(data => setByLang(prev => ({ ...prev, [other]: data })))
+				.catch(() => {})
+		}
+		const idl = ric
+			? (window as any).requestIdleCallback(run, { timeout: 2000 })
+			: setTimeout(run, 0)
+		return () => {
+			if (typeof idl === 'number') clearTimeout(idl as any)
+			// @ts-ignore
+			else if (window.cancelIdleCallback)
+				(window as any).cancelIdleCallback(idl)
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng, id])
 
@@ -419,7 +445,6 @@ export const ProductInformation = ({
 		[selectedVersionKey, variants]
 	)
 
-	// зібрати всі сокети для обраної версії (без дублювань)
 	const socketsForActiveVersion = useMemo(() => {
 		if (!activeVersionKey) return []
 		const map = new Map<string, string>()
@@ -449,7 +474,6 @@ export const ProductInformation = ({
 		return variants.find(v => getVersionKey(v) === activeVersionKey) ?? null
 	}, [variants, activeVersionKey])
 
-	// тепер варіант вважається відповідним, якщо МІСТИТЬ обраний сокет у своєму масиві
 	const combinationVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey || !selectedSocketCode)
 			return null
@@ -462,7 +486,6 @@ export const ProductInformation = ({
 		)
 	}, [variants, activeVersionKey, selectedSocketCode])
 
-	// ===== покупка незалежно від «розетки» (fallback-логіка)
 	const variantForBasket = useMemo(() => {
 		if (combinationVariant) return combinationVariant
 		if (displayVariant) return displayVariant
@@ -478,24 +501,17 @@ export const ProductInformation = ({
 
 	/* ===================== pricing ===================== */
 
-	// публічна роздрібна для не-дилерів (для відображення праворуч)
 	const retailPriceDisplay = displayVariant?.price ?? 0
-
-	// дилерська (для відображення праворуч)
 	const dealerPriceDisplay = displayVariant?.dealer_price ?? null
-
-	// "Розница" у дилерській картці: project_price -> fallback на звичайну price
 	const retailForDealerCard =
 		displayVariant?.project_price ?? retailPriceDisplay
 
-	// розрахунок ціни до оплати (для кошика) — від вибраного або fallback-варіанту
 	const retailPriceToPay = variantForBasket?.price ?? retailPriceDisplay
 	const dealerPriceToPay = variantForBasket?.dealer_price ?? dealerPriceDisplay
 	const effectivePrice = isDealer
 		? (dealerPriceToPay ?? retailPriceToPay)
 		: retailPriceToPay
 
-	// показувати дилерську картку, якщо є dealer/project ціни або користувач дилер
 	const showDealerCard = useMemo(
 		() =>
 			isDealer ||
@@ -558,11 +574,23 @@ export const ProductInformation = ({
 									<CanvasBlockTwo>
 										<Background />
 									</CanvasBlockTwo>
-									<img
-										src={ProductBg.src}
-										alt='product-bg'
+
+									{/* LCP FIX: bg через next/image + priority */}
+									<div
 										className='w-full h-full absolute top-0 left-0 z-[0]'
-									/>
+										style={{ position: 'absolute', inset: 0 }}
+									>
+										<Image
+											src={ProductBg}
+											alt='product-bg'
+											fill
+											priority
+											placeholder='blur'
+											sizes='(max-width: 1000px) 100vw, 60vw'
+											style={{ objectFit: 'cover' }}
+											draggable={false}
+										/>
+									</div>
 
 									<SwiperWrapper className='w-full h-full relative'>
 										{slidesData.map((slide: any, index: number) => (
@@ -736,7 +764,6 @@ export const ProductInformation = ({
 									/>
 								</DescriptionText>
 
-								{/* БЕЗ ВНУТРІШНЬОГО СКРОЛУ: просто розкривається вниз */}
 								<p
 									className={`text-[14px] leading-[18px] text-[#FFFFFFA8] transition-[max-height] duration-300 ease-in-out overflow-hidden ${
 										showDescription ? 'max-h-[9999px]' : 'max-h-0'
@@ -1112,7 +1139,7 @@ const DividerLine = styled.div`
 	margin: 2px 0;
 `
 
-/* ===== shared prices (used earlier in the app) ===== */
+/* ===== shared prices ===== */
 const PricesWrap = styled.div`
 	display: flex;
 	gap: 60px;

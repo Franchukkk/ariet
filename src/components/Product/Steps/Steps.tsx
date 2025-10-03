@@ -21,15 +21,14 @@ export const Steps = () => {
 	]
 
 	return (
-		<StyledSteps>
-			{/* псевдоелемент дає full-bleed рамку без calc() і від’ємних margin */}
+		<StyledSteps aria-busy={!ready}>
 			<div className='main-wrapper'>
 				{ready
 					? STEPS.map(({ id, title, icon }, i) => (
 							<Card
 								key={id}
 								step={i + 1}
-								icon={icon}
+								icon={icon as any}
 								title={title}
 							/>
 						))
@@ -56,6 +55,10 @@ const StyledSteps = styled.div`
 		linear-gradient(#ffffff45, #ffffff45) center top / 100svw 1px no-repeat,
 		linear-gradient(#ffffff45, #ffffff45) center bottom / 100svw 1px no-repeat;
 
+	/* ✅ страховка від мікро-стрибу при гідратації/локалізації:
+     4 картки = 1 ряд на десктопі (272px) і 4 ряди на мобайлі (4 * 150px) */
+	min-height: 272px;
+
 	.main-wrapper {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
@@ -64,6 +67,9 @@ const StyledSteps = styled.div`
 
 	@media (max-width: 1000px) {
 		background: none;
+		/* 4 рядки по 150px */
+		min-height: calc(4 * 150px);
+
 		.main-wrapper {
 			grid-template-columns: 1fr;
 			grid-auto-rows: 150px;

@@ -19,7 +19,7 @@ import { Navigations } from './Navigations'
 import { Slides } from './Slides'
 import type { ICategory, Lng } from '@/lib/server-data'
 
-const MAX_SLIDES = 6
+const MAX_SLIDES = 10
 type SlideItem = { id: number; title: string; photo: any }
 
 export const Banner = ({
@@ -33,36 +33,30 @@ export const Banner = ({
 	const swiperRef = useRef<SwiperType | null>(null)
 	const [activeSlide, setActiveSlide] = useState(0)
 
-	// стабільна мова: пріоритет — пропси зі сторінки
 	const currentLng: Lng = useMemo(() => {
 		if (initialLng) return initialLng
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
 		return raw === 'en' ? 'en' : 'ru'
 	}, [i18n.language, i18n.resolvedLanguage, initialLng])
 
-	// якщо є дані з сервера — не фетчимо на клієнті
 	const { categories, loading } = useCategories({
 		lng: currentLng,
 		pageSize: 99,
-		enabled: !initialCategories // ✅ вимикаємо мережевий виклик
+		enabled: !initialCategories
 	})
 
-	// джерело категорій
 	const categoriesSource: ICategory[] = initialCategories ?? categories
 
-	// slides без зайвих перерахунків
 	const slides: SlideItem[] = useMemo(() => {
-		if (loading && !initialCategories) return []
 		const mapped = (categoriesSource ?? []).map(c => ({
 			id: c.id,
 			title: c.name || '—',
 			photo: c.image || bg
 		}))
 		const next = mapped.slice(0, MAX_SLIDES)
-		return next.length ? next : [{ id: 0, title: '—', photo: bg }]
-	}, [categoriesSource, loading, initialCategories])
+		return next.length ? next : [{ id: -1, title: '—', photo: bg }]
+	}, [categoriesSource])
 
-	// при зміні набору слайдів — повертаємось на перший
 	useEffect(() => {
 		setActiveSlide(0)
 		if (swiperRef.current) swiperRef.current.slideTo(0, 0)
@@ -99,9 +93,12 @@ export const Banner = ({
 						centerNarrowStrength={0.7}
 						amplitude={0.3}
 						waveFreq={2.1}
-						waveFlow={1.6}
+						/* ↓↓↓ повільніша анімація тла ↓↓↓ */
+						waveFlow={0.9} // було ~1.6
+						crossFlow={0.25} // було ~0.4
+						waveTimeDiv={14000} // було 7000 за замовчанням
+						/* ↑↑↑ */
 						crossFreq={0.6}
-						crossFlow={0.4}
 						panSpeed={0}
 						scale={1}
 						zoom={1.0}
@@ -126,6 +123,9 @@ export const Banner = ({
 						observer
 						observeParents
 						observeSlideChildren
+						/* ↓↓↓ повільніший перехід між слайдами ↓↓↓ */
+						speed={800} // мс (було дефолтно ~300ms)
+						/* ↑↑↑ */
 						onBeforeInit={(swiper: SwiperType) => {
 							swiperRef.current = swiper
 						}}
@@ -162,6 +162,31 @@ export const Banner = ({
 const StyledBanner = styled.div`
 	position: relative;
 	margin-bottom: 120px;
+
+	.overlay {
+		min-height: 700px;
+	}
+	@media (max-width: 1200px) {
+		.overlay {
+			min-height: 520px;
+		}
+	}
+	@media (max-width: 1000px) {
+		.overlay {
+			min-height: 460px;
+		}
+	}
+	@media (max-width: 700px) {
+		.overlay {
+			min-height: 380px;
+		}
+	}
+
+	.overlay .swiper,
+	.overlay .swiper-wrapper,
+	.overlay .swiper-slide {
+		min-height: inherit;
+	}
 
 	.navigation-btns {
 		position: absolute;
@@ -229,8 +254,8 @@ const ImgClamp = styled.div`
 	picture img {
 		width: auto;
 		height: auto;
-		max-height: 420px;
-		max-width: 60vw;
+		max-height: 460px; /* було 420px — трохи вище під ширшу пропорцію */
+		max-width: 72vw; /* було 60vw — трохи ширше */
 		object-fit: contain;
 		image-rendering: auto;
 	}
@@ -239,21 +264,21 @@ const ImgClamp = styled.div`
 		min-height: 520px;
 		img,
 		picture img {
-			max-height: 380px;
+			max-height: 400px; /* було 380px */
 		}
 	}
 	@media (max-width: 1000px) {
 		min-height: 460px;
 		img,
 		picture img {
-			max-height: 340px;
+			max-height: 360px; /* було 340px */
 		}
 	}
 	@media (max-width: 700px) {
 		min-height: 380px;
 		img,
 		picture img {
-			max-height: 300px;
+			max-height: 320px; /* було 300px */
 		}
 	}
 `

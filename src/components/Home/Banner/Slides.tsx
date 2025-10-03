@@ -11,7 +11,7 @@ interface Props {
 	onNavigate: (index: number) => void
 }
 
-const MAX_SLIDES = 6
+const MAX_SLIDES = 10
 
 export const Slides = memo(function Slides({
 	slides,
