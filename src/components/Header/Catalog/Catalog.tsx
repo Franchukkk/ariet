@@ -14,7 +14,7 @@ export const Catalog = () => {
 	const catalogRef = useRef<HTMLDivElement>(null)
 	const { t } = useTranslation('common')
 
-	const handleClick = () => setIsOpen(prev => !prev)
+	const handleToggle = () => setIsOpen(prev => !prev)
 
 	useEffect(() => {
 		const handleOutsideClick = (event: MouseEvent) => {
@@ -25,9 +25,7 @@ export const Catalog = () => {
 				setIsOpen(false)
 			}
 		}
-
 		document.addEventListener('mousedown', handleOutsideClick)
-
 		return () => {
 			document.removeEventListener('mousedown', handleOutsideClick)
 		}
@@ -37,7 +35,7 @@ export const Catalog = () => {
 		<StyledCatalog
 			ref={catalogRef}
 			className={`flex items-center ${isOpen && 'open'}`}
-			onClick={handleClick}
+			onClick={handleToggle}
 		>
 			<BurgerIcon
 				aria-label='icon'
@@ -48,7 +46,8 @@ export const Catalog = () => {
 				className='ml-[25px] arrow-down'
 				aria-label='icon'
 			/>
-			<Dropdown />
+
+			<Dropdown onSelect={() => setIsOpen(false)} />
 		</StyledCatalog>
 	)
 }
@@ -67,12 +66,14 @@ const StyledCatalog = styled.div`
 	flex-shrink: 0;
 	position: relative;
 	cursor: pointer;
+
 	.arrow-down {
 		transition: all 0.3s;
 		path {
 			transition: all 0.3s;
 		}
 	}
+
 	&.open {
 		color: #4bc785;
 		.dropdown {
@@ -86,6 +87,7 @@ const StyledCatalog = styled.div`
 			}
 		}
 	}
+
 	@media (max-width: 1400px) {
 		padding: 15px;
 		grid-column: 1/3;

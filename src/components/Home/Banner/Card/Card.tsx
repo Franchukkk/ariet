@@ -21,6 +21,7 @@ export const Card = ({ title, photo, categoryId, lng }: Props) => (
 		$photo={photo}
 	>
 		<Title title={title} />
+
 		<HomeLink
 			categoryId={categoryId}
 			lng={lng}

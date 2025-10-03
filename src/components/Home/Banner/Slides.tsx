@@ -1,3 +1,6 @@
+'use client'
+
+import { memo } from 'react'
 import styled from 'styled-components'
 
 import ArrowSvg from '@/assets/img/slide-arrow.svg'
@@ -10,17 +13,25 @@ interface Props {
 
 const MAX_SLIDES = 6
 
-export const Slides = ({ slides, active, onNavigate }: Props) => {
-	// додатково ріжемо список тут (подвійний захист)
+export const Slides = memo(function Slides({
+	slides,
+	active,
+	onNavigate
+}: Props) {
 	const items = (slides ?? []).slice(0, MAX_SLIDES)
 
 	return (
 		<StyledSlides className='flex flex-col gap-[14px]'>
 			{items.map((s, i) => (
 				<div
-					key={i}
+					key={`${i}-${s}`}
+					role='button'
+					tabIndex={0}
 					className={`flex items-center gap-2.5 ${active === i && 'active'}`}
 					onClick={() => onNavigate(i)}
+					onKeyDown={e => {
+						if (e.key === 'Enter' || e.key === ' ') onNavigate(i)
+					}}
 				>
 					{s}
 					<ArrowSvg aria-label='icon' />
@@ -28,7 +39,7 @@ export const Slides = ({ slides, active, onNavigate }: Props) => {
 			))}
 		</StyledSlides>
 	)
-}
+})
 
 const StyledSlides = styled.div`
 	position: absolute;
@@ -41,6 +52,7 @@ const StyledSlides = styled.div`
 	text-transform: uppercase;
 	color: #ffffff5e;
 	z-index: 3;
+
 	div {
 		cursor: pointer;
 		img {
@@ -55,6 +67,7 @@ const StyledSlides = styled.div`
 			}
 		}
 	}
+
 	@media (max-width: 700px) {
 		display: none;
 	}

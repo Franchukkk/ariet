@@ -12,10 +12,11 @@ interface Props {
 export const HomeLink = ({ categoryId, lng }: Props) => {
 	const { t } = useTranslation('common')
 
-	const href =
-		categoryId != null
-			? `/products?category=${categoryId}${lng ? `&lng=${lng}` : ''}`
-			: '/products'
+	const params = new URLSearchParams()
+	if (categoryId != null) params.set('category', String(categoryId))
+	if (lng) params.set('lng', lng)
+
+	const href = `/products${params.toString() ? `?${params.toString()}` : ''}`
 
 	return <StyledLink href={href}>{t('HomeLink.to_catalog')}</StyledLink>
 }

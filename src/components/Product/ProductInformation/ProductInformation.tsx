@@ -224,7 +224,8 @@ interface Variant {
 	price: number
 	dealer_price?: number | null
 	project_price?: number | null
-	socket: { code: string; name: string } | null
+	/** ТЕПЕР масив сокетів (backward-сумісно нормалізується з одиночного об’єкта) */
+	sockets: { code: string; name: string }[]
 	images: { image: string; alt_text: string | null }[]
 	features: { name: string; value: string }[]
 }
@@ -286,6 +287,20 @@ export const ProductInformation = ({
 			}))
 		)
 
+	// нормалізація сокетів: дозволяє [obj], obj або []
+	const normalizeSockets = (raw: any): { code: string; name: string }[] => {
+		if (!raw) return []
+		const arr = Array.isArray(raw) ? raw : [raw]
+		return arr
+			.map((s: any) => {
+				const code = String(s?.code ?? s ?? '').trim()
+				if (!code) return null
+				const name = String(s?.name ?? s?.title ?? code)
+				return { code, name }
+			})
+			.filter(Boolean) as { code: string; name: string }[]
+	}
+
 	const normalizeProduct = (raw: any): ProductInfo => ({
 		id: Number(raw?.id),
 		name: String(raw?.name ?? ''),
@@ -299,12 +314,8 @@ export const ProductInformation = ({
 			price: toNum(v?.price) ?? 0,
 			dealer_price: toNum(v?.dealer_price),
 			project_price: toNum(v?.project_price),
-			socket: v?.socket
-				? {
-						code: String(v.socket.code),
-						name: String(v.socket.name ?? v.socket.code)
-					}
-				: null,
+			// приймаємо і v.socket (array|object), і v.sockets (array)
+			sockets: normalizeSockets(v?.sockets ?? v?.socket),
 			images: (v?.images ?? []).map((im: any) => ({
 				image: String(im?.image ?? ''),
 				alt_text: im?.alt_text ?? null
@@ -357,7 +368,8 @@ export const ProductInformation = ({
 				if (first) {
 					const vk = getVersionKey(first)
 					setSelectedVersionKey(vk)
-					setSelectedSocketCode(first.socket?.code ?? null)
+					const firstSocket = first.sockets?.[0]?.code ?? null
+					setSelectedSocketCode(firstSocket)
 				}
 			} catch {
 				if (!cancelled) setProductInfo(null)
@@ -407,12 +419,15 @@ export const ProductInformation = ({
 		[selectedVersionKey, variants]
 	)
 
+	// зібрати всі сокети для обраної версії (без дублювань)
 	const socketsForActiveVersion = useMemo(() => {
 		if (!activeVersionKey) return []
 		const map = new Map<string, string>()
 		for (const v of variants) {
 			if (getVersionKey(v) !== activeVersionKey) continue
-			if (v.socket?.code) map.set(v.socket.code, v.socket.name || v.socket.code)
+			for (const s of v.sockets ?? []) {
+				if (s?.code) map.set(s.code, s.name || s.code)
+			}
 		}
 		return Array.from(map, ([code, display]) => ({ code, display }))
 	}, [variants, activeVersionKey])
@@ -434,6 +449,7 @@ export const ProductInformation = ({
 		return variants.find(v => getVersionKey(v) === activeVersionKey) ?? null
 	}, [variants, activeVersionKey])
 
+	// тепер варіант вважається відповідним, якщо МІСТИТЬ обраний сокет у своєму масиві
 	const combinationVariant = useMemo(() => {
 		if (!variants.length || !activeVersionKey || !selectedSocketCode)
 			return null
@@ -441,7 +457,7 @@ export const ProductInformation = ({
 			variants.find(
 				v =>
 					getVersionKey(v) === activeVersionKey &&
-					v.socket?.code === selectedSocketCode
+					(v.sockets ?? []).some(s => s.code === selectedSocketCode)
 			) ?? null
 		)
 	}, [variants, activeVersionKey, selectedSocketCode])
@@ -521,7 +537,7 @@ export const ProductInformation = ({
 							</Title>
 
 							{shortStrict && (
-								<p className='max-w-[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
+								<p className='max-w:[700px] mb-[23px] text-[15px] leading-[24px] uppercase font-[500] text-[#FFFFFF]'>
 									<span className='text-[#4BC785]'>{shortFirst}</span>
 									{shortRest ? ' ' + shortRest : ''}
 								</p>

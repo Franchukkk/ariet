@@ -1,3 +1,5 @@
+'use client'
+
 import styled from 'styled-components'
 
 import { ICategory } from '../../../Content'
@@ -10,21 +12,23 @@ interface Props {
 	categories: ICategory[]
 }
 
-export const Tags = ({ activeFilters, onChangeFilter, categories }: Props) => (
-	<StyledTags className='flex items-center flex-wrap gap-2'>
-		{activeFilters.map(filter => {
-			const category = categories.find(cat => cat.id.toString() === filter)
-			const title = category ? category.name : filter
+export const Tags = ({ activeFilters, onChangeFilter, categories }: Props) => {
+	const getTitle = (id: string) =>
+		categories.find(cat => String(cat.id) === id)?.name ?? id
 
-			return (
+	if (activeFilters.length === 0) return null
+
+	return (
+		<StyledTags className='flex items-center flex-wrap gap-2'>
+			{activeFilters.map(id => (
 				<Tag
-					key={filter}
-					title={title}
-					onClick={() => onChangeFilter(filter)}
+					key={id}
+					title={getTitle(id)}
+					onRemove={() => onChangeFilter(id)} // зняти один фільтр
 				/>
-			)
-		})}
-	</StyledTags>
-)
+			))}
+		</StyledTags>
+	)
+}
 
 const StyledTags = styled.div``

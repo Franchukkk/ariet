@@ -1,12 +1,9 @@
-import { Suspense } from 'react'
-
+// app/online-support/page.tsx
 import { ClientComponent } from '@/components/OnlineSupport/ClientComponent'
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'error'
+export const revalidate = false
+
 export default function Page() {
-	return (
-		<Suspense>
-			<ClientComponent />
-		</Suspense>
-	)
+	return <ClientComponent />
 }

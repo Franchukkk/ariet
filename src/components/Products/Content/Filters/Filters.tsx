@@ -1,3 +1,5 @@
+'use client'
+
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -9,6 +11,7 @@ interface Props {
 	activeFilters: string[]
 	onChangeFilter: (filter: string) => void
 	showFilters: boolean
+	onToggleShowFilters: () => void
 	categories: ICategory[]
 }
 
@@ -16,6 +19,7 @@ export const Filters = ({
 	activeFilters,
 	onChangeFilter,
 	showFilters,
+	onToggleShowFilters,
 	categories
 }: Props) => {
 	const { t } = useTranslation('common')

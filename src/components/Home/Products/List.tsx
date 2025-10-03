@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -17,11 +17,11 @@ interface Product {
 	name: string
 	description: string
 	sku: string
-	category: Category
+	category: Category | null
 	variants: {
 		id: number
 		sku: string
-		images: { image: string; alt_text: string }[]
+		images: { image: string; alt_text: string | null }[]
 		price: string
 	}[]
 }
@@ -44,22 +44,20 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 			setLoading(true)
 			setError(null)
 			try {
-				const res = await fetch(`${API_BASE}/catalog/products/`)
+				const res = await fetch(`${API_BASE}/catalog/products/`, {
+					cache: 'no-store'
+				})
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
 				const json = await res.json()
 				const data: Product[] = json.results || []
-
-				const filtered = filterProductsByCategory(data, activeCategory)
-				setProducts(filtered)
-			} catch (err) {
+				setProducts(filterProductsByCategory(data, activeCategory))
+			} catch (err: any) {
 				console.error('Fetch error:', err)
-				setError('Failed to load')
+				setError(err?.message || 'Failed to load')
 			} finally {
 				setLoading(false)
 			}
 		}
-
 		loadProducts()
 	}, [activeCategory])
 
@@ -80,48 +78,96 @@ export const List = ({ activeCategory }: { activeCategory: string }) => {
 					.slice(0, 6)
 			case 'проектні рішення':
 				return data.filter(p =>
-					p.category?.name?.toLowerCase().includes('проект')
+					(p.category?.name || '').toLowerCase().includes('проект')
 				)
 			default:
 				return data
 		}
 	}
 
-	return (
-		<StyledList>
-			{!loading && !error && products.length === 0 && (
-				<Info>{t('list.Nothing_found')}</Info>
-			)}
-			{error && <p style={{ color: 'red' }}>{error}</p>}
+	// групуємо по 3 картки в ряд і ставимо роздільник-лінію під рядом
+	const renderTriples = (items: Product[]) => {
+		const rows: JSX.Element[] = []
+		for (let i = 0; i < items.length; i += 3) {
+			const a = items[i]
+			const b = items[i + 1]
+			const c = items[i + 2]
 
-			{!loading &&
-				!error &&
-				products.map((product, index) => {
-					const raw =
-						product.variants?.[0]?.images?.[0]?.image || productImg.src
-					const image = raw === productImg.src ? raw : toAbs(raw)
+			const aImg = toAbs(a?.variants?.[0]?.images?.[0]?.image) || productImg.src
+			const bImg = b
+				? toAbs(b?.variants?.[0]?.images?.[0]?.image) || productImg.src
+				: ''
+			const cImg = c
+				? toAbs(c?.variants?.[0]?.images?.[0]?.image) || productImg.src
+				: ''
 
-					return (
-						<div
-							key={product.id}
-							className={`card ${index % 3 === 2 ? 'no-border' : ''}`}
-						>
+			rows.push(
+				<React.Fragment key={`row-${i}`}>
+					<div className='card card-border'>
+						<div className='card-sizer'>
+							<ModelCard
+								photo={aImg}
+								title={a?.name || ''}
+								category={a?.category?.name || ''}
+								link={`/products/${a?.id}`}
+							/>
+						</div>
+					</div>
+
+					{b ? (
+						<div className='card card-border'>
 							<div className='card-sizer'>
 								<ModelCard
-									photo={image}
-									title={product.name}
-									category={product.category?.name || ''}
-									link={`/products/${product.id}`}
+									photo={bImg}
+									title={b?.name || ''}
+									category={b?.category?.name || ''}
+									link={`/products/${b?.id}`}
 								/>
 							</div>
 						</div>
-					)
-				})}
+					) : (
+						<div className='card placeholder' />
+					)}
+
+					{c ? (
+						<div className='card'>
+							<div className='card-sizer'>
+								<ModelCard
+									photo={cImg}
+									title={c?.name || ''}
+									category={c?.category?.name || ''}
+									link={`/products/${c?.id}`}
+								/>
+							</div>
+						</div>
+					) : (
+						<div className='card placeholder' />
+					)}
+
+					<div className='divider' />
+				</React.Fragment>
+			)
+		}
+		return rows
+	}
+
+	if (!loading && !error && products.length === 0) {
+		return (
+			<StyledList>
+				<EmptyInfo>{t('list.Nothing_found')}</EmptyInfo>
+			</StyledList>
+		)
+	}
+
+	return (
+		<StyledList>
+			{error && <p style={{ color: 'red' }}>{error}</p>}
+			{!error && renderTriples(products)}
 		</StyledList>
 	)
 }
 
-const Info = styled.p`
+const EmptyInfo = styled.p`
 	grid-column: 1 / -1;
 	color: #ffffffc9;
 	padding: 14px 0;
@@ -131,77 +177,72 @@ const Info = styled.p`
 const StyledList = styled.div`
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	border-bottom: 1px dashed #ffffff50;
-	border-top: 1px dashed #ffffff50;
-	margin-bottom: 34px;
-	padding: 12px 0;
+	grid-auto-rows: max-content;
 
+	/* керовані висоти для узгодженого вигляду */
+	--card-height-desktop: 420px;
+	--card-height-mobile: 360px;
+
+	--card-image-height-desktop: 420px;
+	--card-image-height-mobile: 160px;
+
+	.card {
+		min-height: var(--card-height-desktop);
+		display: flex;
+		align-items: stretch;
+	}
+
+	.card > .card-sizer {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* стилі зображення всередині ModelCard */
+	.card img {
+		width: 80%;
+		height: var(--card-image-height-desktop);
+		object-fit: cover;
+		display: block;
+		margin: 0 auto;
+	}
+
+	/* пунктир між стовпцями: тільки у перших двох */
+	.card.card-border {
+		border-right: 1px dashed #ffffff80;
+	}
+
+	/* роздільник-лінія під кожним рядом (desktop) */
 	.divider {
-		grid-column: 1/4;
-		grid-row: 2/3;
-		border-bottom: 1px dashed #ffffff50;
+		grid-column: 1 / 4;
+		height: 1px;
+		border-top: 1px dashed #ffffff80;
 		margin: 14px 0;
 	}
 
-	.card {
-		border-right: 1px dashed #ffffff50;
-		border-radius: 0;
-		padding: 13px 11px;
-	}
-	.card.no-border {
-		border-right: none;
-	}
-
-	/* мінімальні стилі для вирівнювання всередині картки */
-	.card-sizer {
-		height: 100%;
-	}
-	.card-sizer > * {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-		min-height: 0;
-	}
-	/* фото не «розпирає» картку */
-	.card-sizer img {
-		width: 100%;
-		height: auto;
-		object-fit: contain;
-		display: block;
-		max-height: 55vh;
-	}
-	/* заголовок — максимум 2 рядки */
-	.card-sizer :is(h1, h2, h3, h4, .title, .card-title) {
-		margin-top: 10px;
-		min-height: 2.8em;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-	/* останній елемент (стрілка/CTA) — донизу */
-	.card-sizer > * > :last-child {
-		margin-top: auto;
-	}
-
+	/* планшет: 2 у ряд, низ — пунктир, приховати роздільник */
 	@media (max-width: 1200px) {
-		grid-template-columns: 1fr 1fr;
-		border-bottom: none;
+		grid-template-columns: repeat(2, 1fr);
+
+		.card {
+			min-height: var(--card-height-mobile);
+			border-bottom: 1px dashed #ffffff80;
+			border-right: none !important;
+		}
+
+		.card img {
+			height: var(--card-image-height-mobile);
+			width: 80%;
+		}
 
 		.divider {
 			display: none;
 		}
-
-		.card {
-			border-bottom: 1px dashed #ffffff50;
-			border-right: none;
-		}
-		.card:last-child {
-			border-bottom: none;
-		}
 	}
 
-	@media (max-width: 900px) {
+	/* мобілка: 1 у ряд */
+	@media (max-width: 800px) {
 		grid-template-columns: 1fr;
 	}
 `

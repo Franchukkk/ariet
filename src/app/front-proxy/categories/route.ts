@@ -16,19 +16,14 @@ const pickLng = (raw?: string | null): Lng | undefined => {
 export async function GET(req: NextRequest) {
 	try {
 		const url = new URL(req.url)
+		const lngQ = pickLng(url.searchParams.get('lng'))
+		const lngH = pickLng(req.headers.get('accept-language'))
+		const lngC = pickLng(req.cookies.get('lng')?.value)
+		const lng: Lng = lngQ ?? lngH ?? lngC ?? 'ru'
 
-		const hintFromQuery = pickLng(url.searchParams.get('lng'))
-		const hintFromHeader = pickLng(req.headers.get('accept-language'))
-		const hintFromCookie = pickLng(req.cookies.get('lng')?.value)
-
-		// ✅ пріоритет: query → header → cookie → 'ru'
-		const lng: Lng = hintFromQuery ?? hintFromHeader ?? hintFromCookie ?? 'ru'
-
-		// прокидуємо всі query + обов'язково ставимо lng
 		const upstreamUrl = new URL(UPSTREAM)
-		for (const [k, v] of url.searchParams.entries()) {
+		for (const [k, v] of url.searchParams.entries())
 			upstreamUrl.searchParams.set(k, v)
-		}
 		upstreamUrl.searchParams.set('lng', lng)
 
 		const upstreamRes = await fetch(upstreamUrl.toString(), {
@@ -44,11 +39,11 @@ export async function GET(req: NextRequest) {
 			redirect: 'follow'
 		})
 
-		const body = await upstreamRes.text()
+		const text = await upstreamRes.text()
 		const backendLang =
 			pickLng(upstreamRes.headers.get('content-language')) ?? lng
 
-		const res = new NextResponse(body, {
+		const res = new NextResponse(text, {
 			status: upstreamRes.status,
 			headers: {
 				'content-type':
@@ -56,12 +51,10 @@ export async function GET(req: NextRequest) {
 					'application/json; charset=utf-8',
 				'cache-control': 'no-store, no-cache, must-revalidate',
 				'Content-Language': backendLang,
-				Vary: 'Accept-Language, LANGUAGE_CODE, Cookie',
-				'X-Debug-Lang-Sent': lng.toUpperCase()
+				Vary: 'Accept-Language, LANGUAGE_CODE, Cookie'
 			}
 		})
 
-		// оновлюємо/виставляємо куку з мовою
 		res.cookies.set('lng', backendLang, {
 			path: '/',
 			maxAge: 60 * 60 * 24 * 365,

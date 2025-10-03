@@ -1,147 +1,160 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 import type { Swiper as SwiperType } from 'swiper'
+import 'swiper/css'
 import { Navigation } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
-import decorBgUrl from '@/assets/img/Banner.svg?url'
 import bg from '@/assets/img/home-bg-1.png'
 
+import { useCategories } from '@/hooks/useCategories'
+
+import { Background } from './Background'
 import { Card } from './Card/Card'
 import { Footer } from './Footer'
 import { Navigations } from './Navigations'
 import { Slides } from './Slides'
-
-type Category = {
-	id: number
-	name?: string
-	name_ru?: string
-	name_en?: string
-	image?: string | { url?: string } | null
-	photo?: string | { url?: string } | null
-	banner?: string | { url?: string } | null
-}
+import type { ICategory, Lng } from '@/lib/server-data'
 
 const MAX_SLIDES = 6
-
 type SlideItem = { id: number; title: string; photo: any }
 
-export const Banner = () => {
+export const Banner = ({
+	initialCategories,
+	initialLng
+}: {
+	initialCategories?: ICategory[]
+	initialLng?: Lng
+}) => {
 	const { i18n } = useTranslation('common')
-
 	const swiperRef = useRef<SwiperType | null>(null)
 	const [activeSlide, setActiveSlide] = useState(0)
-	const [slides, setSlides] = useState<SlideItem[]>([])
 
-	const currentLng = useMemo<'ru' | 'en'>(() => {
+	// стабільна мова: пріоритет — пропси зі сторінки
+	const currentLng: Lng = useMemo(() => {
+		if (initialLng) return initialLng
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
 		return raw === 'en' ? 'en' : 'ru'
-	}, [i18n.language, i18n.resolvedLanguage])
+	}, [i18n.language, i18n.resolvedLanguage, initialLng])
 
+	// якщо є дані з сервера — не фетчимо на клієнті
+	const { categories, loading } = useCategories({
+		lng: currentLng,
+		pageSize: 99,
+		enabled: !initialCategories // ✅ вимикаємо мережевий виклик
+	})
+
+	// джерело категорій
+	const categoriesSource: ICategory[] = initialCategories ?? categories
+
+	// slides без зайвих перерахунків
+	const slides: SlideItem[] = useMemo(() => {
+		if (loading && !initialCategories) return []
+		const mapped = (categoriesSource ?? []).map(c => ({
+			id: c.id,
+			title: c.name || '—',
+			photo: c.image || bg
+		}))
+		const next = mapped.slice(0, MAX_SLIDES)
+		return next.length ? next : [{ id: 0, title: '—', photo: bg }]
+	}, [categoriesSource, loading, initialCategories])
+
+	// при зміні набору слайдів — повертаємось на перший
 	useEffect(() => {
-		let cancelled = false
+		setActiveSlide(0)
+		if (swiperRef.current) swiperRef.current.slideTo(0, 0)
+	}, [slides])
 
-		;(async () => {
-			try {
-				const res = await fetch(
-					`/front-proxy/categories?lng=${currentLng}&page_size=${MAX_SLIDES}&_=${Date.now()}`,
-					{ cache: 'no-store' }
-				)
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
+	const handleNavigation = useCallback((isNext?: boolean) => {
+		const sw = swiperRef.current
+		if (!sw) return
+		isNext ? sw.slideNext() : sw.slidePrev()
+	}, [])
 
-				const json = await res.json()
-				const arr: Category[] = Array.isArray(json)
-					? json
-					: (json?.results ?? [])
+	const handleNavigateToSlide = useCallback(
+		(index: number) => {
+			const sw = swiperRef.current
+			if (!sw) return
+			const max = Math.max(0, slides.length - 1)
+			const bounded = Math.min(Math.max(index, 0), max)
+			if (bounded === sw.activeIndex) return
+			sw.slideTo(bounded)
+		},
+		[slides.length]
+	)
 
-				const mapped: SlideItem[] = arr.map(c => {
-					const title =
-						(currentLng === 'en' ? c.name_en : c.name_ru) ?? c.name ?? ''
-					const rawImg: any = c.image ?? c.photo ?? c.banner ?? null
-					const src = (typeof rawImg === 'string' ? rawImg : rawImg?.url) || bg
-					return { id: c.id, title: title || '—', photo: src }
-				})
-
-				const next = mapped.slice(0, MAX_SLIDES)
-
-				if (!cancelled && next.length) {
-					setSlides(next)
-					setActiveSlide(0)
-					if (swiperRef.current) swiperRef.current.slideTo(0, 0)
-				} else if (!cancelled) {
-					setSlides([{ id: 0, title: '—', photo: bg }])
-				}
-			} catch {
-				if (!cancelled) {
-					setSlides([{ id: 0, title: '—', photo: bg }])
-				}
-			}
-		})()
-
-		return () => {
-			cancelled = true
-		}
-	}, [currentLng])
-
-	const handleNavigation = (isNext?: boolean) => {
-		if (!swiperRef.current) return
-		isNext ? swiperRef.current.slideNext() : swiperRef.current.slidePrev()
-		setActiveSlide(swiperRef.current.activeIndex)
-	}
-
-	const handleNavigateToSlide = (index: number) => {
-		if (!swiperRef.current) return
-		const bounded = Math.max(0, Math.min(index, Math.max(0, slides.length - 1)))
-		swiperRef.current.slideTo(bounded)
-		setActiveSlide(swiperRef.current.activeIndex)
-	}
+	const slideTitles = useMemo(() => slides.map(s => s.title), [slides])
 
 	return (
 		<StyledBanner className='main-wrapper'>
-			<div className='relative'>
-				<Slides
-					slides={slides.map(s => s.title)}
-					active={activeSlide}
-					onNavigate={handleNavigateToSlide}
-				/>
-				<Navigations onNavigate={handleNavigation} />
+			<Stage>
+				<BGLayer>
+					<Background
+						rotateDeg={80}
+						waveAngleDeg={-45}
+						centerNarrowWidth={0.9}
+						centerNarrowStrength={0.7}
+						amplitude={0.3}
+						waveFreq={2.1}
+						waveFlow={1.6}
+						crossFreq={0.6}
+						crossFlow={0.4}
+						panSpeed={0}
+						scale={1}
+						zoom={1.0}
+						pointSize={0.02}
+						color={0x00ffc3}
+					/>
+				</BGLayer>
 
-				<Swiper
-					modules={[Navigation]}
-					slidesPerView={1}
-					loop={false}
-					navigation={false}
-					onBeforeInit={(swiper: SwiperType) => {
-						swiperRef.current = swiper
-					}}
-					onSlideChange={sw => setActiveSlide(sw.activeIndex)}
-				>
-					{slides.map(({ id, title, photo }, i) => (
-						<SwiperSlide key={id ?? i}>
-							<ImgClamp>
-								<Card
-									title={title}
-									photo={photo}
-									categoryId={id}
-									lng={currentLng}
-								/>
-							</ImgClamp>
-						</SwiperSlide>
-					))}
-				</Swiper>
+				<div className='relative overlay'>
+					<Slides
+						slides={slideTitles}
+						active={activeSlide}
+						onNavigate={handleNavigateToSlide}
+					/>
+					<Navigations onNavigate={handleNavigation} />
 
-				<Footer
-					active={activeSlide}
-					total={slides.length}
-					nextSlide={
-						slides[activeSlide === slides.length - 1 ? 0 : activeSlide + 1]
-							?.title
-					}
-				/>
-			</div>
+					<Swiper
+						modules={[Navigation]}
+						slidesPerView={1}
+						loop={false}
+						navigation={false}
+						observer
+						observeParents
+						observeSlideChildren
+						onBeforeInit={(swiper: SwiperType) => {
+							swiperRef.current = swiper
+						}}
+						onSlideChange={sw => setActiveSlide(sw.activeIndex)}
+					>
+						{slides.map(({ id, title, photo }) => (
+							<SwiperSlide key={id}>
+								<ImgClamp>
+									<Card
+										title={title}
+										photo={photo}
+										categoryId={id}
+										lng={currentLng}
+									/>
+								</ImgClamp>
+							</SwiperSlide>
+						))}
+					</Swiper>
+
+					<Footer
+						active={activeSlide}
+						total={slides.length}
+						nextSlide={
+							slides[activeSlide === slides.length - 1 ? 0 : activeSlide + 1]
+								?.title
+						}
+					/>
+				</div>
+			</Stage>
 		</StyledBanner>
 	)
 }
@@ -149,6 +162,7 @@ export const Banner = () => {
 const StyledBanner = styled.div`
 	position: relative;
 	margin-bottom: 120px;
+
 	.navigation-btns {
 		position: absolute;
 		top: 50%;
@@ -181,9 +195,23 @@ const StyledBanner = styled.div`
 			}
 		}
 	}
+
 	@media (max-width: 1000px) {
 		margin-bottom: 40px;
 	}
+`
+
+const Stage = styled.div`
+	position: relative;
+	background: #000;
+	isolation: isolate;
+`
+
+const BGLayer = styled.div`
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
 `
 
 const ImgClamp = styled.div`
@@ -191,13 +219,10 @@ const ImgClamp = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-
-	background-color: #000;
-	background-image: url(${decorBgUrl});
+	background-color: transparent;
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
-
 	min-height: 700px;
 
 	img,

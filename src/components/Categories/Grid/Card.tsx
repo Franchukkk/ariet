@@ -16,8 +16,8 @@ interface Props {
 	className: string
 	topTitle?: string
 	bottomTitle?: string
-	photo?: ImgLike // робимо опційним, якщо бекенд інколи не дає
-	href?: string // якщо треба навігація кліком по всій картці
+	photo?: ImgLike
+	href?: string
 }
 
 export const Card = ({
@@ -30,9 +30,7 @@ export const Card = ({
 	const [hovered, setHovered] = useState(false)
 	const router = useRouter()
 
-	const go = () => {
-		if (href) router.push(href)
-	}
+	const go = () => href && router.push(href)
 	const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
 		if (!href) return
 		if (e.key === 'Enter' || e.key === ' ') {
@@ -98,20 +96,18 @@ const StyledCard = styled.div<{ $bg: ImgLike }>`
 	position: relative;
 	overflow: hidden;
 
-	/* тепер розмір/позиція задаються контейнером */
-
 	.product-box {
 		position: absolute;
-		overflow: hidden; /* ← не даємо картинці вилазити */
-		inset: auto; /* керуємо розмірами у Grid через :nth-child */
-		pointer-events: none; /* кліки проходять по всій картці */
+		overflow: hidden;
+		inset: auto;
+		pointer-events: none;
 	}
 
 	.card-product {
 		position: absolute;
-		inset: 0; /* <-- картинка рівно в межах product-box */
-		object-fit: contain; /* або cover, якщо треба заповнення */
-		object-position: center; /* базове положення, деталь нижче у Grid */
+		inset: 0;
+		object-fit: contain;
+		object-position: center;
 	}
 
 	.title {

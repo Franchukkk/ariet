@@ -1,60 +1,24 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import { Card } from './Card'
+import { useCategoriesExact } from '@/hooks/useCategories'
 
-type Category = { id: number; name: string; image?: string | null }
+import { Card } from './Card'
 
 export const Grid = () => {
 	const { i18n } = useTranslation('common')
-	const [items, setItems] = useState<Category[]>([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState<string | null>(null)
-
 	const currentLng = useMemo<'ru' | 'en'>(() => {
 		const raw = (i18n.resolvedLanguage || i18n.language || 'ru').split('-')[0]
 		return raw === 'en' ? 'en' : 'ru'
 	}, [i18n.language, i18n.resolvedLanguage])
 
-	useEffect(() => {
-		let mounted = true
-		const controller = new AbortController()
-
-		;(async () => {
-			try {
-				setLoading(true)
-				setError(null)
-				const res = await fetch(
-					`https://rpktask.sytes.net/front-proxy/categories?lng=${currentLng}&page_size=5&_=${Date.now()}`,
-					{ cache: 'no-store', signal: controller.signal }
-				)
-
-				if (!res.ok) throw new Error(`HTTP ${res.status}`)
-				const json = await res.json()
-				const arr = Array.isArray(json) ? json : (json?.results ?? [])
-
-				const data = arr.slice(0, 5).map((c: any) => ({
-					id: c.id,
-					name: c[`name_${currentLng}`] ?? c.name ?? '',
-					image: c.image ?? null
-				}))
-
-				if (mounted) setItems(data)
-			} catch (e: any) {
-				if (e?.name !== 'AbortError') setError(e?.message || 'Failed to load')
-			} finally {
-				if (mounted) setLoading(false)
-			}
-		})()
-
-		return () => {
-			mounted = false
-			controller.abort()
-		}
-	}, [currentLng])
+	const { categories, loading, error } = useCategoriesExact(5, {
+		lng: currentLng
+		// debug: true
+	})
 
 	if (loading || error) return null
 
@@ -69,9 +33,16 @@ export const Grid = () => {
 		{ className: 'col-start-5 col-end-8 row-span-2', showTop: false }
 	]
 
+	const makeHref = (categoryId: number) => {
+		const params = new URLSearchParams()
+		params.set('category', String(categoryId))
+		params.set('lng', currentLng)
+		return `/products?${params.toString()}`
+	}
+
 	return (
 		<StyledGrid>
-			{items.map((cat, i) => {
+			{categories.map((cat, i) => {
 				const lay = LAYOUT[i] ?? LAYOUT[LAYOUT.length - 1]
 				const topTitle = lay.showTop ? cat.name : undefined
 				return (
@@ -80,8 +51,8 @@ export const Grid = () => {
 						className={`card ${lay.className}`}
 						topTitle={topTitle}
 						bottomTitle={cat.name}
-						photo={cat.image ?? undefined}
-						href={`/products?category=${cat.id}&lng=${currentLng}`}
+						photo={cat.image || undefined} // ⬅️ тепер картинка прийде з хуку
+						href={makeHref(cat.id)}
 					/>
 				)
 			})}
