@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -68,8 +68,9 @@ function PossibilitiesInner({ currentLng }: { currentLng: Lng }) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [currentLng])
 
+	// load product
 	useEffect(() => {
-		let alive = true
+		const ac = new AbortController()
 
 		if (!productId) {
 			setProduct(null)
@@ -88,13 +89,13 @@ function PossibilitiesInner({ currentLng }: { currentLng: Lng }) {
 					'Content-Type': 'application/json',
 					'Accept-Language': currentLng.toUpperCase()
 				},
-				cache: 'no-store'
+				cache: 'no-store',
+				signal: ac.signal
 			}
 		)
 			.then(async r => {
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
-				if (!alive) return
 				setProduct({
 					id: json?.id,
 					name: json?.name ?? null,
@@ -104,43 +105,54 @@ function PossibilitiesInner({ currentLng }: { currentLng: Lng }) {
 						: []
 				})
 			})
-			.catch(() => {
-				if (alive) setProduct(null)
+			.catch(e => {
+				if ((e as any)?.name !== 'AbortError') setProduct(null)
 			})
-			.finally(() => {
-				if (alive) setLoading(false)
-			})
+			.finally(() => setLoading(false))
 
-		return () => {
-			alive = false
-		}
+		return () => ac.abort()
 	}, [productId, currentLng])
 
+	/* ХУКИ НИЖЧЕ — БЕЗ УМОВ (щоб не ламати порядок hooks) */
+	const safeName = product?.name ?? ''
+
+	const i18nTitle = useMemo(
+		() =>
+			t('possibilities.title', {
+				name: safeName,
+				defaultValue:
+					currentLng === 'en'
+						? `Your possibilities with ${safeName}`
+						: `Ваши возможности с ${safeName}`
+			}).trim(),
+		[t, safeName, currentLng]
+	)
+
+	const initial = useMemo(
+		() =>
+			(product?.possibilities ?? []).map(p => ({
+				name: p?.name ?? '',
+				description: p?.description ?? ''
+			})),
+		[product?.possibilities]
+	)
+
+	// тільки тепер early return
 	const hasHeaderData = !!(
 		product?.name?.trim() || product?.main_feature_description?.trim()
 	)
-	const hasPossibilities = (product?.possibilities?.length ?? 0) > 0
+	const hasPossibilities = initial.length > 0
 
 	if (loading || !productId || !product || !hasHeaderData || !hasPossibilities)
 		return null
 
-	const i18nTitle = t('possibilities.title', {
-		name: product.name ?? '',
-		defaultValue:
-			currentLng === 'en'
-				? `Your possibilities with ${product.name ?? ''}`
-				: `Ваши возможности с ${product.name ?? ''}`
-	}).trim()
-
-	const subtitleText = product.main_feature_description ?? ''
-
 	return (
 		<StyledPossibilities className='main-wrapper'>
 			<Title text={i18nTitle} />
-
 			<List
 				productId={productId}
 				lng={currentLng}
+				initial={initial}
 			/>
 		</StyledPossibilities>
 	)

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
+import type { Swiper as SwiperType } from 'swiper'
 import 'swiper/css/pagination'
-import { Autoplay, Pagination } from 'swiper/modules'
+import { Autoplay, Pagination, Virtual } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import photoFallback from '@/assets/img/module.png'
@@ -48,7 +49,7 @@ export const List = () => {
 	const [error, setError] = useState<string | null>(null)
 	const [isMobile, setIsMobile] = useState(false)
 
-	// мобільний брейкпойнт (на мобілі залишаємо рівно 5 карток)
+	// ——— брейкпойнт: на мобілі рівно 5 карток ———
 	useEffect(() => {
 		const mq = window.matchMedia('(max-width: 768px)')
 		const apply = (e: MediaQueryList | MediaQueryListEvent) =>
@@ -105,15 +106,17 @@ export const List = () => {
 		[t]
 	)
 
+	// ——— завантаження даних з відміною ———
 	useEffect(() => {
-		let abort = false
+		const ac = new AbortController()
 		const load = async () => {
 			setLoading(true)
 			setError(null)
 			try {
 				const r = await fetch(`${API_BASE}/catalog/products/?page_size=12`, {
 					headers: { 'Content-Type': 'application/json' },
-					cache: 'no-store'
+					cache: 'no-store',
+					signal: ac.signal
 				})
 				if (!r.ok) throw new Error(`HTTP ${r.status}`)
 				const json = await r.json()
@@ -139,31 +142,51 @@ export const List = () => {
 					}
 				})
 
-				if (!abort) setItems(mapped)
-			} catch (e) {
-				if (!abort) {
-					setItems([])
-					setError('Failed to load')
-				}
+				setItems(mapped)
+			} catch (e: any) {
+				if (e?.name === 'AbortError') return
+				setItems([])
+				setError('Failed to load')
 			} finally {
-				if (!abort) setLoading(false)
+				setLoading(false)
 			}
 		}
 		load()
-		return () => {
-			abort = true
-		}
+		return () => ac.abort()
 	}, [t])
 
-	// що показуємо: 5 на мобілці, інакше — все
+	// ——— що показуємо: 5 на мобілці, інакше — все ———
 	const data = useMemo(() => {
 		const base = items.length ? items : FALLBACK
 		return isMobile ? base.slice(0, 5) : base
 	}, [items, FALLBACK, isMobile])
 
+	// ——— автоплей лише коли секція у в’юпорті ———
+	const rootRef = useRef<HTMLDivElement>(null)
+	const swiperRef = useRef<SwiperType | null>(null)
+	useEffect(() => {
+		if (!rootRef.current) return
+		const el = rootRef.current
+		const io = new IntersectionObserver(
+			entries => {
+				const entry = entries[0]
+				const sw = swiperRef.current
+				if (!sw || !sw.autoplay) return
+				if (entry.isIntersecting) {
+					if (sw?.autoplay?.stopped) sw.autoplay.start()
+				} else {
+					sw.autoplay.stop()
+				}
+			},
+			{ root: null, threshold: 0.2 }
+		)
+		io.observe(el)
+		return () => io.disconnect()
+	}, [])
+
 	return (
-		<StyledList>
-			{loading && <Info>Завантаження…</Info>}
+		<StyledList ref={rootRef}>
+			{loading && <Info></Info>}
 			{error && <Info className='error'>{error}</Info>}
 			{!loading && !error && data.length === 0 && (
 				<Info>Нічого не знайдено</Info>
@@ -173,7 +196,8 @@ export const List = () => {
 				<CardGlobalFix>
 					<Swiper
 						spaceBetween={0}
-						modules={[Pagination, Autoplay]}
+						modules={[Pagination, Autoplay, Virtual]}
+						virtual
 						autoplay={{ delay: 2000, disableOnInteraction: true }}
 						pagination={{ clickable: true, dynamicBullets: false }}
 						breakpoints={{
@@ -181,17 +205,29 @@ export const List = () => {
 							800: { slidesPerView: 2 },
 							0: { slidesPerView: 1 }
 						}}
+						onSwiper={sw => {
+							swiperRef.current = sw
+						}}
+						// дрібні оптимізації плавності
+						watchSlidesProgress
+						observer
+						observeParents
 					>
-						{data.map(m => (
-							<SwiperSlide key={m.id}>
+						{data.map((m, idx) => (
+							<SwiperSlide
+								key={m.id}
+								virtualIndex={idx}
+							>
 								<CardSizer className='card-sizer'>
-									<ModelCard
-										photo={m.photo}
-										title={m.title}
-										category={m.category}
-										link={m.link}
-										isNew={m.isNew}
-									/>
+									<LazyMount rootMargin='200px'>
+										<ModelCard
+											photo={m.photo}
+											title={m.title}
+											category={m.category}
+											link={m.link}
+											isNew={m.isNew}
+										/>
+									</LazyMount>
 								</CardSizer>
 							</SwiperSlide>
 						))}
@@ -199,6 +235,43 @@ export const List = () => {
 				</CardGlobalFix>
 			)}
 		</StyledList>
+	)
+}
+
+/* ——— легкий lazy-mount без зміни верстки ——— */
+function LazyMount({
+	children,
+	rootMargin = '0px'
+}: {
+	children: React.ReactNode
+	rootMargin?: string
+}) {
+	const [ready, setReady] = useState(false)
+	const ref = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const el = ref.current
+		if (!el) return
+		const io = new IntersectionObserver(
+			(entries, obs) => {
+				if (entries[0].isIntersecting) {
+					setReady(true)
+					obs.disconnect()
+				}
+			},
+			{ root: null, threshold: 0.01, rootMargin }
+		)
+		io.observe(el)
+		return () => io.disconnect()
+	}, [rootMargin])
+
+	return (
+		<div
+			ref={ref}
+			style={{ display: 'contents' }}
+		>
+			{ready ? children : null}
+		</div>
 	)
 }
 
@@ -218,6 +291,12 @@ const StyledList = styled.div`
 
 	border-top: 1px dashed #ffffff50;
 	padding: 12px 0 14px;
+
+	/* CLS: резервуємо місце під слайдер + пагінацію */
+	min-height: calc(var(--card-h) + 76px);
+
+	/* ізолюємо компоновку/фарбування секції, щоб не «зачіпала» сусідів */
+	contain: layout paint;
 
 	.swiper-slide {
 		border-right: 1px dashed #ffffff50;
@@ -262,6 +341,7 @@ const StyledList = styled.div`
 const CardSizer = styled.div`
 	height: var(--card-h);
 	display: flex;
+	min-width: 0;
 
 	/* корінь ModelCard займає всю висоту */
 	& > * {

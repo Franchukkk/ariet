@@ -9,12 +9,11 @@ import { Background } from './Background'
 
 export const Banner = ({
 	featureName,
-	featureImageUrl // ← передаємо з контейнера значення main_feature_image
+	featureImageUrl
 }: {
 	featureName: string
 	featureImageUrl?: string | null
 }) => {
-	// безпечний фолбек, щоб не було помилки "Image is missing required src"
 	const imgSrc: string | StaticImageData =
 		featureImageUrl && featureImageUrl.trim().length
 			? featureImageUrl

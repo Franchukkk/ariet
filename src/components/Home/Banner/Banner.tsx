@@ -93,11 +93,9 @@ export const Banner = ({
 						centerNarrowStrength={0.7}
 						amplitude={0.3}
 						waveFreq={2.1}
-						/* ↓↓↓ повільніша анімація тла ↓↓↓ */
-						waveFlow={0.9} // було ~1.6
-						crossFlow={0.25} // було ~0.4
-						waveTimeDiv={14000} // було 7000 за замовчанням
-						/* ↑↑↑ */
+						waveFlow={0.9}
+						crossFlow={0.25}
+						waveTimeDiv={14000}
 						crossFreq={0.6}
 						panSpeed={0}
 						scale={1}
@@ -123,9 +121,7 @@ export const Banner = ({
 						observer
 						observeParents
 						observeSlideChildren
-						/* ↓↓↓ повільніший перехід між слайдами ↓↓↓ */
-						speed={800} // мс (було дефолтно ~300ms)
-						/* ↑↑↑ */
+						speed={500}
 						onBeforeInit={(swiper: SwiperType) => {
 							swiperRef.current = swiper
 						}}

@@ -1,49 +1,30 @@
-'use client'
+// app/products/[id]/page.tsx
+import { Suspense } from 'react'
 
-import { useState } from 'react'
-import styled from 'styled-components'
-
-import { Breadcrumbs } from '@/components/Breadcrumbs'
-import { Autonomy } from '@/components/Product/Autonomy/Autonomy'
-import { Models } from '@/components/Product/Models/Models'
-import { Possibilities } from '@/components/Product/Possibilities/Possibilities'
-import { ProductInformation } from '@/components/Product/ProductInformation/ProductInformation'
-import { ProductVariant } from '@/components/Product/ProductVariant/ProductVariant'
-import { Specifications } from '@/components/Product/Specifications/Specifications'
-import { Steps } from '@/components/Product/Steps/Steps'
 import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
-import { Support } from '@/components/Support/Support'
 
-export const dynamic = 'force-dynamic'
+import ProductPageClient from './ProductPageClient'
+import { getProductName } from '@/lib/server-data'
 
-export default function ProductPage() {
-	const [productName, setProductName] = useState<string>('')
+export const revalidate = 300
+export const dynamicParams = true
+
+type PageProps = { params: Promise<{ id: string }> }
+
+export default async function ProductPage({ params }: PageProps) {
+	const { id } = await params // ⬅️ головне виправлення
+	const productId = Number(id)
+
+	const initialName = await getProductName(productId).catch(() => '')
 
 	return (
 		<PublicRoute>
-			<ProductVariant />
-
-			<div>
-				<Breadcrumbs
-					path={['Главная', 'Продукция', productName]}
-					alias={['/', 'products', 'current']}
+			<Suspense fallback={null}>
+				<ProductPageClient
+					id={productId}
+					initialName={initialName}
 				/>
-			</div>
-			<Stack as='main'>
-				<ProductInformation setProductName={setProductName} />
-				<Steps />
-				<Specifications />
-				<Autonomy />
-				<Possibilities />
-				<Models />
-				<Support />
-			</Stack>
+			</Suspense>
 		</PublicRoute>
 	)
 }
-
-const Stack = styled.div`
-	& > * + * {
-		margin-top: clamp(32px, 5vw, 80px);
-	}
-`

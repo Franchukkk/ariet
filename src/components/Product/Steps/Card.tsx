@@ -7,7 +7,6 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 	step: number
 	icon: FunctionComponent<SVGProps<SVGSVGElement>> | null
 	title: string
-	/** внутрішній прапорець для скелета */
 	'data-skeleton'?: boolean
 }
 
@@ -25,7 +24,6 @@ export const Card = ({ step, icon: Icon, title, ...props }: Props) => {
 				{isSkeleton ? (
 					<div className='icon-skeleton' />
 				) : (
-					/* Фіксуємо геометрію SVG – запобігає CLS */
 					Icon && (
 						<Icon
 							aria-label='icon'
@@ -54,23 +52,23 @@ export const Card = ({ step, icon: Icon, title, ...props }: Props) => {
 }
 
 const StyledCard = styled.div`
-	padding: 31px;
+	box-sizing: border-box;
+	/* ↑ трохи більший внутрішній відступ картки */
+	padding: 36px;
 	font-weight: 500;
 	font-size: 16px;
-	line-height: 1; /* стабільна висота рядка */
+	line-height: 1;
 	letter-spacing: 0.01em;
 	text-transform: uppercase;
 	color: #ffffffc4;
 	position: relative;
 
-	/* вертикальні роздільники перенесені з контейнера, щоб не зсували сітку */
 	border-left: 1px dashed #ffffff45;
 
 	&:last-child {
 		border-right: 1px dashed #ffffff45;
 	}
 
-	/* тільки безпечні transition-и */
 	transition:
 		background-color 0.2s ease,
 		border-color 0.2s ease,
@@ -88,14 +86,15 @@ const StyledCard = styled.div`
 		width: max-content;
 		position: absolute;
 		top: -34px;
-		left: 31px;
+		/* ↑ зсув лейбла узгоджено з новим padding */
+		left: 36px;
 	}
 
 	@media (max-width: 1000px) {
 		border-left: none;
 		border-top: 1px dashed #ffffff45;
-		align-items: center;
-		padding: 25px;
+		/* ↑ трохи більше на мобайлі */
+		padding: 28px;
 
 		&:last-child {
 			border-right: none;
@@ -112,7 +111,7 @@ const StyledCard = styled.div`
 const IconBox = styled.div`
 	width: 40px;
 	height: 40px;
-	/* резервуємо місце під іконку */
+
 	& > svg,
 	& > img {
 		display: block;
@@ -140,15 +139,14 @@ const IconBox = styled.div`
 `
 
 const TitleBox = styled.div`
-	/* резерв під назву, щоб довга локаль не зсувала блок */
-	min-height: 22px; /* відповідає font-size 16px + line-height 1.375 ~ 22px */
+	min-height: 22px;
 	display: flex;
 	align-items: center;
 
 	.title {
 		overflow: hidden;
 		text-overflow: ellipsis;
-		white-space: nowrap; /* стабільна висота */
+		white-space: nowrap;
 		line-height: 22px;
 		color: #ffffffc4;
 	}

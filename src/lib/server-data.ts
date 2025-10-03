@@ -1,4 +1,3 @@
-// src/lib/server-data.ts
 import { headers } from 'next/headers'
 
 export type Lng = 'ru' | 'en'
@@ -8,8 +7,11 @@ export interface ICategory {
 	image?: string | null
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const normalizeCategories = (json: any, lng: Lng): ICategory[] => {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const arr: any[] = Array.isArray(json) ? json : (json?.results ?? [])
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return arr.map((c: any) => {
 		const localized = c?.[`name_${lng}`]
 		const name =
@@ -46,4 +48,28 @@ export async function getCategories(
 	if (!res.ok) throw new Error(`Failed to load categories: ${res.status}`)
 	const json = await res.json()
 	return normalizeCategories(json, lng)
+}
+
+export async function getProductName(
+	id: number,
+	lng: Lng = 'ru'
+): Promise<string> {
+	const base = await getBaseUrl()
+	const url = `${base}/front-proxy/products/${id}?lng=${lng}`
+
+	const res = await fetch(url, {
+		next: {
+			revalidate: 300,
+			tags: ['product', `product:${id}`, `product:${id}:${lng}`]
+		}
+	})
+	if (!res.ok) return ''
+	const json = await res.json()
+	const localized = json?.[`name_${lng}`]
+	return (
+		(typeof localized === 'string' && localized) ||
+		(typeof json?.name === 'string' && json.name) ||
+		(typeof json?.title === 'string' && json.title) ||
+		''
+	)
 }

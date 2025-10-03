@@ -22,7 +22,7 @@ export const Steps = () => {
 
 	return (
 		<StyledSteps aria-busy={!ready}>
-			<div className='main-wrapper'>
+			<div className='steps-grid'>
 				{ready
 					? STEPS.map(({ id, title, icon }, i) => (
 							<Card
@@ -48,18 +48,17 @@ export const Steps = () => {
 
 const StyledSteps = styled.div`
 	position: relative;
-	padding: 20px 0 22px;
+	/* ↑ більше відступів зліва/справа, адаптивно через clamp */
+	padding: 20px clamp(24px, 6vw, 100px) 22px;
 
-	/* Дві лінії-фони: зверху і знизу, на всю ширину вікна */
 	background:
 		linear-gradient(#ffffff45, #ffffff45) center top / 100svw 1px no-repeat,
 		linear-gradient(#ffffff45, #ffffff45) center bottom / 100svw 1px no-repeat;
 
-	/* ✅ страховка від мікро-стрибу при гідратації/локалізації:
-     4 картки = 1 ряд на десктопі (272px) і 4 ряди на мобайлі (4 * 150px) */
+	/* 4 картки = 1 ряд на десктопі */
 	min-height: 272px;
 
-	.main-wrapper {
+	.steps-grid {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		grid-auto-rows: 272px;
@@ -70,7 +69,7 @@ const StyledSteps = styled.div`
 		/* 4 рядки по 150px */
 		min-height: calc(4 * 150px);
 
-		.main-wrapper {
+		.steps-grid {
 			grid-template-columns: 1fr;
 			grid-auto-rows: 150px;
 		}
