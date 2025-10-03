@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
 		remotePatterns: [
 			{
 				protocol: 'https',
-				hostname: 'rpktask.sytes.net'
+				hostname: 'test.arietpower.com'
 			}
 		]
 	},
