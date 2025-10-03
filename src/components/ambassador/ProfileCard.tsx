@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { useMe } from '@/hooks/useMe'
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 
 export default function ProfileCard() {
 	const { t } = useTranslation('common')

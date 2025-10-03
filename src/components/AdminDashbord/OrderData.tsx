@@ -107,7 +107,7 @@ const splitByStatuses = (rows: any[]) => {
 	return b
 }
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 
 export const OrderData = () => {
 	const [orders, setOrders] = useState<any[]>([])

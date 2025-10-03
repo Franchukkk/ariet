@@ -60,7 +60,7 @@ export const ModalCart = ({
 }) => {
 	const { t, i18n } = useTranslation('common')
 
-	const API_BASE = 'https://rpktask.sytes.net/api'
+	const API_BASE = 'https://test.arietpower.com/api'
 	const token =
 		typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
 	const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}

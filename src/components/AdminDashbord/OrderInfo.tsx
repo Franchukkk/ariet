@@ -37,7 +37,7 @@ const logout = () => {
 }
 
 const API_BASE = (
-	process.env.NEXT_PUBLIC_API_BASE || 'https://rpktask.sytes.net'
+	process.env.NEXT_PUBLIC_API_BASE || 'https://test.arietpower.com'
 ).replace(/\/+$/, '')
 
 const refreshToken = async (): Promise<boolean> => {

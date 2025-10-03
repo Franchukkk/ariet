@@ -28,7 +28,7 @@ export async function GET(
 	const lng: Lng = hintFromQuery ?? hintFromHeader ?? hintFromCookie ?? 'ru'
 
 	const upstreamUrl = new URL(
-		`https://rpktask.sytes.net/api/catalog/products/${id}`
+		`https://test.arietpower.com/api/catalog/products/${id}`
 	)
 	upstreamUrl.searchParams.set('lng', lng) // форсимо lng в апстрім
 	upstreamUrl.searchParams.set('_', String(Date.now())) // bust cache

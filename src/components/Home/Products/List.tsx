@@ -26,11 +26,11 @@ interface Product {
 	}[]
 }
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 const toAbs = (url?: string) => {
 	if (!url) return ''
 	if (/^https?:\/\//i.test(url)) return url
-	return `https://rpktask.sytes.net${url.startsWith('/') ? '' : '/'}${url}`
+	return `https://test.arietpower.com${url.startsWith('/') ? '' : '/'}${url}`
 }
 
 export const List = ({ activeCategory }: { activeCategory: string }) => {

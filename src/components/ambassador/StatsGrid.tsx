@@ -10,7 +10,9 @@ import { getAccessToken, logout, refreshToken } from '@/helpers/auth'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+const API_BASE = 'https://test.arietpower.com/api'
 
 /* -------------------- styled -------------------- */
 const Card = styled.div`

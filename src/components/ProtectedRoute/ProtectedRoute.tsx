@@ -27,7 +27,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 		const refreshAccessToken = async () => {
 			try {
 				const res = await fetch(
-					'https://rpktask.sytes.net/api/token/refresh/',
+					'https://test.arietpower.com/api/token/refresh/',
 					{
 						method: 'POST',
 						headers: {
@@ -48,7 +48,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 					localStorage.setItem('accessToken', data.access)
 
 					const userRes = await fetch(
-						'https://rpktask.sytes.net/api/users/me/',
+						'https://test.arietpower.com/api/users/me/',
 						{
 							method: 'GET',
 							headers: {

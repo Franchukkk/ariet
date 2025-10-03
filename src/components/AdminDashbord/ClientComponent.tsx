@@ -22,7 +22,7 @@ export const ClientComponent = () => {
 
 		if (!refresh || !access) return
 
-		fetch('https://rpktask.sytes.net/api/token/refresh/', {
+		fetch('https://test.arietpower.com/api/token/refresh/', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -37,7 +37,7 @@ export const ClientComponent = () => {
 				}
 			})
 
-		fetch('https://rpktask.sytes.net/api/orders/', {
+		fetch('https://test.arietpower.com/api/orders/', {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',

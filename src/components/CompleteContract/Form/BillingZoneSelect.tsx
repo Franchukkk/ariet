@@ -47,7 +47,7 @@ export function BillingZoneSelect({
 			try {
 				while (true) {
 					const r = await fetch(
-						`https://rpktask.sytes.net/api/orders/billing-zones/?page=${page}&page_size=${pageSize}`,
+						`https://test.arietpower.com/api/orders/billing-zones/?page=${page}&page_size=${pageSize}`,
 						{ headers, cache: 'no-store' }
 					)
 					if (!r.ok) throw new Error(`HTTP ${r.status}`)

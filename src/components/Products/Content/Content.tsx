@@ -143,7 +143,7 @@ function ContentInner() {
 			}
 
 			const r = await fetch(
-				`https://rpktask.sytes.net/api/catalog/products/?${params.toString()}`,
+				`https://test.arietpower.com/api/catalog/products/?${params.toString()}`,
 				{
 					method: 'GET',
 					credentials: 'include',

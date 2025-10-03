@@ -7,7 +7,7 @@ import { Background } from '@/components/About/Hero/Background'
 import { PublicRoute } from '@/components/PublicRoute/PublicRoute'
 import { ThanksForOrder } from '@/components/thanks-for-order/thanks-for-order'
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 
 export const ClientComponent = ({
 	initialOrderParam

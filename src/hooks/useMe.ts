@@ -43,7 +43,9 @@ export async function requestWithToken(input: RequestInfo, init?: RequestInit) {
 }
 
 const fetchMe = async () => {
-	const res = await requestWithToken('https://rpktask.sytes.net/api/users/me/')
+	const res = await requestWithToken(
+		'https://test.arietpower.com/api/users/me/'
+	)
 	if (!res.ok) throw new Error('Failed to load profile')
 	return res.json()
 }

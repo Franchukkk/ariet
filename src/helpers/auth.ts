@@ -21,7 +21,7 @@ export const refreshToken = async (): Promise<boolean> => {
 
 	try {
 		const response = await fetch(
-			'https://rpktask.sytes.net/api/token/refresh/',
+			'https://test.arietpower.com/api/token/refresh/',
 			{
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },

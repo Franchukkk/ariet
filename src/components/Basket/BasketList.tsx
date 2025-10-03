@@ -36,8 +36,8 @@ export const BasketList = () => {
 	const total = discount > 0 ? subtotal - (subtotal * discount) / 100 : subtotal
 
 	const PROMO_ENDPOINTS = [
-		'https://rpktask.sytes.net/api/promocodes/check',
-		'https://rpktask.sytes.net/api/promocodes/check/'
+		'https://test.arietpower.com/api/promocodes/check',
+		'https://test.arietpower.com/api/promocodes/check/'
 	]
 
 	async function requestPromo(code: string) {

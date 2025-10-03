@@ -68,7 +68,7 @@ const refreshToken = async (): Promise<boolean> => {
 	if (!refreshTokenValue) return false
 	try {
 		const response = await fetch(
-			'https://rpktask.sytes.net/api/token/refresh/',
+			'https://test.arietpower.com/api/token/refresh/',
 			{
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -327,7 +327,7 @@ export const ProductInformation = ({
 		}))
 	})
 
-	const apiBase = 'https://rpktask.sytes.net'
+	const apiBase = 'https://test.arietpower.com'
 
 	const loadProduct = async (lng: Lng): Promise<ProductInfo> => {
 		const url = `${apiBase}/api/catalog/products/${id}/?lng=${lng}&_=${Date.now()}`

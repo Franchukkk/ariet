@@ -46,7 +46,7 @@ export const List = () => {
 		const fetchProducts = async () => {
 			try {
 				const res = await fetch(
-					'https://rpktask.sytes.net/api/catalog/products/'
+					'https://test.arietpower.com/api/catalog/products/'
 				)
 				if (!res.ok) throw new Error(`HTTP ${res.status}`)
 

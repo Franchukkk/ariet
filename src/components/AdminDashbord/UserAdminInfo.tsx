@@ -12,7 +12,7 @@ import userAdministrator from '@/assets/img/user_administrator.png'
 
 type ImgLike = string | StaticImageData
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 
 type MeResponse = {
 	email: string

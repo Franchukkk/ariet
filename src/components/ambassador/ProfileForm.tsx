@@ -168,7 +168,7 @@ export default function ProfileForm() {
 			await mutate(
 				async () => {
 					const res = await requestWithToken(
-						'https://rpktask.sytes.net/api/users/me/',
+						'https://test.arietpower.com/api/users/me/',
 						{ method: 'PUT', body: JSON.stringify(payload) }
 					)
 					if (!res.ok) {

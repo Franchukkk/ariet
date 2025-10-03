@@ -55,7 +55,7 @@ export const Orders = () => {
 	useEffect(() => {
 		const run = async () => {
 			try {
-				const res = await fetch('https://rpktask.sytes.net/api/orders/', {
+				const res = await fetch('https://test.arietpower.com/api/orders/', {
 					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',

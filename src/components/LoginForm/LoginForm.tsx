@@ -14,7 +14,7 @@ export default function LoginForm() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
-		const res = await fetch('https://rpktask.sytes.net/api/token/', {
+		const res = await fetch('https://test.arietpower.com/api/token/', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

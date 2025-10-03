@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const revalidate = 0
 
-const UPSTREAM = 'https://rpktask.sytes.net/api/catalog/categories/'
+const UPSTREAM = 'https://test.arietpower.com/api/catalog/categories/'
 
 type Lng = 'ru' | 'en'
 const pickLng = (raw?: string | null): Lng | undefined => {

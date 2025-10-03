@@ -21,7 +21,7 @@ export const User = () => {
 
 			try {
 				const res = await fetch(
-					'https://rpktask.sytes.net/api/token/refresh/',
+					'https://test.arietpower.com/api/token/refresh/',
 					{
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
@@ -34,13 +34,16 @@ export const User = () => {
 
 				localStorage.setItem('accessToken', data.access)
 
-				const userRes = await fetch('https://rpktask.sytes.net/api/users/me/', {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${data.access}`
+				const userRes = await fetch(
+					'https://test.arietpower.com/api/users/me/',
+					{
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${data.access}`
+						}
 					}
-				})
+				)
 
 				const userData = await userRes.json()
 

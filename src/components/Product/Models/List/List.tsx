@@ -11,7 +11,7 @@ import photoFallback from '@/assets/img/module.png'
 
 import { ModelCard } from '../../../ModelCard/ModelCard'
 
-const API_BASE = 'https://rpktask.sytes.net/api'
+const API_BASE = 'https://test.arietpower.com/api'
 
 type ApiImage = { image: string; alt_text?: string }
 type ApiVariant = { id: number; images?: ApiImage[]; price?: string }
@@ -38,7 +38,7 @@ type CardItem = {
 const toAbs = (url?: string) => {
 	if (!url) return ''
 	if (/^https?:\/\//i.test(url)) return url
-	return `https://rpktask.sytes.net${url.startsWith('/') ? '' : '/'}${url}`
+	return `https://test.arietpower.com${url.startsWith('/') ? '' : '/'}${url}`
 }
 
 export const List = () => {
