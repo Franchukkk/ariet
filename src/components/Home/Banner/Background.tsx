@@ -29,17 +29,16 @@ export const Background = () => {
 		const mountNode = mountRef.current
 		mountNode?.appendChild(renderer.domElement)
 
-		// ↑↑ БІЛЬШЕ ТОЧОК: збільшуємо сегменти площини
-		const SEG_X = 300 // було 150
-		const SEG_Y = 200 // було 100
+		const SEG_X = 300
+		const SEG_Y = 200
 		const geometry = new THREE.PlaneGeometry(6, 4, SEG_X, SEG_Y)
 		const pos = geometry.getAttribute('position')
-		pos.setUsage(THREE.DynamicDrawUsage) // трохи ефективніше при постійному оновленні
+		pos.setUsage(THREE.DynamicDrawUsage)
 
 		const simplex = new SimplexNoise()
 
 		const pointsMaterial = new THREE.PointsMaterial({
-			size: 0.012, // було 0.02 — зменшили, бо точок більше
+			size: 0.012,
 			color: 0x00ffc3,
 			sizeAttenuation: true
 		})
@@ -47,7 +46,6 @@ export const Background = () => {
 		const waves = new THREE.Points(geometry, pointsMaterial)
 		waves.rotation.x = -Math.PI / 2
 
-		// масштаб як у тебе
 		waves.scale.set(2.7, 1, 2.7)
 
 		scene.add(waves)
@@ -60,11 +58,13 @@ export const Background = () => {
 
 		window.addEventListener('resize', onResize)
 
+		const SPEED = 0.5
+
 		const animate = (t: number) => {
 			for (let i = 0; i < pos.count; i++) {
 				const x = pos.getX(i)
 				const y = pos.getY(i)
-				const z = 0.5 * simplex.noise3d(x / 2, y / 2, t / 6000)
+				const z = 0.5 * simplex.noise3d(x / 2, y / 2, (t * SPEED) / 6000)
 				pos.setZ(i, z)
 			}
 			pos.needsUpdate = true
