@@ -12,7 +12,7 @@ export const dynamicParams = true
 type PageProps = { params: Promise<{ id: string }> }
 
 export default async function ProductPage({ params }: PageProps) {
-	const { id } = await params // ⬅️ головне виправлення
+	const { id } = await params
 	const productId = Number(id)
 
 	const initialName = await getProductName(productId).catch(() => '')
