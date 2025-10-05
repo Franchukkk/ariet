@@ -29,18 +29,25 @@ export const Background = () => {
 		const mountNode = mountRef.current
 		mountNode?.appendChild(renderer.domElement)
 
-		const geometry = new THREE.PlaneGeometry(6, 4, 150, 100)
+		// ↑↑ БІЛЬШЕ ТОЧОК: збільшуємо сегменти площини
+		const SEG_X = 300 // було 150
+		const SEG_Y = 200 // було 100
+		const geometry = new THREE.PlaneGeometry(6, 4, SEG_X, SEG_Y)
 		const pos = geometry.getAttribute('position')
+		pos.setUsage(THREE.DynamicDrawUsage) // трохи ефективніше при постійному оновленні
+
 		const simplex = new SimplexNoise()
 
 		const pointsMaterial = new THREE.PointsMaterial({
-			size: 0.02,
-			color: 0x00ffc3
+			size: 0.012, // було 0.02 — зменшили, бо точок більше
+			color: 0x00ffc3,
+			sizeAttenuation: true
 		})
 
 		const waves = new THREE.Points(geometry, pointsMaterial)
 		waves.rotation.x = -Math.PI / 2
 
+		// масштаб як у тебе
 		waves.scale.set(2.7, 1, 2.7)
 
 		scene.add(waves)
