@@ -86,23 +86,7 @@ export const Banner = ({
 		<StyledBanner className='main-wrapper'>
 			<Stage>
 				<BGLayer>
-					<Background
-						rotateDeg={80}
-						waveAngleDeg={-45}
-						centerNarrowWidth={0.9}
-						centerNarrowStrength={0.7}
-						amplitude={0.3}
-						waveFreq={2.1}
-						waveFlow={0.9}
-						crossFlow={0.25}
-						waveTimeDiv={14000}
-						crossFreq={0.6}
-						panSpeed={0}
-						scale={1}
-						zoom={1.0}
-						pointSize={0.02}
-						color={0x00ffc3}
-					/>
+					<Background />
 				</BGLayer>
 
 				<div className='relative overlay'>

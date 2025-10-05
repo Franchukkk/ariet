@@ -9,12 +9,13 @@ export const Background = () => {
 	const mountRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
-		let animationId: number
+		let animationId = 0
 
-		let renderer = new THREE.WebGLRenderer({ antialias: true })
+		const renderer = new THREE.WebGLRenderer({ antialias: true })
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+		renderer.setSize(window.innerWidth, window.innerHeight)
 
 		const scene = new THREE.Scene()
-		//scene.background = new THREE.Color('#121212')
 
 		const camera = new THREE.PerspectiveCamera(
 			30,
@@ -24,9 +25,6 @@ export const Background = () => {
 		)
 		camera.position.set(4, 2, 8)
 		camera.lookAt(scene.position)
-
-		renderer = new THREE.WebGLRenderer({ antialias: true })
-		renderer.setSize(window.innerWidth, window.innerHeight)
 
 		const mountNode = mountRef.current
 		mountNode?.appendChild(renderer.domElement)
@@ -42,6 +40,9 @@ export const Background = () => {
 
 		const waves = new THREE.Points(geometry, pointsMaterial)
 		waves.rotation.x = -Math.PI / 2
+
+		waves.scale.set(2.7, 1, 2.7)
+
 		scene.add(waves)
 
 		const onResize = () => {
@@ -71,42 +72,22 @@ export const Background = () => {
 			cancelAnimationFrame(animationId)
 			window.removeEventListener('resize', onResize)
 			renderer.dispose()
-			mountNode?.removeChild(renderer.domElement)
+			if (renderer.domElement && renderer.domElement.parentNode) {
+				renderer.domElement.parentNode.removeChild(renderer.domElement)
+			}
 		}
 	}, [])
+
 	return <Root ref={mountRef} />
 }
-
-const StyledBackground = styled.div`
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	width: 100%;
-	height: 100%;
-	z-index: -1;
-	opacity: 0.5;
-	canvas {
-		width: 321% !important;
-		height: 178% !important;
-		position: absolute;
-		top: -181px;
-		right: -499px;
-		bottom: -146px;
-		@media (max-width: 600px) {
-			top: 10px;
-			width: 600px !important;
-			height: 126% !important;
-			right: 0px !important;
-		}
-	}
-`
 
 const Root = styled.div`
 	position: absolute;
 	inset: 0;
-	z-index: 0; /* 🔥 фон */
-	pointer-events: none; /* не перекриває кліки */
+	z-index: 0;
+	pointer-events: none;
+	overflow: hidden;
+
 	canvas {
 		display: block;
 		width: 100% !important;
