@@ -16,7 +16,7 @@ export const Phone = () => {
 				className='flex items-center gap-1'
 			>
 				<PhoneIcon aria-label='phone' />
-				+380 67 993 72 34
+				+86 185 29 573 835
 			</a>
 
 			<Link
