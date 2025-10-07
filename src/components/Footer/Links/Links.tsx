@@ -102,7 +102,7 @@ export const Links = () => {
 							link: 'https://www.facebook.com/profile.php?id=61581631662372'
 						},
 						{
-							title: 'Linkedin',
+							title: 'LinkedIn',
 							link: 'https://www.linkedin.com/company/ariet/'
 						}
 					]}
