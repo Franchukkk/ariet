@@ -12,7 +12,7 @@ export const Phone = () => {
 	return (
 		<StyledPhone>
 			<a
-				href='tel:+380679937234'
+				href='tel:+86 185 29 573 835'
 				className='flex items-center gap-1'
 			>
 				<PhoneIcon aria-label='phone' />

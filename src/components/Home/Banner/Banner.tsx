@@ -8,8 +8,6 @@ import 'swiper/css'
 import { Navigation } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
-import bg from '@/assets/img/home-bg-1.png'
-
 import { useCategories } from '@/hooks/useCategories'
 
 import { Background } from './Background'
@@ -50,11 +48,11 @@ export const Banner = ({
 	const slides: SlideItem[] = useMemo(() => {
 		const mapped = (categoriesSource ?? []).map(c => ({
 			id: c.id,
-			title: c.name || '—',
-			photo: c.image || bg
+			title: c.name || '',
+			photo: c.image ?? null
 		}))
 		const next = mapped.slice(0, MAX_SLIDES)
-		return next.length ? next : [{ id: -1, title: '—', photo: bg }]
+		return next.length ? next : [{ id: -1, title: '', photo: null }]
 	}, [categoriesSource])
 
 	useEffect(() => {

@@ -95,11 +95,15 @@ export const Links = () => {
 					links={[
 						{
 							title: 'Instagram',
-							link: 'https://www.instagram.com/volt.kz_official/'
+							link: 'https://www.instagram.com/ariet.technology'
 						},
 						{
 							title: 'Facebook',
-							link: 'https://www.facebook.com/volt.kzofficial/'
+							link: 'https://www.facebook.com/profile.php?id=61581631662372'
+						},
+						{
+							title: 'Linkedin',
+							link: 'https://www.linkedin.com/company/ariet/'
 						}
 					]}
 				/>
