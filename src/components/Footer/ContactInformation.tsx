@@ -17,8 +17,8 @@ export const CompanyInformation = () => {
 
 const StyledCompanyInformation = styled.div`
 	font-weight: 400;
-	font-size: 14px;
-	line-height: 21px;
+	font-size: 12px;
+	line-height: 18px;
 	letter-spacing: 0%;
 	color: #7a7b7a;
 	max-width: auto;
@@ -31,14 +31,4 @@ const StyledCompanyInformation = styled.div`
     p {
         text-align: center;
     }
-	.title {
-		font-weight: 500;
-		font-size: 20px;
-		line-height: 16px;
-		letter-spacing: 0%;
-		vertical-align: middle;
-		text-transform: uppercase;
-		color: #f1f1f1;
-		margin-bottom: 23px;
-	}
 `
