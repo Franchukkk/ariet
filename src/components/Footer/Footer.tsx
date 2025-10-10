@@ -5,6 +5,7 @@ import { AboutUs } from "./AboutUs";
 import { Links } from "./Links/Links";
 import { Divider } from "./Divider";
 import { Info } from "./Info";
+import { CompanyInformation } from "./ContactInformation";
 
 export const Footer = () => (
   <StyledFooter className="main-wrapper">
@@ -12,6 +13,7 @@ export const Footer = () => (
       <AboutUs />
       <Links />
     </div>
+    <CompanyInformation />
     <Divider />
     <Info />
   </StyledFooter>
