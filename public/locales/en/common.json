@@ -2,6 +2,9 @@
 	"footer": {
 		"aboutUs": "ARIET — modern equipment for a stable power supply.<br/> Reliable uninterruptible power supplies and stabilizers, created by engineers for engineers.<br/> Technology, quality, and style are what distinguish ARIET."
 	},
+	  "Photo": {
+    "no_photo": "No photo available"
+  },
 	"partnerForm": {
 		"fill_form": "Fill out the form and we will contact yous",
 		"name": "Name",
