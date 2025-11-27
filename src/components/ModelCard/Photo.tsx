@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import type { StaticImageData } from "next/image";
+import { useTranslation } from "react-i18next";
 
 type ImgLike = string | StaticImageData;
 
@@ -8,9 +9,9 @@ interface Props {
 }
 
 export const Photo = ({ photo }: Props) => {
- 
+  const { t } = useTranslation("common"); 
   if (!photo) {
-    return <NoPhoto>Фото отсутствует</NoPhoto>;
+    return <NoPhoto>{t("Photo.no_photo")}</NoPhoto>; 
   }
 
   const src =
@@ -28,16 +29,12 @@ const NoPhoto = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
- 
-
   border-radius: 8px;
   font-size: 18px;
   color: #555;
 `;
 
-
-
 const StyledPhoto = styled.img`
   width: 315px;
   margin: 0 auto 57px;
-  `;
+`;
